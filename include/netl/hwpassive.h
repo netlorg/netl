@@ -24,23 +24,19 @@
 #ifndef HWPASSIVE_H
 #define HWPASSIVE_H
 
-#define MAX_COM_LEN 255
+extern int hwlookup_mode;
 
-/*==============================================================================
-| which "facility" should we send the syslog logs to?
-==============================================================================*/
+#define HWLOOKUP_LONG		0
+#define HWLOOKUP_SHORT		1
+#define HWLOOKUP_COUNT		2
+#define HWLOOKUP_DEFAULT	HWLOOKUP_LONG
 
-#define NETL_LOG_FACILITY	LOG_LOCAL4
+typedef struct hwpassive_Entry {
+	u8 hw[6];
+	u32 ip;
+	time_t first, last;
+	struct hwpassive_Entry *next;
+} hwpassive_entry;
 
-/*==============================================================================
-| prototypes
-==============================================================================*/
+#endif /* HWPASSIVE_H */
 
-int	netl(char *dev);
-void	dgdump(u8 *dg, char *name, int len);
-void	checkicmp(u8 *dg, struct iphdr ip, struct icmphdr *h, int len);
-void	checktcp(u8 *dg, struct iphdr ip, struct tcphdr *h, int len);
-void	checkudp(u8 *dg, struct iphdr ip, struct udphdr *h, int len);
-void	parsedg(u8 *dg, int len);
-
-#endif /* NETL_H */

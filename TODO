@@ -6,3 +6,4 @@
  * win32 port
  * write/use a loadable kernel module which filters packets for me
  * add -lpcap support just for the fun of it
+ * remove byte native byte orders from code generation, and modify test cases appropriately

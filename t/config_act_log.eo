@@ -54,7 +54,7 @@ check(u8 *dg, size_t len)
 		ip->protocol == PROTOCOL_TCP
 	) {
 		if(	1 &&
-			ntohs(h->dest) == 80	&& /* 20480 */
+			ntohs(h->dest) == 0x0050	&&
 			1
 		) {
 			/* ACTION_LOG */

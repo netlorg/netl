@@ -1,3 +1,29 @@
+version 1.05
+------------
+
+ . modified hwpassive to use a hash function infront of the linked list.
+   this should make the hardware address lookups faster.  (hash function is 
+   xor each of the bytes in the address together, not the best distribution,
+   but it is blindingly fast)
+ . added `hwpassive:print', `hwpassive:lookhw:' and `hwpassive:lookip' dcp
+   commands to hwpassive.  print prints the database to log, and lookhw
+   and lookip do hardware address and ip address lookups respectively.
+ . added time stamps on each hwpassive entry.  it now keeps track of the
+   first, and last times the entry was seen.  this also modifies the `update'
+   flag, so hwpassive will re-write the hwpassive database on nearly
+   every invocation now.
+ . corrected BYTE_ORDER typo in include/global.h which allows netl to
+   compile under sparc-linux.  updated compiler.c and test cases for
+   SPARC byte orders.
+ . wrote hwlookup to interactm with the ethernet address database offline
+   (ie when hwpassive isn't running).  updated hwpassive so that it will
+   remove duplicate entries on startup.  i'm not certain how they were
+   introduced in the first place.
+ . changed Makefile to install *all* netl files in the LIBPATH, as well
+   as BIN and SUPATHs.  this allows you to keep more than one version of
+   netl on the same system.  why you would *want* to do that, i know not,
+   but you *can* do it if you wish.
+
 version 1.04
 ------------
 
@@ -99,6 +125,11 @@ version .95.2
 
  . the \ character now works in the config file, if you want to have
    multiple line rules.  very unix-esq.
+
+version .95.1
+-------------
+
+ . minor changes
 
 version .95
 -----------

@@ -6,6 +6,7 @@ Makefile
 Makefile.dep
 README
 TODO
+hwlookup.c
 action.c
 catch.c
 check.c
@@ -17,6 +18,7 @@ conf/traceroute.conf
 config.l
 config.y
 configure
+system.guess
 dcp.pl
 doc/Makefile
 doc/copyright.gif
@@ -68,7 +70,6 @@ filt/udp.c
 filt/udp4.c
 filt/udp6.c
 filter.c
-hwpassive.pl
 in/Makefile
 in/Makefile.dep
 in/file.c
@@ -99,7 +100,7 @@ ipv6.c
 lookup.c
 main.c
 neta.c
-netl-1.04.lsm
+netl-1.05.lsm
 netl.c
 netlcc.pl
 options.c

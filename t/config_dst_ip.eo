@@ -31,8 +31,8 @@ char *dump(u8 *dg, char *logname, size_t len);
 void
 construct(void)
 {
-	addip("starscream", 67766794); /* 10.10.10.4 */ 
-	addip("reliant", 84544010); /* 10.10.10.5 */ 
+	addip("starscream", htonl(0x0a0a0a04); /* 10.10.10.4 */ 
+	addip("reliant", htonl(0x0a0a0a05); /* 10.10.10.5 */ 
 }
 
 /* check() */
@@ -56,7 +56,7 @@ check(u8 *dg, size_t len)
 		ip->protocol == PROTOCOL_UDP
 	) {
 		if(	1 &&
-			ip->daddr == 67766794	&& /* "10.10.10.4" */
+			ntohl(ip->daddr) == 0x0a0a0a04	&& /* "10.10.10.4" */
 			1
 		) {
 			/* ACTION_LOG */
@@ -66,7 +66,7 @@ check(u8 *dg, size_t len)
 			}
 		}
 		if(	1 &&
-			ip->daddr == 34212362	&& /* "10.10.10.2" */
+			ntohl(ip->daddr) == 0x0a0a0a02	&& /* "10.10.10.2" */
 			1
 		) {
 			/* ACTION_LOG */
@@ -83,7 +83,7 @@ check(u8 *dg, size_t len)
 		ip->protocol == PROTOCOL_TCP
 	) {
 		if(	1 &&
-			ip->daddr == 84544010	&& /* "10.10.10.5" */
+			ntohl(ip->daddr) == 0x0a0a0a05	&& /* "10.10.10.5" */
 			1
 		) {
 			/* ACTION_LOG */
@@ -93,7 +93,7 @@ check(u8 *dg, size_t len)
 			}
 		}
 		if(	1 &&
-			ip->daddr == 17435146	&& /* "10.10.10.1" */
+			ntohl(ip->daddr) == 0x0a0a0a01	&& /* "10.10.10.1" */
 			1
 		) {
 			/* ACTION_LOG */

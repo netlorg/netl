@@ -54,7 +54,7 @@ check(u8 *dg, size_t len)
 		ip->protocol == PROTOCOL_UDP
 	) {
 		if(	1 &&
-			ntohs(h->source) != 47	&& /* 12032 */
+			ntohs(h->source) != 0x002f	&&
 			1
 		) {
 			/* ACTION_LOG */
@@ -71,7 +71,7 @@ check(u8 *dg, size_t len)
 		ip->protocol == PROTOCOL_TCP
 	) {
 		if(	1 &&
-			ntohs(h->source) != 80	&& /* 20480 */
+			ntohs(h->source) != 0x0050	&&
 			1
 		) {
 			/* ACTION_LOG */

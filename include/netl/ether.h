@@ -37,13 +37,13 @@
 |     8035	rarp
 ==============================================================================*/
 
-#if defined LITTLE_ENDIAN
+#if defined NETL_LITTLE_ENDIAN
 
   #define MACTYPE_IPDG	0x0008
   #define MACTYPE_ARP	0x0608
   #define MACTYPE_RARP	0x3580
 
-#elif defined BIG_ENDIAN
+#elif defined NETL_BIG_ENDIAN
 
   #define MACTYPE_IPDG	0x0800
   #define MACTYPE_ARP	0x0806

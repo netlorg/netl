@@ -50,7 +50,7 @@
 |     8035	rarp
 ==============================================================================*/
 
-#if defined LITTLE_ENDIAN
+#if defined NETL_LITTLE_ENDIAN
 
   #define LOCALHOST_IP	0x0100007f
 
@@ -64,7 +64,7 @@ typedef struct {
 	reserved:2;
 } flagbyte;
 
-#elif defined BIG_ENDIAN
+#elif defined NETL_BIG_ENDIAN
 
   #define LOCALHOST_IP	0x7f000001
 
@@ -87,12 +87,15 @@ typedef struct {
 ==============================================================================*/
 
 typedef struct {
-#if defined(LITTLE_ENDIAN)
+#if defined(NETL_LITTLE_ENDIAN)
 	u8	ihl:4,
 		version:4;
-#elif defined (BIG_ENDIAN)
-	u8	version:4,
-  		ihl:4;
+#elif defined (NETL_BIG_ENDIAN)
+	u8	ihl_version;
+	#define IPIHL(ihlv) (ihlv & 0x0f)
+	#define IPVER(ihlv) ((ihlv & 0xf0) >> 4)
+/*	u8	version:4,
+  		ihl:4;*/
 #else
 	#error	"Please fix <asm/byteorder.h>"
 #endif
@@ -120,10 +123,10 @@ union ip6addr {
 };
 
 typedef struct {
-#if defined(LITTLE_ENDIAN)
+#if defined(NETL_LITTLE_ENDIAN)
 	u8	priority:4,
 		version:4;
-#elif defined (BIG_ENDIAN)
+#elif defined (NETL_BIG_ENDIAN)
 	u8	version:4,
   		priority:4;
 #else
@@ -211,7 +214,7 @@ typedef struct {
 	u16	dest;		/* 2 */
 	u32	seq;		/* 4 */
 	u32	ack_seq;	/* 8 */
-#if defined(LITTLE_ENDIAN)
+#if defined(NETL_LITTLE_ENDIAN)
 	u16	res1:4,		/* 12 */
 		doff:4,
 		fin:1,
@@ -221,7 +224,7 @@ typedef struct {
 		ack:1,
 		urg:1,
 		res2:2;
-#elif defined(BIG_ENDIAN)
+#elif defined(NETL_BIG_ENDIAN)
 	u16	doff:4,
 		res1:4,
 		res2:2,

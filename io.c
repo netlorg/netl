@@ -202,3 +202,21 @@ nmsym(void *handle, char *symbol)
 	}
 	return sym;
 }
+
+int
+ahextoi(char *s)
+{
+	int val;
+
+	for(val=0; *s; s++) {
+		val *= 16;
+		if('0' <= *s && *s <= '9') {
+			val += (*s) - '0';
+		} else if('A' <= *s && *s <= 'F') {
+			val += (*s) - 'A' + 10;
+		} else {
+			val += (*s) - 'a' + 10;
+		}
+	}
+	return val;
+}

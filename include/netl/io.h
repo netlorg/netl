@@ -47,5 +47,6 @@ void *nmopen(char *name);
 int nmclose(void *handle);
 void *nmsym(void *handle, char *symbol);
 
+int ahextoi(char *s);
 
 #endif

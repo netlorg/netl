@@ -8,7 +8,7 @@ include ../Makefile.inc
 CFLAGS+=-I ../include
 
 DEFAULT=linux-ether.so
-INPUT_MODULES=linux-ether.so file.so pcap.so
+INPUT_MODULES=linux-ether.so file.so #pcap.so
 
 all:$(INPUT_MODULES) default.so
 
@@ -19,8 +19,14 @@ default.so:linux-ether.so
 # object files:
 #===============================================================================
 
+pcap.so:pcap.o
+	$(CC) -L pcap -shared $(LDFLAGS) $(CFLAGS) -o $@ $< -lpcap
+
 %.so:%.o
 	$(CC) -shared $(LDFLAGS) $(CFLAGS) -o $@ $<
+
+pcap.o:pcap.c
+	$(CC) $(CFLAGS) -Ipcap -c $< -o $@
 
 %.o:%.c
 	$(CC) $(CFLAGS) -c $< -o $@

@@ -24,8 +24,8 @@
 .I neta
 is a network packet analyzer.  it was designed to decode an IP
 packet stored as a file.  usually this will be a packet dumped by
-.BR netl (8)
-.  first the address is shown, followed by header data.  the
+.BR netl (8).
+first the address is shown, followed by header data.  the
 final part is a hex dump, which displays offset, hex data, and character
 data. because the header data is interpreted for you, it is not included
 in the hex dump.
@@ -34,26 +34,20 @@ in the hex dump.
 .PP
 .I neta
 uses a subset of the options from 
-.BR netl (8)
-.  these include -h,
+.BR netl (8).
+these include -h,
 -r and -v.  the reminder do not make sense.
 .PP
 .SH SEE ALSO
 .PP
-.BR netl (8)
-, 
-.BR netl.conf (5)
-, 
-.BR netlcc (1)
-, 
-.BR netl_install (1)
-,
-.BR netl_module (1)
-, 
-.BR neta (1)
-, 
-.BR hwpassive (8)
-, 
+.BR netl (8),
+.BR netl.conf (5),
+.BR netlcc (1),
+.BR netl_install (1),
+.BR netl_module (1),
+.BR neta (1),
+.BR hwpassive (8),
+.BR hwlookup (1),
 .BR dcp (1)
 and 
 .BR xd (1)
@@ -66,6 +60,10 @@ http://www.wwa.com/~ollisg/netl/index.html, which should contain up to
 date information on 
 .B netl
 .
+.PP
+i have attempted to write pretty readable documentation, however, i'm not
+really the best technically writer.  if you are, maybe we could
+colaborate?
 .PP
 .SH COPYING
 .PP

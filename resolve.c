@@ -63,8 +63,8 @@ reverse_dump(FILE *fp, listtype *l)
 		u8 *ptr;
 
 		ptr = (u8 *) &l->ip;
-		fprintf(fp, "\taddip(\"%s\", %u); /* %u.%u.%u.%u */ \n", 
-				l->name, l->ip,
+		fprintf(fp, "\taddip(\"%s\", htonl(0x%08x); /* %u.%u.%u.%u */ \n",
+				l->name, ntohl(l->ip),
 				ptr[0], ptr[1], ptr[2], ptr[3]);
 	}
 }
@@ -145,8 +145,8 @@ ip2string(u32 ip)
 	if(
 		 ((herhost = gethostbyname(buff)) != NULL) &&
 		 ((herhost = gethostbyaddr(herhost->h_addr_list[0], 
-													herhost->h_length,
-			  herhost->h_addrtype)) != NULL)
+			herhost->h_length,
+			herhost->h_addrtype)) != NULL)
 		) 
 		return addip(herhost->h_name, ip);
 

@@ -40,17 +40,20 @@ include Makefile.inc
 
 CFLAGS+=-I include
 TDR=../tdr.pl
-EXEC=netl neta xd
+EXEC=netl neta xd hwpassive hwlookup
 DIST=netl
-
-COREDIR=tarquin.macro core.head core.line core.tail
 
 MOD=in.nmod filt.nmod out.nmod
 
-all : $(EXEC) $(MOD) libnetl.so
+all : include/netl/version.h $(EXEC) $(MOD) libnetl.so
+
+hwpassive:
+	echo "#!/bin/sh" > hwpassive
+	echo "$(SUBINPATH)/netl \$$* 'null &hwpassive'" >> hwpassive
+	chmod +x hwpassive
 
 %.nmod:
-	$(MAKE) -k -C $*
+	cd $*;$(MAKE)
 
 gnr:all web dist
 
@@ -110,6 +113,10 @@ filter.o action.o resolve.o dump.o io.o compiler.o ipv6.o main.o
 netl:$(NETLOBJ)
 	$(CC) $(LDFLAGS) $(CFLAGS) -o netl $(NETLOBJ) $(NET_LIBS) $(MISC_LIBS) $(LEX_LIBS) $(YACC_LIBS)
 
+HWLOOKUPOBJ=hwlookup.o options.o resolve.o io.o
+hwlookup:$(HWLOOKUPOBJ)
+	$(CC) $(LDFLAGS) $(CFLAGS) -o hwlookup $(HWLOOKUPOBJ) $(MISC_LIBS)
+
 NETAOBJ=neta.o lookup.o options.o resolve.o dump.o io.o
 neta:$(NETAOBJ)
 	$(CC) $(LDFLAGS) $(CFLAGS) -o neta $(NETAOBJ) $(MISC_LIBS)
@@ -159,26 +166,37 @@ config.tab.h config.tab.c:config.y
 
 .PHONY: install
 install:
-	install -d $(SUBINPATH)
-	install -g 0 -o 0 -m 511 netl $(SUBINPATH)
-	install -d $(BINPATH)
-	install -g 0 -o 0 -m 511 neta xd $(BINPATH)
-	install -g 0 -o 0 -m 555 dcp.pl $(BINPATH)/dcp
-	install -g 0 -o 0 -m 555 tdr.pl $(BINPATH)/tdr
-	install -g 0 -o 0 -m 555 netlcc.pl $(BINPATH)/netlcc
-	install -g 0 -o 0 -m 555 hwpassive.pl $(SUBINPATH)/hwpassive
-	install -d -g 0 -o 0 -m 700 /tmp/netl
-	install -d $(MANPATH) $(MANPATH)/man1 $(MANPATH)/man5 $(MANPATH)/man8
-	install -g 0 -o 0 -m 644 doc/*.1 $(MANPATH)/man1
-	install -g 0 -o 0 -m 644 doc/*.5 $(MANPATH)/man5
-	install -g 0 -o 0 -m 644 doc/*.8 $(MANPATH)/man8
 	install -d $(LIBPATH)
-	$(RM) /usr/local/lib/netl
-	ln -s $(LIBPATH) /usr/local/lib/netl
+	install -d $(LIBPATH)/sbin
+	install -g 0 -o 0 -m 511 netl $(LIBPATH)/sbin
+	install -g 0 -o 0 -m 555 hwpassive $(LIBPATH)/sbin
+	install -d $(SUBINPATH)
+	cd $(SUBINPATH);$(RM) netl hwpassive
+	cd $(SUBINPATH);ln $(LIBPATH)/sbin/* . || cp $(LIBPATH)/sbin/* .
+	install -d $(LIBPATH)/bin
+	install -g 0 -o 0 -m 511 neta xd $(LIBPATH)/bin
+	install -g 0 -o 0 -m 555 dcp.pl $(LIBPATH)/bin/dcp
+	install -g 0 -o 0 -m 555 tdr.pl $(LIBPATH)/bin/tdr
+	install -g 0 -o 0 -m 555 hwlookup $(LIBPATH)/bin
+	install -g 0 -o 0 -m 555 netlcc.pl $(LIBPATH)/bin/netlcc
+	install -d $(BINPATH)
+	cd $(BINPATH);$(RM) neta xd dcp tdr hwlookup netlcc
+	cd $(BINPATH);ln $(LIBPATH)/bin/* . || cp $(LIBPATH)/bin/* .
+	install -d $(LIBPATH)/man/man1 $(LIBPATH)/man/man5 $(LIBPATH)/man/man8
+	install -g 0 -o 0 -m 644 doc/*.1 $(LIBPATH)/man/man1
+	install -g 0 -o 0 -m 644 doc/*.5 $(LIBPATH)/man/man5
+	install -g 0 -o 0 -m 644 doc/*.8 $(LIBPATH)/man/man8
+	install -d $(MANPATH) $(MANPATH)/man1 $(MANPATH)/man5 $(MANPATH)/man8
+	cd $(MANPATH)/man1; ln -f $(LIBPATH)/man/man1/* . || cp $(LIBPATH)/man/man1 .
+	cd $(MANPATH)/man5; ln -f $(LIBPATH)/man/man5/* . || cp $(LIBPATH)/man/man5 .
+	cd $(MANPATH)/man8; ln -f $(LIBPATH)/man/man8/* . || cp $(LIBPATH)/man/man8 .
+	$(RM) -r $(PREFIX)/lib/netl
+	ln -s $(LIBPATH) $(PREFIX)/lib/netl
 	install -d $(LIBPATH)/dump
 	install -d $(INCLUDEPATH)/netl
 	install -g 0 -o 0 -m 644 include/netl/*.h $(INCLUDEPATH)/netl
 	install -g 0 -o 0 -m 755 libnetl.so $(LIBPATH)
+	install -g 0 -o 0 -m 644 hwcode $(LIBPATH)
 	cd in; $(MAKE) install
 	cd out; $(MAKE) install
 	cd filt; $(MAKE) install
@@ -189,17 +207,17 @@ install:
 
 .PHONY: clean
 clean:
-	$(RM) netl netl.exe neta neta.exe xd xd.exe
+	$(RM) netl netl.exe neta neta.exe xd xd.exe hwlookup hwlookup.exe
 	$(RM) dcp dcp.exe
 	$(RM) tmp.dat core a.out 
 	$(RM) *.o *.html *.tar *.tmp
 	$(RM) -r $(DIST)-$(VER) $(DIST)-$(VER)-bin tdr-$(TDR_VER)
-	$(RM) t/*.diff t/*.diffERR t/*.ao t/*.aERR t/*.aRET
+	$(RM) t/*.diff t/*.diffERR t/*.diffRET t/*.ao t/*.aERR t/*.aRET
 	$(RM) t/tdr.log t/core
 	$(RM) lib*.so* lib*.a tdr.log
 	$(RM) lex.yy.c config.tab.h config.tab.c config.output config_test
 	$(RM) userfilter.c *.so README INSTALL conf/*.c conf/*.so conf/*.o
-	$(RM) *.a *.so
+	$(RM) *.a *.so hwpassive hwpassive.exe
 	cd in; $(MAKE) clean
 	cd filt; $(MAKE) clean
 	cd out; $(MAKE) clean
@@ -217,7 +235,7 @@ wc:
 Makefile.dep:
 	$(PERL) makedepend.pl
 
-Makefile.inc:
+Makefile.inc include/netl/version.h :
 	./configure
 
 include Makefile.dep

@@ -19,8 +19,8 @@
 .SH DESCRIPTION
 .PP
 the file netl.conf is the main configuration file for the program
-.BR netl (8)
-.  there is an example 
+.BR netl (8).
+there is an example 
 .I netl.conf
 which comes with the
 .I netl
@@ -182,8 +182,8 @@ an example configuration will follow.
 is technically not a requirement.  it indicates a string by
 which the packet may be identified.  this identification will be used by
 log when sent to 
-.BR syslogd (8)
-, or as part of the filename when dumped.
+.BR syslogd (8),
+or as part of the filename when dumped.
 .PP
 .B flags=
 [TCP only] allows you to specify that certain TCP flags be set.  
@@ -305,20 +305,14 @@ log	tcp	name=fin flag=fin !srcip=localhost
 .PP
 .SH SEE ALSO
 .PP
-.BR netl (8)
-, 
-.BR netl.conf (5)
-, 
-.BR netlcc (1)
-, 
-.BR netl_install (1)
-,
-.BR netl_module (1)
-, 
-.BR neta (1)
-, 
-.BR hwpassive (8)
-, 
+.BR netl (8),
+.BR netl.conf (5),
+.BR netlcc (1),
+.BR netl_install (1),
+.BR netl_module (1),
+.BR neta (1),
+.BR hwpassive (8),
+.BR hwlookup (1),
 .BR dcp (1)
 and 
 .BR xd (1)
@@ -331,6 +325,10 @@ http://www.wwa.com/~ollisg/netl/index.html, which should contain up to
 date information on 
 .B netl
 .
+.PP
+i have attempted to write pretty readable documentation, however, i'm not
+really the best technically writer.  if you are, maybe we could
+colaborate?
 .PP
 .SH COPYING
 .PP

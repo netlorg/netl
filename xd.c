@@ -28,6 +28,7 @@
 |=============================================================================*/
 
 static char *id = "@(#)xd (c) 1997 graham the ollis <ollisg@wwa.com>";
+static dumb(char *x) { dumb(id); }
 
 #include <stdio.h>
 #include <stdlib.h>

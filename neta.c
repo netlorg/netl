@@ -26,6 +26,7 @@
 |=============================================================================*/
 
 static char	*id = "@(#)neta (c) 1997 graham the ollis <ollisg@wwa.com>";
+static void dumb(char *c) { dumb(id); }
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,12 +44,12 @@ static char	*id = "@(#)neta (c) 1997 graham the ollis <ollisg@wwa.com>";
 | prototypes
 |=============================================================================*/
 
-void print(u8 *buff, size_t size);
-size_t printip(u8 *buff);
-void printaddrport(u8 *buff, size_t len);
-void printtcp(u8 *buff, size_t len);
-void printicmp(u8 *buff, size_t len);
-void printaddr(u8 *buff);
+void print(u8 *, size_t);
+size_t printip(u8 *);
+void printaddrport(u8 *, size_t);
+void printtcp(u8 *, size_t);
+void printicmp(u8 *, size_t);
+void printaddr(iphdr *);
 
 /*==============================================================================
 | main
@@ -136,11 +137,11 @@ size_t
 printip(u8 *buff)
 {
 	iphdr		*ip = (iphdr *) buff;
-	size_t	len = ip->ihl << 2;
+	size_t	len = ip->ihl << 2; //IPIHL(ip->ihl_version) << 2;
 	size_t	doff = len;
 
 	puts("IP:");
-	printf("  version:           %d\n", ip->version);
+	printf("  version:           %d\n", ip->version); //IPVER(ip->ihl_version));
 	printf("  header length:     %02x\n", (int) len); 
 	fputs ("  type of service:   ", stdout);
 
@@ -177,14 +178,14 @@ printip(u8 *buff)
 
 		case PROTOCOL_ICMP:
 			puts("icmp");
-			printaddr(buff);
+			printaddr(ip);
 			printicmp(buff, len);
 			doff += sizeof(icmphdr);
 			break;
 
 		default:
 			printf("unknown [%02x]\n", ip->protocol);
-			printaddr(buff);
+			//printaddr(buff);
 			break;
 
 	}  
@@ -242,9 +243,9 @@ printtcp(u8 *buff, size_t len)
 |=============================================================================*/
 
 void
-printaddr(u8 *buff)
+printaddr(iphdr *ip)
 {
-	iphdr	*ip = (iphdr *) buff;
+	//iphdr	*ip = (iphdr *) buff;
 
 	printf("  %s => %s\n", ip2string(ip->saddr), ip2string(ip->daddr));
 }

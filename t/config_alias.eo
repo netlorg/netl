@@ -31,9 +31,9 @@ char *dump(u8 *dg, char *logname, size_t len);
 void
 construct(void)
 {
-	addip("starscream", 67766794); /* 10.10.10.4 */ 
-	addip("figment", 34212362); /* 10.10.10.2 */ 
-	addip("pacific", 17435146); /* 10.10.10.1 */ 
+	addip("starscream", htonl(0x0a0a0a04); /* 10.10.10.4 */ 
+	addip("figment", htonl(0x0a0a0a02); /* 10.10.10.2 */ 
+	addip("pacific", htonl(0x0a0a0a01); /* 10.10.10.1 */ 
 }
 
 /* check() */

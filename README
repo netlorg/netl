@@ -181,7 +181,8 @@ improvements for netl.
 SEE ALSO
 
 netl(8), netl.conf(5), netlcc(1), netl_install(1),
-netl_module(1), neta(1), hwpassive(8), dcp(1) and xd(1)
+netl_module(1), neta(1), hwpassive(8), hwlookup(1),
+dcp(1) and xd(1)
 
 
 BUGS
@@ -190,6 +191,10 @@ there are almost certainly bugs, please report them to me.  my email
 address is Graham Ollis <ollisg@wwa.com>, and the CORE home page is at
 http://www.wwa.com/~ollisg/netl/index.html, which should contain up to
 date information on netl.
+
+i have attempted to write pretty readable documentation, however, i'm not
+really the best technically writer.  if you are, maybe we could
+colaborate?
 
 
 COPYING

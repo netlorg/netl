@@ -66,25 +66,21 @@ extern char *so_path, *so_path_default;
 
 #include "netl/version.h"
 
-#ifndef TRUE
-  #define TRUE			1
-#endif
-#ifndef FALSE
-  #define FALSE			0
-#endif
+#define TRUE			1
+#define FALSE			0
 
 extern char *prog;
 
 /*==============================================================================
 | linux 32 bit tested on a modified (stealth) 2.0.29 kernel
+|   . currently i test on linux 2.2.x kernel running on i486, i586 and an alpha
+|   . does not work on SPARC (am working on this)
 ==============================================================================*/
 
 #ifdef linux
 
   #include <netinet/in.h>
-/*  #include <linux/types.h> */
   #include <linux/if_ether.h> 
-/*  #include <asm/byteorder.h> */
   #include <sys/types.h>
   #include <endian.h>
 
@@ -93,16 +89,10 @@ extern char *prog;
   typedef u_int32_t	u32;
   typedef u_int64_t	u64;
 
-/*  #if defined __LITTLE_ENDIAN_BITFIELD*/
   #if __BYTE_ORDER == __LITTLE_ENDIAN
-    #ifndef LITTLE_ENDIAN
-      #define LITTLE_ENDIAN
-    #endif
-/*  #elif defined __BIG_ENDIAN_BITFIELD*/
-  #elif __BTE_ORDER == __BIG_ENDIAN
-    #ifndef BIG_ENDIAN
-      #define BIG_ENDIAN
-    #endif
+    #define NETL_LITTLE_ENDIAN
+  #elif __BYTE_ORDER == __BIG_ENDIAN
+    #define NETL_BIG_ENDIAN
   #else
     #error "cannot determine byte order!"
   #endif
@@ -112,11 +102,7 @@ extern char *prog;
   #define OS_UNIX
 
 /*==============================================================================
-| gnu for win32 tested on the win95 of the same machine
-| NEEDS ALL SORTS OF WORK
-|
-| the values marked as coming from linux come from a linux kernel and
-| don't work
+| the windows port doesn't work yet.  oh well.
 ==============================================================================*/
 
 #elif __CYGWIN32__
@@ -127,7 +113,7 @@ extern char *prog;
   typedef __u16 u16;
   typedef __u32 u32;
 
-  #define LITTLE_ENDIAN
+  #define NETL_LITTLE_ENDIAN
 /* this doesn't work
   #define ETH_P_ALL		0x0003		// linux/if_ether.h 
   #define SIOCSIFFLAGS		0x8914		// linux/sockios.h
@@ -151,7 +137,7 @@ extern char *prog;
   typedef unsigned short	u16;
   typedef unsigned int		u32;
 
-  #define LITTLE_ENDIAN
+  #define NETL_LITTLE_ENDIAN
 
   #define NETL_LOG_FACILITY	LOG_USER
 

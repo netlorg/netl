@@ -37,6 +37,7 @@
 #include "netl/config.h"
 #include "netl/options.h"
 #include "netl/io.h"
+#include "netl/hwpassive.h"
 
 /*==============================================================================
 | global "options" 
@@ -45,12 +46,13 @@
 char *so_path_default = NETL_LIB_PATH;
 char *so_path = NETL_LIB_PATH;
 char *grab_module_name = "default";
-char *dump_dir = NETL_LIB_PATH "/dump";
+char *dump_dir = NETL_DUMP_PATH;
 
 int displayVersion = TRUE;
 int useIPv6 = FALSE;
 int debug_mode = FALSE;
 int output_mode = 0;
+int hwlookup_mode = HWLOOKUP_DEFAULT;
 char *output_name = "userfilter.c";
 char *netdevice = "eth0";
 
@@ -93,6 +95,10 @@ parsecmdline(int argc, char *argv[])
 			if(argv[0][1] == '-') {		/* long options... */
 				if(!strcmp("--foreground", argv[0]))
 					noBackground = 1;
+				else if(!strcmp("--long", argv[0]))
+					hwlookup_mode = HWLOOKUP_LONG;
+				else if(!strcmp("--short", argv[0]))
+					hwlookup_mode = HWLOOKUP_SHORT;
 				else if(!strcmp("--background", argv[0]))
 					noBackground = 0;
 				else if(!strcmp("--resolve", argv[0]))
@@ -133,6 +139,16 @@ parsecmdline(int argc, char *argv[])
 									prog, argv[0]);
 			} else switch(argv[0][1]) {
 
+
+				case 'l' :
+					hwlookup_mode = HWLOOKUP_LONG;
+					break;
+				case 's' :
+					hwlookup_mode = HWLOOKUP_SHORT;
+					break;
+				case 'n' :
+					hwlookup_mode = HWLOOKUP_COUNT;
+					break;
 
 				#ifndef NO_SYSLOGD
 					case 'z' :
@@ -223,13 +239,16 @@ void
 printusage()
 {
 	puts("usage: netl [options] [requirements]
+usage: hwpassive [options] [requirements]
 usage: neta [options] [datagram-file]
+usage: hwlookup [options] address
 
 where options can be any of the following:
 -v			display version number copyright information [on]
 -r, --resolve		resolve IP numbers to hostname [on]
     --dont-resolve	do not resolve
 -f, --file		set config file [/etc/netl.conf]
+			or set database file for hwlookup
 -d, --debug		print out configeration and DON\'T run (debug option)
 -h, --help		this help message
 -i, --input		module to use for input
@@ -243,10 +262,14 @@ where options can be any of the following:
 			by default, this is /usr/local/lib/netl/dump
     --stdout		a combination of --generate-c and --output-name which
 			sends the netl module c code to stdout.
--6			use experimental IPv6 filters.  (off by default)\n");
+-l, --long		hwlookup detailed output mode (default)
+-s, --short		hwlookup short output mode
+-n			hwlookup only count answers to the query
+-6			use experimental IPv6 filters.  (off by default)");
 #ifndef NO_SYSLOGD
 	puts(
-"-z, --foreground		do not run in background, send all output to STDOUT and STDERR
+"-z, --foreground	do not run in background, send all output to STDOUT
+			and STDERR
     --background	run in the background, send all output to syslogd");
 #endif
 #ifndef NO_TEEOUT

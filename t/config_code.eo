@@ -54,7 +54,7 @@ check(u8 *dg, size_t len)
 		ip->protocol == PROTOCOL_ICMP
 	) {
 		if(	1 &&
-			ih->code == 1	&&
+			ih->code == 0x01	&&
 			1
 		) {
 			/* ACTION_LOG */
@@ -64,7 +64,7 @@ check(u8 *dg, size_t len)
 			}
 		}
 		if(	1 &&
-			ih->code == 2	&&
+			ih->code == 0x02	&&
 			1
 		) {
 			/* ACTION_LOG */

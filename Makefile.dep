@@ -78,7 +78,6 @@ filter.o: \
 	include/netl/ip.h \
 	include/netl/config.h \
 	include/netl/options.h 
-fred.o: 
 action.o: \
 	include/netl/global.h \
 	include/netl/action.h \
@@ -110,3 +109,4 @@ catch.o: \
 	include/netl/global.h \
 	include/netl/catch.h \
 	include/netl/io.h 
+fred.o: 

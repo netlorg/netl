@@ -37,6 +37,8 @@
 ## 25 Jun 99  G. Ollis	once again, removed the documentation from here on a
 ##			whim into the netl dist.  this way i can use my new
 ##			rms format instead of the anoying POD format.
+## 04 Jul 99  G. Ollis	added diffRET file.  it's kinda silly, but is better
+##			than special casing it.
 ##==============================================================================
 ## see man page for more information.  (or POD below)
 
@@ -138,6 +140,7 @@ sub testProgram { # $progName
 	my $diffErrName = "$root.diffERR";
 	my $retName = "$root.aRET";
 	my $oldRetName = "$root.eRET";
+	my $diffRetName = "$root.diffRET";
 
 	## warn the user that a file is to be overwriten
 	&checkFile($fileName);
@@ -161,7 +164,7 @@ sub testProgram { # $progName
 	## if there is expected output warn of differences
 	my $outDiff = &checkDiff($fileName, $oldFileName, $diffFileName);
 	my $errDiff = &checkDiff($errName, $oldErrName, $diffErrName);
-	my $retDiff = &checkDiff($retName, $oldRetName);
+	my $retDiff = &checkDiff($retName, $oldRetName, $diffRetName);
 
 	local $log;		# don't tell anyone i used a local here...
 

@@ -45,10 +45,10 @@ dynamic libraries that you file in your library directories
 .I netl
 decides at run time which
 modules need to be loaded by reading the configuration file (see
-.BR netl.conf (5)
-) or by command line rules (see 
-.BR netl (8)
-), and then
+.BR netl.conf (5))
+or by command line rules (see 
+.BR netl (8)),
+and then
 executes the appropriate action based on that configuration.
 .PP
 a .so file can be created by creating a C module, and compiling it using
@@ -131,8 +131,7 @@ an ampersand ('&') character to indicate that it is not an `official'
 module.  some of the modules netl ships with are in this state, not
 because they are defective, but because they haven't been implemented by
 the compiler (for more information on the compiler, see 
-.BR netlcc (1)
-).
+.BR netlcc (1)).
 .PP
 a filter module should include (in this order) these header files which
 come with the 
@@ -410,8 +409,7 @@ an at sign ('@') character to indicate that it is not an `official'
 module.  some of the modules netl ships with are in this state, not
 because they are defective, but because they haven't been implemented by
 the compiler (for more information on the compiler, see 
-.BR netlcc (1)
-).
+.BR netlcc (1)).
 .PP
 possible uses for this type of module include an X interface which sends
 pop up messages to a user when someone is trying to hack into his machine.  
@@ -438,8 +436,8 @@ useful portion of the configitem is the member logname which is the
 requirement 
 .B name=
 you specified in the configuration file (see
-.BR netl.conf (5)
-).  cf->logname is the desired value.
+.BR netl.conf (5)).
+cf->logname is the desired value.
 .PP
 there are copious examples that come with the 
 .I netl
@@ -448,20 +446,14 @@ none really worth going over at the moment.
 .PP
 .SH SEE ALSO
 .PP
-.BR netl (8)
-, 
-.BR netl.conf (5)
-, 
-.BR netlcc (1)
-, 
-.BR netl_install (1)
-,
-.BR netl_module (1)
-, 
-.BR neta (1)
-, 
-.BR hwpassive (8)
-, 
+.BR netl (8),
+.BR netl.conf (5),
+.BR netlcc (1),
+.BR netl_install (1),
+.BR netl_module (1),
+.BR neta (1),
+.BR hwpassive (8),
+.BR hwlookup (1),
 .BR dcp (1)
 and 
 .BR xd (1)
@@ -474,6 +466,10 @@ http://www.wwa.com/~ollisg/netl/index.html, which should contain up to
 date information on 
 .B netl
 .
+.PP
+i have attempted to write pretty readable documentation, however, i'm not
+really the best technically writer.  if you are, maybe we could
+colaborate?
 .PP
 .SH COPYING
 .PP

@@ -47,7 +47,7 @@ grab(char *buf)
 {
 	FILE *fp;
 	char buffer[1024];
-	long len,r;
+	long len=0, r;
 
 	buffer[0] = 0;
 	while(buffer[0] == 0) {

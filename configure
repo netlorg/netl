@@ -1,17 +1,26 @@
 #!/bin/sh
 
-VER="1.04"
+SYSTEM=`system.guess`
+VER="1.05"
 TDR_VER="1.00"
 NETL_VER_MAJOR=1
-NETL_VER_MINOR=4
-
-if test "$CC" = "" ; then
-	CC=gcc
-fi
+NETL_VER_MINOR=5
 
 if test "$CFLAGS" = "" ; then
 	CFLAGS="-O3 -Wall"
 fi
+
+case $SYSTEM in
+	i486-*)
+		CFLAGS="$CFLAGS -march=i486 -m486"
+	;;
+	i586-*)
+		CFLAGS="$CFLAGS -march=pentium -mpentium"
+	;;
+	i[6789]86-*)
+		CFLAGS="$CFLAGS -march=pentiumpro -mpentiumpro"
+	;;
+esac
 
 if test "$LDFLAGS" = "" ; then
 	LDFLAGS="-L. -rdynamic"
@@ -23,6 +32,7 @@ BINPATH=$PREFIX/bin
 MANPATH=$PREFIX/man
 LIBPATH=$PREFIX/lib/netl-$VER
 INCLUDEPATH=$LIBPATH/include
+DUMPPATH=$LIBPATH/dump
 
 while test "$1" != ""; do
 
@@ -34,6 +44,10 @@ while test "$1" != ""; do
 	esac
 
 	case $arg in
+		--target=*)
+			TARGET=${opt}-
+		;;
+
 		--prefix=*)
 			PREFIX=$opt
 			SUBINPATH=$PREFIX/sbin
@@ -41,11 +55,13 @@ while test "$1" != ""; do
 			MANPATH=$PREFIX/man
 			LIBPATH=$PREFIX/lib/netl-$VER
 			INCLUDEPATH=$LIBPATH/include
+			DUMPPATH=$LIBPATH/dump
 		;;
 
 		--libdir=*)
 			LIBPATH=$opt
 			INCLUDEPATH=$LIBPATH/include
+			DUMPPATH=$LIBPATH/dump
 		;;
 
 		--incdir=*)
@@ -60,6 +76,15 @@ while test "$1" != ""; do
 		;;
 		--manpath=*)
 			MANPATH=$opt
+		;;
+
+		--static)
+			LEX_LIBS=/usr/lib/libfl.a
+			MISC_LIBS=/usr/lib/libdl.a
+		;;
+
+		--dumppath=*)
+			DUMPPATH=$opt
 		;;
 
 		--help)
@@ -77,6 +102,10 @@ Configuration:
   --bindir=DIR		directory to install user programs [PREFIX/bin]
   --subindir=DIR	directory to install daemons [PREFIX/sbin]
   --manpath=DIR		directory to install man pages [PREFIX/man]
+  --dumppath=DIR	directory where netl will dump packets to by default
+			[LIBDIR/dump]
+  --target=HOSTTYPE	specify a cross compiler
+  --static		produce a statically linked binary
 Environemnt:
   CC			C Compiler [gcc]
   CFLAGS		flags [-O3 -Wall]
@@ -110,6 +139,12 @@ EOF
 		;;
 	esac
 done
+
+if test "$CC" = "" ; then
+	CC=${TARGET}gcc
+fi
+
+echo configuring for $SYSTEM
 
 ################################################################################
 # compiler test
@@ -152,7 +187,7 @@ if test "$LEX_LIBS" = "" ; then
 	LEX_LIBS="-lfl"
 fi
 
-mkdir .lextest
+mkdir .lextest || true
 cd .lextest
 
 cat > test.l <<EOF
@@ -171,7 +206,7 @@ else
 	exit
 fi
 
-if $CC $CFLAGS $LDFLAGS lex.yy.c $LEX_LIBS 1> /dev/null 2> /dev/null ; then
+if $CC $CFLAGS $LDFLAGS lex.yy.c -o lex_test $LEX_LIBS 1> /dev/null 2> /dev/null ; then
 	echo lex compile test good
 else
 	echo lex compile is not right!
@@ -180,7 +215,7 @@ else
 	exit
 fi
 
-if a.out 1> /dev/null 2>/dev/null ; then
+if lex_test 1> /dev/null 2>/dev/null ; then
 	echo lex run test good
 else
 	echo lex runtime is not right!
@@ -206,7 +241,7 @@ if test "$YACC_LIBS" = "" ; then
 	YACC_LIBS=
 fi
 
-mkdir .yacctest
+mkdir .yacctest || true
 cd .yacctest
 
 cat > test.y <<EOF
@@ -228,7 +263,7 @@ else
 fi
 
 
-if $CC $CFLAGS $LDFLAGS test.tab.c $YACC_LIBS $LEX_LIBS 1> /dev/null 2> /dev/null; then
+if $CC $CFLAGS $LDFLAGS test.tab.c -o yacc_test $YACC_LIBS $LEX_LIBS 1> /dev/null 2> /dev/null; then
 	echo yacc compile test good
 else
 	echo yacc compile is not right!
@@ -237,7 +272,7 @@ else
 	exit
 fi
 
-if a.out 1> /dev/null 2>/dev/null ; then
+if yacc_test 1> /dev/null 2>/dev/null ; then
 	echo yacc run test good
 else
 	echo yacc runtime is not right!
@@ -254,10 +289,10 @@ rm -rf .yacctest
 ################################################################################
 
 if test "$AR" = "" ; then
-	AR=ar
+	AR=${TARGET}ar
 fi
 if test "$RANLIB" = "" ; then
-	RANLIB=ranlib
+	RANLIB=${TARGET}ranlib
 fi
 if test "$LN" = "" ; then
 	LN=ln
@@ -312,6 +347,7 @@ echo "SUBINPATH=$SUBINPATH" >> Makefile.inc
 echo "BINPATH=$BINPATH" >> Makefile.inc
 echo "MANPATH=$MANPATH" >> Makefile.inc
 echo "LIBPATH=$LIBPATH" >> Makefile.inc
+echo "DUMPPATH=$DUMPPATH" >> Makefile.inc
 echo "INCLUDEPATH=$INCLUDEPATH" >> Makefile.inc
 echo "NETL_LIBS=" >> Makefile.inc
 echo "MISC_LIBS=$MISC_LIBS" >> Makefile.inc
@@ -324,3 +360,5 @@ echo "#define NETL_VER_MAJOR $NETL_VER_MAJOR" >> include/netl/version.h
 echo "#define NETL_VER_MINOR $NETL_VER_MINOR" >> include/netl/version.h
 echo "#define COPYVER \"$VER copyright 1997-1999 Graham THE Ollis <ollisg@wwa.com>\"" >> include/netl/version.h
 echo "#define NETL_LIB_PATH \"$LIBPATH\"" >> include/netl/version.h
+echo "#define NETL_DUMP_PATH \"$DUMPPATH\"" >> include/netl/version.h
+

@@ -33,6 +33,7 @@
 |=============================================================================*/
 
 static char	*id = "@(#)netl by graham the ollis <ollisg@wwa.com>";
+static void dumb(char *d) { dumb(id); }
 
 #include <errno.h>
 #include <string.h>

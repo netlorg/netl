@@ -193,107 +193,103 @@ check(u8 *dg, size_t len)
 
 			if(ci->check_src_ip && prot != PROT_RAW) {
 				if(ci->src_ip_mask == FULL) 
-					fprintf(fp, "\t\t\tip->saddr == %u\t&& /* \"%s\" */\n",
-						ci->src_ip, ip2string(ci->src_ip));
+					fprintf(fp, "\t\t\tntohl(ip->saddr) == 0x%08x\t&& /* \"%s\" */\n",
+						ntohl(ci->src_ip), ip2string(ci->src_ip));
 				else
-					fprintf(fp, "\t\t\t(ip->saddr & %u) == %u\t&& /* \"%s/%x\" */\n",
-						ci->src_ip_mask, ci->src_ip,
+					fprintf(fp, "\t\t\t(ntohl(ip->saddr) & 0x%08x) == 0x%08x\t&& /* \"%s/%s\" */\n",
+						ntohl(ci->src_ip_mask), 
+						ntohl(ci->src_ip),
 						ip2string(ci->src_ip),
-						ntohl(ci->src_ip_mask));
+						ip2string(ci->src_ip_mask));
 			}
 			if(ci->check_dst_ip && prot != PROT_RAW) {
 				if(ci->dst_ip_mask == FULL)
-					fprintf(fp, "\t\t\tip->daddr == %u\t&& /* \"%s\" */\n",
-						ci->dst_ip, ip2string(ci->dst_ip));
+					fprintf(fp, "\t\t\tntohl(ip->daddr) == 0x%08x\t&& /* \"%s\" */\n",
+						ntohl(ci->dst_ip), ip2string(ci->dst_ip));
 				else
-					fprintf(fp, "\t\t\t(ip->daddr & %u) == %u\t&& /* \"%s/%x\" */\n",
-						ci->dst_ip_mask, ci->dst_ip,
+					fprintf(fp, "\t\t\t(ntohl(ip->daddr) & 0x%08x) == 0x%08x\t&& /* \"%s/%s\" */\n",
+						ntohl(ci->dst_ip_mask), 
+						ntohl(ci->dst_ip),
 						ip2string(ci->dst_ip),
-						ntohl(ci->dst_ip_mask));
+						ip2string(ci->dst_ip_mask));
 			}
 			if(ci->check_src_prt && (prot == PROT_TCP || 
 						 prot == PROT_UDP)) {
 				if(ci->src_prt1 == ci->src_prt2) {
-					fprintf(fp, "\t\t\tntohs(h->source) == %u\t&& /* %u */\n",
-							ntohs(ci->src_prt1),
-							ci->src_prt1);
+					fprintf(fp, "\t\t\tntohs(h->source) == 0x%04x\t&&\n",
+							ntohs(ci->src_prt1));
 				} else {
-					fprintf(fp, "\t\t\tntohs(h->source) > %u\t&& /* %u */\n",
-							ntohs(ci->src_prt2),
-							ci->src_prt1);
-					fprintf(fp, "\t\t\tntohs(h->source) < %u\t&& /* %u */\n",
-							ntohs(ci->src_prt1),
-							ci->src_prt2);
+					fprintf(fp, "\t\t\tntohs(h->source) > 0x%04x\t&&\n",
+							ntohs(ci->src_prt2));
+					fprintf(fp, "\t\t\tntohs(h->source) < 0x%04x\t&&\n",
+							ntohs(ci->src_prt1));
 				}
 			}
 			if(ci->check_dst_prt && (prot == PROT_TCP || 
 						 prot == PROT_UDP)) {
 				if(ci->dst_prt1 == ci->dst_prt2) {
-					fprintf(fp, "\t\t\tntohs(h->dest) == %u\t&& /* %u */\n",
-							ntohs(ci->dst_prt1),
-							ci->dst_prt1);
+					fprintf(fp, "\t\t\tntohs(h->dest) == 0x%04x\t&&\n",
+							ntohs(ci->dst_prt1));
 				} else {
-					fprintf(fp, "\t\t\tntohs(h->dest) > %u\t&& /* %u */\n",
-							ntohs(ci->dst_prt2),
-							ci->dst_prt1);
-					fprintf(fp, "\t\t\tntohs(h->dest) < %u\t&& /* %u */\n",
-							ntohs(ci->dst_prt1),
-							ci->dst_prt2);
+					fprintf(fp, "\t\t\tntohs(h->dest) > 0x%04x\t&&\n",
+							ntohs(ci->dst_prt2));
+					fprintf(fp, "\t\t\tntohs(h->dest) < 0x%04x\t&&\n",
+							ntohs(ci->dst_prt1));
 				}
 			}
 			if(ci->check_src_ip_not && prot != PROT_RAW) {
 				if(ci->src_ip_not_mask == FULL)
-					fprintf(fp, "\t\t\tip->saddr != %u\t&& /* \"%s\" */\n",
-						ci->src_ip_not, ip2string(ci->src_ip_not));
+					fprintf(fp, "\t\t\tntohs(ip->saddr) != 0x%08x\t&& /* \"%s\" */\n",
+						ntohl(ci->src_ip_not), ip2string(ci->src_ip_not));
 				else
-					fprintf(fp, "\t\t\t(ip->saddr & %u) == %u\t&& /* \"%s/%x\" */\n",
-						ci->src_ip_not_mask, ci->src_ip_not,
+					fprintf(fp, "\t\t\t(ntohl(ip->saddr) & 0x%08x) == 0x%08x\t&& /* \"%s/%s\" */\n",
+						ntohl(ci->src_ip_not_mask), 
+						ntohl(ci->src_ip_not),
 						ip2string(ci->src_ip_not),
-						ntohl(ci->src_ip_not_mask));
+						ip2string(ci->src_ip_not_mask));
 			}
 			if(ci->check_dst_ip_not && prot != PROT_RAW) {
 				if(ci->dst_ip_not_mask == FULL)
-					fprintf(fp, "\t\t\tip->daddr != %u\t&& /* \"%s\" */\n",
-						ci->dst_ip_not, ip2string(ci->dst_ip_not));
+					fprintf(fp, "\t\t\tntohl(ip->daddr) != 0x%08x\t&& /* \"%s\" */\n",
+						ntohl(ci->dst_ip_not), ip2string(ci->dst_ip_not));
 				else
-					fprintf(fp, "\t\t\t(ip->daddr & %u) == %u\t&& /* \"%s/%x\" */\n",
-						ci->dst_ip_not_mask, ci->dst_ip_not,
+					fprintf(fp, "\t\t\t(ntohl(ip->daddr) & 0x%08x) == 0x%08x\t&& /* \"%s/%s\" */\n",
+						ntohl(ci->dst_ip_not_mask), 
+						ntohl(ci->dst_ip_not),
 						ip2string(ci->dst_ip_not),
-						ntohl(ci->dst_ip_not_mask));
+						ip2string(ci->dst_ip_not_mask));
 			}
 			if(ci->check_src_prt_not && (prot == PROT_TCP ||
 						     prot == PROT_UDP)) {
-				fprintf(fp, "\t\t\tntohs(h->source) != %u\t&& /* %u */\n",
-					ntohs(ci->src_prt_not),
-					ci->src_prt_not);
+				fprintf(fp, "\t\t\tntohs(h->source) != 0x%04x\t&&\n",
+					ntohs(ci->src_prt_not));
 			}
 			if(ci->check_dst_prt_not && (prot == PROT_TCP ||
 						     prot == PROT_UDP)) {
-				fprintf(fp, "\t\t\tntohs(h->dest) != %u\t&& /* %u */\n",
-					ntohs(ci->dst_prt_not),
-					ci->dst_prt_not);
+				fprintf(fp, "\t\t\tntohs(h->dest) != 0x%04x\t&&\n",
+					ntohs(ci->dst_prt_not));
 			}
 			if(ci->check_icmp_type && prot == PROT_ICMP) {
-				fprintf(fp, "\t\t\tih->type == %u\t&&\n",
+				fprintf(fp, "\t\t\tih->type == 0x%02x\t&&\n",
 					ci->icmp_type);
 			}
 			if(ci->check_icmp_code && prot == PROT_ICMP) {
-				fprintf(fp, "\t\t\tih->code == %u\t&&\n",
+				fprintf(fp, "\t\t\tih->code == 0x%02x\t&&\n",
 					ci->icmp_code);
 			}
 			if(ci->check_tcp_flags_on && prot == PROT_TCP) {
-				fprintf(fp, "\t\t\t(flags & %u) == %u\t&&\n",
+				fprintf(fp, "\t\t\t(flags & 0x%02x) == 0x%02x\t&&\n",
 					ci->tcp_flags_on, ci->tcp_flags_on);
 			}
 			if(ci->check_tcp_flags_off && prot == PROT_TCP) {
-				fprintf(fp, "\t\t\t(flags & %u) != %u\t&&\n",
+				fprintf(fp, "\t\t\t(flags & 0x%02x) != 0x%02x\t&&\n",
 					ci->tcp_flags_off, ci->tcp_flags_off);
 			}
 			if(ci->check_src_hw) {
 				int n;
 				fprintf(fp, "\t\t\t");
 				for(n=0; n<6; n++) {
-					fprintf(fp, "dg[%d] == 0x%x && ", 
+					fprintf(fp, "dg[%d] == 0x%02x && ", 
 						n+6,
 						ci->src_hw[n]);
 				}
@@ -303,7 +299,7 @@ check(u8 *dg, size_t len)
 				int n;
 				fprintf(fp, "\t\t\t");
 				for(n=0; n<6; n++) {
-					fprintf(fp, "dg[%d] == 0x%x && ", 
+					fprintf(fp, "dg[%d] == 0x%02x && ", 
 						n,
 						ci->dst_hw[n]);
 				}
@@ -313,7 +309,7 @@ check(u8 *dg, size_t len)
 				int n;
 				fprintf(fp, "\t\t\t");
 				for(n=0; n<6; n++) {
-					fprintf(fp, "dg[%d] != 0x%x && ", 
+					fprintf(fp, "dg[%d] != 0x%02x && ", 
 						n+6,
 						ci->src_hw_not[n]);
 				}
@@ -323,12 +319,13 @@ check(u8 *dg, size_t len)
 				int n;
 				fprintf(fp, "\t\t\t");
 				for(n=0; n<6; n++) {
-					fprintf(fp, "dg[%d] != 0x%x && ", 
+					fprintf(fp, "dg[%d] != 0x%02x && ", 
 						n,
 						ci->dst_hw_not[n]);
 				}
 				fprintf(fp, "\n");
 			}
+			/* === GNR === */
 
 			fprintf(fp, "\t\t\t1\n\t\t) {\n");
 

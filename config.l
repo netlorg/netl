@@ -63,8 +63,6 @@ int in_quote = 0;
 		yylval.x.h = -1;				\
 		yylval.x.code = -1
 
-static int ahextoi(char *s);
-
 static int paran_depth = 0, brace_depth = 0;
 
 %}
@@ -186,20 +184,3 @@ hd			[A-Fa-f0-9]
 
 %%
 
-static int
-ahextoi(char *s)
-{
-	int val;
-
-	for(val=0; *s; s++) {
-		val *= 16;
-		if('0' <= *s && *s <= '9') {
-			val += (*s) - '0';
-		} else if('A' <= *s && *s <= 'F') {
-			val += (*s) - 'A' + 10;
-		} else {
-			val += (*s) - 'a' + 10;
-		}
-	}
-	return val;
-}

@@ -1,7 +1,5 @@
 /*==============================================================================
-| grab.c
-|   by Graham THE Ollis <ollisg@wwa.com>
-|
+| pcap.c
 |   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
 |
 |   This program is free software; you can redistribute it and/or modify
@@ -18,15 +16,9 @@
 |   along with this program; if not, write to the Free Software
 |   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 |
-|  Date       Name	Revision
-|  ---------  --------  --------
-|  26 sep 97  G. Ollis	took this code out of the main module.  this is all 
-|			linux specific so far (ahh... there is a reason
-|			go figure.)  all the networking code goes here.
-|  04 apr 99  G. Ollis	this is now a stub for a input module for netl
 |=============================================================================*/
 
-//#include <pcap.h>
+#include <pcap.h>
 
 /*==============================================================================
 | prepare the ethernet card.  this usually involves putting the card in to

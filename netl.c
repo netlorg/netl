@@ -32,8 +32,6 @@
 |			of this module and put it in to grab.c.
 |=============================================================================*/
 
-static char	*id = "@(#)netl by graham the ollis <ollisg@wwa.com>";
-
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>

@@ -54,7 +54,7 @@ check(u8 *dg, size_t len)
 		ip->protocol == PROTOCOL_UDP
 	) {
 		if(	1 &&
-			ntohs(h->dest) == 47	&& /* 12032 */
+			ntohs(h->dest) == 0x002f	&&
 			1
 		) {
 			/* ACTION_LOG */
@@ -64,8 +64,8 @@ check(u8 *dg, size_t len)
 			}
 		}
 		if(	1 &&
-			ntohs(h->dest) > 33434	&& /* 24810 */
-			ntohs(h->dest) < 60000	&& /* 39554 */
+			ntohs(h->dest) > 0x829a	&&
+			ntohs(h->dest) < 0xea60	&&
 			1
 		) {
 			/* ACTION_LOG */
@@ -82,7 +82,7 @@ check(u8 *dg, size_t len)
 		ip->protocol == PROTOCOL_TCP
 	) {
 		if(	1 &&
-			ntohs(h->dest) == 80	&& /* 20480 */
+			ntohs(h->dest) == 0x0050	&&
 			1
 		) {
 			/* ACTION_LOG */
@@ -92,8 +92,8 @@ check(u8 *dg, size_t len)
 			}
 		}
 		if(	1 &&
-			ntohs(h->dest) > 200	&& /* 11265 */
-			ntohs(h->dest) < 300	&& /* 51200 */
+			ntohs(h->dest) > 0x00c8	&&
+			ntohs(h->dest) < 0x012c	&&
 			1
 		) {
 			/* ACTION_LOG */
