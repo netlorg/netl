@@ -6,7 +6,7 @@
 
 #H NAME
 
-i<netl_module> - user defined i<netl> module API.
+i<netl_module> - i<netl> API.
 
 #H DESCRIPTION
 
@@ -19,8 +19,8 @@ distribution comes with a number of modules, which you will likely want
 to look at.  i<netl> by default relies rather heavily on modules in the
 i<netl> distribution.
 
-a b<netl> module is just a dynamic object file (.so) similar to the
-dynamic libraries that you file in your lib directories
+a i<netl> module is just a dynamic object file (.so) similar to the
+dynamic libraries that you file in your library directories
 (/lib/libc.so.6.1) for example.  i<netl> decides at run time which
 modules need to be loaded by reading the configuration file (see
 sa<netl.conf>(5)) or by command line rules (see sa<netl>(8)), and then
@@ -76,9 +76,16 @@ typically this means /usr/local/lib/netl/in.
 
 a filter module decides if the ethernet frame passed to it is worthy of
 note.  this is how the protocol filters are implemented.  you can program
-you filter to do with the packet as you please, but a better design would
-be to pass the packet (if it is a `hit') to the output module, which will
-be passed to the module from the netl main code.
+you filter to do with the packet as you please (e.g. directly log to
+syslogd or dump to a file), but a better design would be to pass the
+packet (if it is a `hit') to the output module specified by the
+particular rule.
+
+when loading a user netl filter module, you will have to prefix it with
+an ampersand ('&') character to indicate that it is not an `official'
+module.  some of the modules netl ships with are in this state, not
+because they are defective, but because they haven't been implemented by
+the compiler (for more information on the compiler, see sa<netlcc>(1)).
 
 a filter module should include (in this order) these header files which
 come with the i<netl> distribution: netl/global.h netl/ether.h netl/ip.h
@@ -130,8 +137,18 @@ module.  once again, output modules must live in a directory called `out'
 where ever i<netl> is searching for modules.  this is usually
 /usr/local/lib/netl/out.
 
+a netl output module is sometimes also refered to an action module, since
+the output modules are the ones which actually act once a packet has been
+filtered.
+
+when loading a user netl action module, you will have to prefix it with
+an at sign ('@') character to indicate that it is not an `official'
+module.  some of the modules netl ships with are in this state, not
+because they are defective, but because they haven't been implemented by
+the compiler (for more information on the compiler, see sa<netlcc>(1)).
+
 possible uses for this type of module include an X interface which sends
-popup messages to a user when someone is trying to hack into his machine.  
+pop up messages to a user when someone is trying to hack into his machine.  
 this is just an idea.
 
 an output module should define an integer b<action_done> which is used by

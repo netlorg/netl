@@ -15,7 +15,7 @@ i<xd> filename [ ... ]
 #H DESCRIPTION
 
 i<xd> will give you a nifty hex dump of the files you give it.  along
-with the ultra useful ascii values (only the readable ones), and the
+with the ultra useful ASCII values (only the readable ones), and the
 offset of the byte beginning on each line.  i<xd> doesn't have as many
 nifty options as the classic sa<od>(1)  for example, but on the other
 hand this means you don't have to memorize anything.  i<xd> was just

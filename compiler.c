@@ -21,6 +21,7 @@
 |  Date       Name	Revision
 |  ---------  --------  --------
 |  18 Jul 99  G. Ollis	created module
+|  03 Jul 99  G. Ollis	added support for /x bitmasks on dstip= type rules
 |=============================================================================*/
 
 #include <stdio.h>
@@ -186,15 +187,29 @@ check(u8 *dg, size_t len)
 			| then print out the rule checking code
 			======================================================*/
 
+#define FULL 0xffffffff
+
 			fprintf(fp, "\t\tif(\t1 &&\n");
 
 			if(ci->check_src_ip && prot != PROT_RAW) {
-				fprintf(fp, "\t\t\tip->saddr == %u\t&& /* \"%s\" */\n",
-					ci->src_ip, ip2string(ci->src_ip));
+				if(ci->src_ip_mask == FULL) 
+					fprintf(fp, "\t\t\tip->saddr == %u\t&& /* \"%s\" */\n",
+						ci->src_ip, ip2string(ci->src_ip));
+				else
+					fprintf(fp, "\t\t\t(ip->saddr & %u) == %u\t&& /* \"%s/%x\" */\n",
+						ci->src_ip_mask, ci->src_ip,
+						ip2string(ci->src_ip),
+						ntohl(ci->src_ip_mask));
 			}
 			if(ci->check_dst_ip && prot != PROT_RAW) {
-				fprintf(fp, "\t\t\tip->daddr == %u\t&& /* \"%s\" */\n",
-					ci->dst_ip, ip2string(ci->dst_ip));
+				if(ci->dst_ip_mask == FULL)
+					fprintf(fp, "\t\t\tip->daddr == %u\t&& /* \"%s\" */\n",
+						ci->dst_ip, ip2string(ci->dst_ip));
+				else
+					fprintf(fp, "\t\t\t(ip->daddr & %u) == %u\t&& /* \"%s/%x\" */\n",
+						ci->dst_ip_mask, ci->dst_ip,
+						ip2string(ci->dst_ip),
+						ntohl(ci->dst_ip_mask));
 			}
 			if(ci->check_src_prt && (prot == PROT_TCP || 
 						 prot == PROT_UDP)) {
@@ -227,12 +242,24 @@ check(u8 *dg, size_t len)
 				}
 			}
 			if(ci->check_src_ip_not && prot != PROT_RAW) {
-				fprintf(fp, "\t\t\tip->saddr != %u\t&& /* \"%s\" */\n",
-					ci->src_ip_not, ip2string(ci->src_ip_not));
+				if(ci->src_ip_not_mask == FULL)
+					fprintf(fp, "\t\t\tip->saddr != %u\t&& /* \"%s\" */\n",
+						ci->src_ip_not, ip2string(ci->src_ip_not));
+				else
+					fprintf(fp, "\t\t\t(ip->saddr & %u) == %u\t&& /* \"%s/%x\" */\n",
+						ci->src_ip_not_mask, ci->src_ip_not,
+						ip2string(ci->src_ip_not),
+						ntohl(ci->src_ip_not_mask));
 			}
 			if(ci->check_dst_ip_not && prot != PROT_RAW) {
-				fprintf(fp, "\t\t\tip->daddr != %u\t&& /* \"%s\" */\n",
-					ci->dst_ip_not, ip2string(ci->dst_ip_not));
+				if(ci->dst_ip_not_mask == FULL)
+					fprintf(fp, "\t\t\tip->daddr != %u\t&& /* \"%s\" */\n",
+						ci->dst_ip_not, ip2string(ci->dst_ip_not));
+				else
+					fprintf(fp, "\t\t\t(ip->daddr & %u) == %u\t&& /* \"%s/%x\" */\n",
+						ci->dst_ip_not_mask, ci->dst_ip_not,
+						ip2string(ci->dst_ip_not),
+						ntohl(ci->dst_ip_not_mask));
 			}
 			if(ci->check_src_prt_not && (prot == PROT_TCP ||
 						     prot == PROT_UDP)) {

@@ -6,7 +6,7 @@
 
 #H NAME
 
-i<netl.conf> - sa<netl>(8) configuration file
+i<netl.conf> - i<netl>(8) configuration file
 
 #H DESCRIPTION
 
@@ -43,8 +43,8 @@ b<alias> hostname ipnumber
 
 this allows you to define an alias for a specific host.  this is name can
 be used later in the configuration file (with the b<dstip=> and b<srcip=>
-options), and is also used to report the hostname to syslogd when a log
-is triggered.
+options), and is also used to report the hostname to sa<syslogd>(8) when
+a log is triggered.
 
 #H ACTION RULES
 
@@ -59,10 +59,13 @@ action protocol requirement
 the parenthetical notation is useful for complicated, multi line
 requirements.  action is one of
 
-b<log> - send information about the datagram to syslogd.
+b<log> - send information about the datagram to sa<syslogd>(8) (by
+default), or stdout (with the b<--foreground> option).  see the
+sa<syslog.conf>(5) for information on redirecting syslogd output to a
+specific file.
 
 b<dump> - save the datagram to a file.  this will be a unique file in
-/tmp/netl.
+/usr/local/lib/netl/dump.
 
 b<ignore> - ignore the datagram, do not process any further rules.
 
@@ -85,8 +88,8 @@ see the sa<netl_module>(1) man page for more information on programming
 your own user defined protocol filters.  the netl distribution comes with
 two useful filter modules, aside from the standard protocol filters.  
 b<&gnr> logs the usual useful things, but is much faster than using the
-equivalent protocol filter rules.  b<&ping> logs pings and "pongs" my
-personal term for ECHO_REPLY, the standard reply to a ping.
+equivalent protocol filter rules.  b<&ping> logs pings and "pongs" (my
+term for ECHO_REPLY, the standard reply to a ping).
 
 there are now experimental IPv6 filters, although they have not been
 tested, and may not be completely implemented.  you are welcome to try
@@ -106,7 +109,7 @@ an example configuration will follow.
 
 b<name=> is technically not a requirement.  it indicates a string by
 which the packet may be identified.  this identification will be used by
-log when sent to syslogd, or as part of the filename when dumped.
+log when sent to sa<syslogd>(8), or as part of the filename when dumped.
 
 b<flags=> [TCP only] allows you to specify that certain TCP flags be set.  
 each flag is separated with a comma (,) character.  valid flags are syn,
@@ -122,6 +125,11 @@ source port numbers.
 b<dstip=> [all IP protocols] this specifies the destination IP address,
 either as a dotted decimal (10.10.10.1) or as an aliased hostname (see
 b<alias> above).
+
+an ip address may optionally be followed by a `/x' where x is the size of
+the bitmask which should match the ip address.  for example, 10.0.0.0/8
+will match 10.*.*.* and 150.135.0.0/16 will match 150.135.*.*.  this is
+useful for making rules for a whole subnet.
 
 b<srcip=> [all IP protocols] same as b<dstip=>, except this is for the
 source IP address.

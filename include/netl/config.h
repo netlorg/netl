@@ -117,15 +117,15 @@ struct configitem {
 		check_src_hw_not:1,
 		check_dst_hw_not:1;
 
-  u32		src_ip,
-		dst_ip;
+  u32		src_ip, src_ip_mask,
+		dst_ip, dst_ip_mask;
 
   u16		src_prt1,		/* udp and tcp only */
 		src_prt2,
 		dst_prt1,
 		dst_prt2;
-  u32		src_ip_not,
-		dst_ip_not;
+  u32		src_ip_not, src_ip_not_mask,
+		dst_ip_not, dst_ip_not_mask;
   u16		src_prt_not,
 		dst_prt_not;
 

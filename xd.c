@@ -27,12 +27,14 @@
 |  28 Feb 97  G. Ollis	.92 created program
 |=============================================================================*/
 
-char *id = "@(#)xd (c) 1997 graham the ollis <ollisg@wwa.com>";
+static char *id = "@(#)xd (c) 1997 graham the ollis <ollisg@wwa.com>";
 
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "netl/dump.h"
+
+int debug_mode;
 
 /*==============================================================================
 | main

@@ -31,6 +31,7 @@ extern int useIPv6;
 extern char *configfile;
 extern char *netdevice;
 extern char *dump_dir;
+extern int debug_mode;
 
 void parsecmdline(int argc, char *argv[]);
 int booleanValue(char c);

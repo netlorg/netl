@@ -14,7 +14,7 @@ tcp4.so tcp6.so tcp.so \
 udp4.so udp6.so udp.so \
 ignp.so \
 raw.so \
-dcp.so ping.so gnr.so
+dcp.so ping.so gnr.so tcp4_next.so hwpassive.so
 
 all:$(FILT_MODULES)
 
@@ -44,3 +44,8 @@ install:
 .PHONY: clean
 clean:
 	$(RM) *.o *.so
+
+Makefile.dep:
+	cd ..; $(PERL) makedepend.pl
+
+include Makefile.dep

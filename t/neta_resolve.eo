@@ -1,0 +1,25 @@
+-------------------------------------------------------------------
+eg/icmp.dg
+ethernet:
+  type: IP datagram
+  00:00:00:00:00:00 => 00:00:00:00:00:00
+IP:
+  version:           4
+  header length:     14
+  type of service:   none
+  total length       0054
+  frag id            aeaf
+  frag offset        0000
+  time to live       40
+  protocol           icmp
+  localhost => localhost
+  type:              echo
+  code:              00 net_unreach redir_net exc_ttl 
+  id:                d007
+  sequence:          0000
+  gateway:           d0070000
+data:
+  0000 37 58 17 33 84 84 05 00 08 09 0a 0b 0c 0d 0e 0f 7X.3............
+  0010 10 11 12 13 14 15 16 17 18 19 1a 1b 1c 1d 1e 1f ................
+  0020 20 21 22 23 24 25 26 27 28 29 2a 2b 2c 2d 2e 2f  !"#$%&'()*+,-./
+  0030 30 31 32 33 34 35 36 37                         01234567

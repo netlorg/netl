@@ -64,12 +64,14 @@ check(u8 *dg, size_t len)
 
 		c = &req.c[i];
 
-		/*	printf("%d\n", *c->action_done);	*/
-
 		if(all_packets) continue;
 		if(ip_packets) continue;
 		if(tcp_and_udp_packets)	continue;
 
+/*		log("check_tcp_flags_on:%d", c->check_tcp_flags_on);
+		log("(flags & c->tcp_flags_on) != c->tcp_flags_on == (%d & %d == %d) != %d == %d",
+			flags, c->tcp_flags_on, flags & c->tcp_flags_on, c->tcp_flags_on, (flags & c->tcp_flags_on) != c->tcp_flags_on);
+*/
 		if(
 
 			 /*=======================================================================

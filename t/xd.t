@@ -1,3 +1,3 @@
 #!/bin/sh
 
-../xd tcp.datagram udp.datagram icmp.datagram
+../xd eg/tcp.dg eg/udp.dg eg/icmp.dg

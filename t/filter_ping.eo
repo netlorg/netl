@@ -1,0 +1,23 @@
+starting netl, logging eth0
+signal handler installed
+icmp 10.10.10.2 => 10.10.10.4 ()
+icmp 10.10.10.4 => 10.10.10.2 ()
+input file EOF
+starting netl, logging eth0
+signal handler installed
+ping 10.10.10.2 => 10.10.10.4 ()
+input file EOF
+starting netl, logging eth0
+signal handler installed
+pong 10.10.10.4 => 10.10.10.2 ()
+input file EOF
+starting netl, logging eth0
+signal handler installed
+ping 10.10.10.2 => 10.10.10.4 ()
+pong 10.10.10.4 => 10.10.10.2 ()
+input file EOF
+starting netl, logging eth0
+signal handler installed
+ping figment => starscream ()
+pong starscream => figment ()
+input file EOF

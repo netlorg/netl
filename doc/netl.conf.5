@@ -13,8 +13,8 @@
 .PP
 .I netl.conf
 - 
-.BR netl (8)
-configuration file
+.I netl
+(8) configuration file
 .PP
 .SH DESCRIPTION
 .PP
@@ -69,8 +69,10 @@ be used later in the configuration file (with the
 .B dstip=
 and 
 .B srcip=
-options), and is also used to report the hostname to syslogd when a log
-is triggered.
+options), and is also used to report the hostname to 
+.BR syslogd (8)
+when
+a log is triggered.
 .PP
 .SH ACTION RULES
 .PP
@@ -86,11 +88,19 @@ the parenthetical notation is useful for complicated, multi line
 requirements.  action is one of
 .PP
 .B log
-- send information about the datagram to syslogd.
+- send information about the datagram to 
+.BR syslogd (8)
+(by
+default), or stdout (with the 
+.B --foreground
+option).  see the
+.BR syslog.conf (5)
+for information on redirecting syslogd output to a
+specific file.
 .PP
 .B dump
 - save the datagram to a file.  this will be a unique file in
-/tmp/netl.
+/usr/local/lib/netl/dump.
 .PP
 .B ignore
 - ignore the datagram, do not process any further rules.
@@ -136,8 +146,8 @@ two useful filter modules, aside from the standard protocol filters.
 logs the usual useful things, but is much faster than using the
 equivalent protocol filter rules.  
 .B &ping
-logs pings and "pongs" my
-personal term for ECHO_REPLY, the standard reply to a ping.
+logs pings and "pongs" (my
+term for ECHO_REPLY, the standard reply to a ping).
 .PP
 there are now experimental IPv6 filters, although they have not been
 tested, and may not be completely implemented.  you are welcome to try
@@ -171,7 +181,9 @@ an example configuration will follow.
 .B name=
 is technically not a requirement.  it indicates a string by
 which the packet may be identified.  this identification will be used by
-log when sent to syslogd, or as part of the filename when dumped.
+log when sent to 
+.BR syslogd (8)
+, or as part of the filename when dumped.
 .PP
 .B flags=
 [TCP only] allows you to specify that certain TCP flags be set.  
@@ -194,6 +206,11 @@ source port numbers.
 either as a dotted decimal (10.10.10.1) or as an aliased hostname (see
 .B alias
 above).
+.PP
+an ip address may optionally be followed by a `/x' where x is the size of
+the bitmask which should match the ip address.  for example, 10.0.0.0/8
+will match 10.*.*.* and 150.135.0.0/16 will match 150.135.*.*.  this is
+useful for making rules for a whole subnet.
 .PP
 .B srcip=
 [all IP protocols] same as 
@@ -249,7 +266,7 @@ detect
 
 ignore	udp	if(dstport=644);
 ignore	udp	if(srcport=644);
-log	udp	if(name=udp);
+#log	udp	if(name=udp);
 
 #pop3
 dl	tcp	if (	name=pop3 	# post office protocol version 3
@@ -300,6 +317,8 @@ log	tcp	name=fin flag=fin !srcip=localhost
 , 
 .BR neta (1)
 , 
+.BR hwpassive (8)
+, 
 .BR dcp (1)
 and 
 .BR xd (1)
@@ -308,8 +327,8 @@ and
 .PP
 there are almost certainly bugs, please report them to me.  my email
 address is Graham Ollis <ollisg@wwa.com>, and the CORE home page is at
-http://www.wwa.com/~ollisg/core.html, which should contain up to date
-information on 
+http://www.wwa.com/~ollisg/netl/index.html, which should contain up to
+date information on 
 .B netl
 .
 .PP

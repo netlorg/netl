@@ -44,7 +44,7 @@ require 5;		# this funny thing doesn't even do anything but is a
 			# great visual aid for the version impaired.
 
 ## GLOBALS
-$VERSION	= '0.71';  if($VERSION) {}
+$VERSION	= '1.00';  if($VERSION) {}
 $LOG_FILE_NAME	= 'tdr.log';		# where to put the test driver log
 $DATE_CMD	= 'date | cut -c5-';	# date command
 
@@ -113,83 +113,83 @@ exit $return_value;
 
 #void
 sub testProgram { # $progName
-  $progName = $_[0];
+	$progName = $_[0];
 
-  $total++;
+	$total++;
 
-  ## if the name given doesn't have the .t extension, add it unless
-  ## there isn't a file without a .t extension the user wants to use.
-  $progName .= ".t" unless(-x $progName);
+	## if the name given doesn't have the .t extension, add it unless
+	## there isn't a file without a .t extension the user wants to use.
+	$progName .= ".t" unless(-x $progName);
 
-  ## if the file given or file.t doesn't exist, then tell the user
-  ## that he's going to have to do better.
-  unless(-x $progName) {
-    print "file doesn't exist, or permission denied.\n";
-    exit 3;
-  }
+	## if the file given or file.t doesn't exist, then tell the user
+	## that he's going to have to do better.
+	unless(-x $progName) {
+		print "file doesn't exist, or permission denied.\n";
+		exit 3;
+	}
 
-  ## all the file names are given here relative to the command given to tdr
-  my $root;	($root = $progName) =~ s!\.t$!!;
-  my $fileName = "$root.ao";
-  my $errName = "$root.aERR";
-  my $oldFileName = "$root.eo";
-  my $oldErrName = "$root.eERR";
-  my $diffFileName = "$root.diff";
-  my $diffErrName = "$root.diffERR";
-  my $retName = "$root.aRET";
-  my $oldRetName = "$root.eRET";
+	## all the file names are given here relative to the command given to tdr
+	my $root;	($root = $progName) =~ s!\.t$!!;
+	my $fileName = "$root.ao";
+	my $errName = "$root.aERR";
+	my $oldFileName = "$root.eo";
+	my $oldErrName = "$root.eERR";
+	my $diffFileName = "$root.diff";
+	my $diffErrName = "$root.diffERR";
+	my $retName = "$root.aRET";
+	my $oldRetName = "$root.eRET";
 
-  ## warn the user that a file is to be overwriten
-  &checkFile($fileName);
-  &checkFile($errName);
-  &checkFile($retName);
+	## warn the user that a file is to be overwriten
+	&checkFile($fileName);
+	&checkFile($errName);
+	&checkFile($retName);
 
-  ## run the program, redirect as needed
-  system "$progName 1> $fileName 2> $errName";
+	## run the program, redirect as needed
+	system "$progName 1> $fileName 2> $errName";
 
-  my $exitValue = ($? >> 8);
-  my $signalValue = ($? & 255);
-  # right shift 8 bits - the wonders of perl.  2 values in 16 bit int
-  # $exitValue is the value returned by the program
-  # $signalValue is the signal used to terminate it
+	my $exitValue = ($? >> 8);
+	my $signalValue = ($? & 255);
+	# right shift 8 bits - the wonders of perl.  2 values in 16 bit int
+	# $exitValue is the value returned by the program
+	# $signalValue is the signal used to terminate it
 
-  ## save the return value for completeness
-  open(RETURN, ">$retName") || die "could not open $retName for writing $!\n";
-  print RETURN "exit($exitValue) signal($signalValue)\n";
-  close RETURN;
+	## save the return value for completeness
+	open(RETURN, ">$retName") || die "could not open $retName for writing $!\n";
+	print RETURN "exit($exitValue) signal($signalValue)\n";
+	close RETURN;
 
-  ## if there is expected output warn of differences
-  my $outDiff = &checkDiff($fileName, $oldFileName, $diffFileName);
-  my $errDiff = &checkDiff($errName, $oldErrName, $diffErrName);
-  my $retDiff = &checkDiff($retName, $oldRetName);
+	## if there is expected output warn of differences
+	my $outDiff = &checkDiff($fileName, $oldFileName, $diffFileName);
+	my $errDiff = &checkDiff($errName, $oldErrName, $diffErrName);
+	my $retDiff = &checkDiff($retName, $oldRetName);
 
-  local $log;		# don't tell anyone i used a local here...
+	local $log;		# don't tell anyone i used a local here...
 
-  if(($outDiff==2) or ($errDiff==2) or ($retDiff==2)) {	# diff FAILED!
-    $log = "diff FAILED\n";    
-  } elsif(($outDiff==3) or ($errDiff==3)) {		# no expected output
-    $log = "N/A\n";
-    $total_na++;
+	if(($outDiff==2) or ($errDiff==2) or ($retDiff==2)) {	# diff FAILED!
+		$log = "diff FAILED\n";    
+	} elsif(($outDiff==3) or ($errDiff==3)) {		# no expected output
+		$log = "N/A\n";
+		$total_na++;
 
-  } elsif(($outDiff==0) and ($errDiff==0) and 
-         (($retDiff==3) or ($retDiff==0)) ) {
-    if($disp_stats) {
-      $log = "OK\r";
-    } else {
-      $log = "OK\n";
-    }
-    $total_work++;
-  } else {
-    $log = '';
-    $log .= 'STDOUT ' if $outDiff == 1;
-    $log .= 'STDERR ' if $errDiff == 1;
-    $log .= 'RETVAL ' if $retDiff == 1;
-    $log .= "fail\n";
-    $return_value = 4;
-  }
-   
-  write;
-  write LOG;
+	} elsif(($outDiff==0) and ($errDiff==0) and 
+				 (($retDiff==3) or ($retDiff==0)) ) {
+		if($disp_stats) {
+			$log = "OK\r";
+		} else {
+			$log = "OK\n";
+		}
+		$total_work++;
+	} else {
+		$log = '';
+		$log .= 'STDOUT ' if $outDiff == 1;
+		$log .= 'STDERR ' if $errDiff == 1;
+		$log .= 'RETVAL ' if $retDiff == 1;
+		$log .= "fail\n";
+		$return_value = 4;
+	}
+	 
+	write;
+	write LOG;
 
 format STDOUT =
 @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -213,11 +213,11 @@ format LOG =
 
 #string
 sub getTime { # void
-  my($fred);
+	my($fred);
 
-  chop($fred = `$DATE_CMD`);
+	chop($fred = `$DATE_CMD`);
 
-  $fred;
+	$fred;
 }
 
 ##==============================================================================
@@ -232,19 +232,19 @@ sub getTime { # void
 #int
 sub checkDiff { # $actualFileName, $expetedFileName, $diffFileName
 
-  my($fileName, $oldFileName, $diffFileName) = @_;
-  my $exitValue = 3;
-  my $cmd = "diff $fileName $oldFileName";
-  $cmd .= " 1> $diffFileName" if defined $diffFileName;
+	my($fileName, $oldFileName, $diffFileName) = @_;
+	my $exitValue = 3;
+	my $cmd = "diff $fileName $oldFileName";
+	$cmd .= " 1> $diffFileName" if defined $diffFileName;
 
-  if(-e $oldFileName) {  # if the expected output file exists, then....
-    &checkFile($diffFileName);
-    system $cmd;
-    $exitValue = $? >> 8;
-    unlink $fileName if $exitValue == 0;
-    unlink $diffFileName if defined $diffFileName;
-  }
-  $exitValue;	# 0 = no difference
+	if(-e $oldFileName) {  # if the expected output file exists, then....
+		&checkFile($diffFileName);
+		system $cmd;
+		$exitValue = $? >> 8;
+		unlink $fileName if $exitValue == 0;
+		unlink $diffFileName if defined $diffFileName;
+	}
+	$exitValue;	# 0 = no difference
 		# 1 = difference
 		# 2 = diff failed
 		# 3 = no expected output
@@ -260,20 +260,20 @@ sub checkDiff { # $actualFileName, $expetedFileName, $diffFileName
 
 #void 
 sub checkFile { # $fileName
-  my $fileName = $_[0];
-  my $inp;
+	my $fileName = $_[0];
+	my $inp;
 
-  return if defined $fileName and $fileName eq '/dev/null';
+	return if defined $fileName and $fileName eq '/dev/null';
 
-  return if($verbose == 0);
-  if(-e $fileName) {
-    print STDERR "warning, $fileName exists, ";
-    if($interactive == 1) {
-      print STDERR "overwrite? ";
-      $inp = <STDIN>;
-      exit 1 if($inp =~ /^n/);
-    }
-    print STDERR "overwriting.\n" if($interactive == 0);
-  }
+	return if($verbose == 0);
+	if(-e $fileName) {
+		print STDERR "warning, $fileName exists, ";
+		if($interactive == 1) {
+			print STDERR "overwrite? ";
+			$inp = <STDIN>;
+			exit 1 if($inp =~ /^n/);
+		}
+		print STDERR "overwriting.\n" if($interactive == 0);
+	}
 }
 

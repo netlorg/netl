@@ -1,6 +1,6 @@
 /*==============================================================================
-| icmp
-|   parse an icmp datagram
+| ping
+|   log pings (ICMP_ECHO) and pongs (ICMP_ECHOREPLY)
 |
 |   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
 |

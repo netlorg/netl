@@ -30,12 +30,15 @@
 #include "netl/ether.h"
 #include "netl/ip.h"
 #include "netl/config.h"
+#include "netl/options.h"
 
 filt_mod *filters = NULL;
 int num_filters=0;
 int max_filters=0;
 
 #define DEFAULT_NUM_FILT 10
+
+char *filt_path = "filt";
 
 /*==============================================================================
 | resize();
@@ -76,6 +79,18 @@ lookup_filter(char *name, int filter_code)
 	filt_mod fm;
 	char buffer[1024];
 	extern char *so_path, *filt_path;
+
+	if(!useIPv6) {
+		if(!strcmp(name, "icmp")) {
+			name = "icmp4";
+		} else if(!strcmp(name, "ip")) {
+			name = "ip4";
+		} else if(!strcmp(name, "tcp")) {
+			name = "tcp4";
+		} else if(!strcmp(name, "udp")) {
+			name = "udp4";
+		}
+	}
 
 	if(filters == NULL) {
 		filters = allocate(sizeof(filt_mod) * DEFAULT_NUM_FILT);

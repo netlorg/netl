@@ -207,12 +207,12 @@ typedef struct {
 ==============================================================================*/
 
 typedef struct {
-	u16	source;
-	u16	dest;
-	u32	seq;
-	u32	ack_seq;
+	u16	source;		/* 0 */
+	u16	dest;		/* 2 */
+	u32	seq;		/* 4 */
+	u32	ack_seq;	/* 8 */
 #if defined(LITTLE_ENDIAN)
-	u16	res1:4,
+	u16	res1:4,		/* 12 */
 		doff:4,
 		fin:1,
 		syn:1,
@@ -234,10 +234,11 @@ typedef struct {
 #else
 #error	"Adjust your <asm/byteorder.h> defines"
 #endif	
-	u16	window;
-	u16	check;
-	u16	urg_ptr;
+	u16	window;		/* 14 */
+	u16	check;		/* 16 */
+	u16	urg_ptr;	/* 18 */
 } tcphdr;
+	/* total : 20bytes */
 
 /*==============================================================================
 | UDP

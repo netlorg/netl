@@ -1,6 +1,6 @@
 /*==============================================================================
-| icmp
-|   parse an icmp datagram
+| gnr
+|   stadard rules for the Graham New Republic
 |
 |   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
 |

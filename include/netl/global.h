@@ -64,7 +64,7 @@ extern char *so_path, *so_path_default;
 | end configure (hopefully this is far as you need to go)
 ==============================================================================*/
 
-#define COPYVER "1.02 copyright 1997 Graham THE Ollis <ollisg@wwa.com>"
+#include "netl/version.h"
 
 #ifndef TRUE
   #define TRUE			1

@@ -7,12 +7,9 @@ include ../Makefile.inc
 
 CFLAGS+=-I ../include
 
-OUTPUT_MODULES=dl.so dump.so log.so null.so
+OUTPUT_MODULES=dl.so dump.so log.so null.so pipe.so
 
 all:$(OUTPUT_MODULES)
-
-default.so:linux-ether.so
-	$(LN) -s linux-ether.so default.so
 
 #===============================================================================
 # object files:
@@ -41,3 +38,7 @@ install:
 clean:
 	$(RM) *.o *.so
 
+Makefile.dep:
+	cd ..; $(PERL) makedepend.pl
+
+include Makefile.dep

@@ -43,3 +43,8 @@ install:
 clean:
 	$(RM) *.o *.so
 
+Makefile.dep:
+	cd ..; $(PERL) makedepend.pl
+	
+
+include Makefile.dep

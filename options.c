@@ -21,6 +21,7 @@
 |  Date       Name	Revision
 |  ---------  --------  --------
 |  28 Feb 97  G. Ollis	created
+|  02 Jul 99  G. Ollis	corrected spelling for --foreground
 |=============================================================================*/
 
 #include <stdlib.h>
@@ -41,10 +42,10 @@
 | global "options" 
 |=============================================================================*/
 
-char *so_path_default = "/usr/local/lib/netl";
-char *so_path = "/usr/local/lib/netl";
+char *so_path_default = NETL_LIB_PATH;
+char *so_path = NETL_LIB_PATH;
 char *grab_module_name = "default";
-char *dump_dir = "/usr/local/lib/netl/dump";
+char *dump_dir = NETL_LIB_PATH "/dump";
 
 int displayVersion = TRUE;
 int useIPv6 = FALSE;
@@ -82,6 +83,7 @@ parsecmdline(int argc, char *argv[])
 {
 	while(--argc > 0) {
 		argv++;
+		/*printf("%d:%s\n", argc, argv[0]);*/
 		if(argv[0][0] == '-') {
 
 			/*========================================================================
@@ -89,7 +91,7 @@ parsecmdline(int argc, char *argv[])
 			|=======================================================================*/
 
 			if(argv[0][1] == '-') {		/* long options... */
-				if(!strcmp("--forground", argv[0]))
+				if(!strcmp("--foreground", argv[0]))
 					noBackground = 1;
 				else if(!strcmp("--background", argv[0]))
 					noBackground = 0;
@@ -239,12 +241,12 @@ where options can be any of the following:
 			--generate-c option.  the default is userfilter.c
     --dump-dir		specify a directory to put the packet dumps into.
 			by default, this is /usr/local/lib/netl/dump
-    -stdout		a combination of --generate-c and --output-name which
+    --stdout		a combination of --generate-c and --output-name which
 			sends the netl module c code to stdout.
 -6			use experimental IPv6 filters.  (off by default)\n");
 #ifndef NO_SYSLOGD
 	puts(
-"-z, --forground		do not run in background, send all output to STDOUT and STDERR
+"-z, --foreground		do not run in background, send all output to STDOUT and STDERR
     --background	run in the background, send all output to syslogd");
 #endif
 #ifndef NO_TEEOUT

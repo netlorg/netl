@@ -1,0 +1,108 @@
+.ad b
+.TH tdr 1 "25 June 1999" "CORE software" "CORE software"
+.AT 3
+.de sh
+.br
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.PP
+.SH NAME
+.PP
+.I tdr
+- test driver.
+.PP
+.SH SYNOPSIS
+.PP
+.I tdr
+[-v [-i] ] [-o] 
+.B cmd
+[
+.B args
+]
+.PP
+.SH DESCRIPTION
+.PP
+.I tdr
+is a program for testing programs.  
+.I tdr
+executes 
+.B cmd
+and
+puts the various standard streams in the appropriate places.  
+.B cmd
+is
+intended to be a here document with a .t extension.  If the extension
+exists, then this part of the file name will be removed for the output
+streams.  If there are expected output files present in the current
+directory, then 
+.I tdr
+will do a 
+.BR diff (1)
+on the expected and actual
+output and inform the user that differences were found.
+.PP
+.SH FILES
+.PP
+all these files should be found in the current directory the test program
+is named 
+.B fred
+or 
+.B fred.t
+in this case:
+.PP
+.SH GENERATED FILES
+.PP
+   fred.ao - actual output created by 
+.I tdr
+   fred.aERR - actual error stream created by 
+.I tdr
+   fred.diff - differences (ie. unix diff) between
+                  actual and expected output iff there
+                  is a difference
+   fred.diffERR - differences between actual and expected
+                  error stream
+   fred.aRET - text file with the return value
+   tdr.log - log file for the test driver.
+                  this file is appended to.
+.PP
+.SH EXISTING FILES
+.PP
+   fred.eo - expected output created by programmer
+   fred.eERR - expected error stream created by programmer
+   fred.eRET - expected return value
+.PP
+note that the diff files are only created if there is a difference.  the
+program warns the user when a file is to be overwritten if -v option used
+but doesn't prompt, unless the -i option is specified.
+.PP
+.SH OPTIONS
+.PP
+    -v warn before over writing files.
+    -i prompt before over writing files.
+    -o do not overwrite log file.
+    -n print out handy statistical information (totals)
+.PP
+.SH RETURN VALUES
+.PP
+   0 - normal execution
+   1 - user abort
+   2 - usage line
+   3 - file doesn't exist
+   4 - difference between actual and expected output
+.PP
+.SH SEE ALSO
+.PP
+.BR diff (1)
+.PP
+.SH LEGAL
+.PP
+Copyright, 1996, Regents of University of California
+.PP
+portions are (c) 1997 Graham THE Ollis
+.PP
+.SH AUTHOR
+.PP
+Graham THE Ollis <ollisg@wwa.com>

@@ -36,6 +36,7 @@
 
 #include "netl/global.h"
 #include "netl/io.h"
+#include "netl/options.h"
 
 #ifndef NO_SYSLOGD
 int noBackground = FALSE;
@@ -123,6 +124,8 @@ allocate(size_t size)
 {
 	void *tmp;
 
+	/*log("netl_allocate(%d)", size); */
+
 	if((tmp = malloc(size)) == NULL) {
 		err("error: could not malloc(), die");
 		exit(2);
@@ -158,6 +161,9 @@ nmopen(char *name)
 {
 	void *handle;
 	void (*f)(void);
+
+	if(debug_mode)
+		log("loading module: %s", name);
 
 	handle = dlopen(name, RTLD_NOW);
 	if(handle == NULL) {

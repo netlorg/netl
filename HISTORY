@@ -1,13 +1,52 @@
+version 1.04
+------------
+
+ . added a bazillion test cases.  most notably, filter test cases.
+ . corrected multiple flags being set with the flag= rule.
+   (i was and'ing in config.y when i should have been or'ing)
+ . tcp4_next is a module which logs the first packet, as per the rule,
+   and the next 5 packets which match the same signature (address/port
+   combinations) regardless of set/cleared flags.  this was a user
+   request.
+ . finally wrote hwpassive.   implemented as a netl module.
+ . hwpassive listens for dcp "hwpassive:write" which indicates
+   the database should be dumped to disk.
+ . corrected the spelling for the --foreground option.
+ . added bit mask support for IP addresses.  for srcip= and dstip=
+   you may now add a /int to specify a mask.  for example, 10.0.0.0/8
+   will log 10.*.*.* and 150.135.0.0/16 will log 150.135.*.*
+ . this is a MAJOR API revision.
+ . fixed minor bug in neta.  icmp.code was not being correctly decoded.
+   (the integer output had been correct)
+ . wrote a pipe output module.  this executes `pipeprog' in the current
+   directory, and passes it (as the first argument) a file descriptor.
+   each packet is written to this file descriptor from netl, with an
+   extra header, containing only the length of the packet.
+ . wrote a catch module in the core for the purposes of implementing
+   a dandy-handy pipeprog, as mentioned in the last entry.
+ . began work on a Perl/Tk interface for netl.  the primary motivation
+   for this was as an application to the `pipe' output module (actually,
+   each motivated the other).  for now, this will be a seperate dist,
+   until it gathers some serious steam.
+ . wrote a configure script.  autoconf was to complicated for the simplicity
+   of my configurations.  i may regret this, if netl gets ported to any
+   other platforms...	
+
+version 1.03
+------------
+
+ . bug fix: netl does not load incomplete IPv6 modules by default.
+
 version 1.02
 ------------
 
- . switched to flex/bison to parse the configeration files.
+ . switched to flex/bison to parse the configuration files.
  . created new modular design.  see netl_module(1)
  . this is a MAJOR (internal) revision
- . redid the man pages.  they still aren't that good, but at least they
+ . re-did the man pages.  they still aren't that good, but at least they
    are up to date again.  actually it's nice to have documentation on the
    new module system.
- . wrote netlcc front end and compiler.c backend for the netl compiler.
+ . wrote netlcc front end and compiler.c back end for the netl compiler.
    see netlcc(1) for details.
  . moved the dump directory from /tmp/netl to /usr/local/lib/netl/dump
  . added --dump-dir option for specifying an alternate dump directory.
@@ -28,7 +67,7 @@ version 1.01
 version 1.00
 ------------
 
- . no major chagnes, but netl doesn't really feel developmental anymore
+ . no major changes, but netl doesn't really feel developmental anymore
    so i now declare it to be in the `released' state.  q.e.d.
 		[ q.e.d. is latin for `so what' ]
 
@@ -42,7 +81,7 @@ version .95.3
    *sequence* to make sure that all netl dump files are (theoretically)
    unique.  sequence is the new one.  the form is now
    /tmp/netl/name-pid-time-sequence.dg
-   where name is the name you specify in configeration, pid is the 
+   where name is the name you specify in configuration, pid is the 
    process id, time is seconds since 00:00:00 GMT, 1 January 1970, and 
    sequence is the number of datagrams which have been dumped by this 
    particular netl process.
@@ -66,8 +105,8 @@ version .95
 
  . created man page documentation.
 
- . added `detect' config line, see the netl(8) manpage for details.
-   this will reduce the amount of configeration you will have to do
+ . added `detect' config line, see the netl(8) man page for details.
+   this will reduce the amount of configuration you will have to do
    in the netl.conf file.
 
  . modified dist version of netl.conf so that it's more portable.
@@ -80,7 +119,7 @@ version .95
 version .94
 -----------
 
- . changed all the struct declerations to typedef declerations.  get off my
+ . changed all the struct declarations to typedef declarations.  get off my
    back ok?  i've been programming perl for so long, forgot some of that
    strange C language. 
 
@@ -99,7 +138,7 @@ version .94
  . fixed the clearipcache() function.  thus now, when you send a 
    netl:readconfig, netl will clear the ip cache before reading the file,
    avoiding all sorts of potential duplicates.  though you probably have
-   an enourmous amount of memory like me and don't care... 
+   an enormous amount of memory like me and don't care... 
 
  . added some global options with ports to win32 in mind.  NO_SYSLOGD, if 
    defined in global.h will not even compile with the syslogd library stuff.  
@@ -119,7 +158,7 @@ version .94
  a. -z option allows you to run netl in the foreground.  output is sent to
     stdout instead of syslogd.
 
- b. you can include configeration lines in the command line.  when you do
+ b. you can include configuration lines in the command line.  when you do
     this, the config file /etc/netl.conf will NOT be read.  note that (a)
     and (b) are meant to be used in concert with each other for testing
     and quick monitoring. 
@@ -138,7 +177,7 @@ version .94
     depending on your linux being overly up to date.
 
  f. neta no longer swaps source/destination ip/ethernet addresses
-    inapropriately. 
+    inappropriately. 
 
  g. started work on hwpassive, which is no where near complete.
 

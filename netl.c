@@ -32,7 +32,7 @@
 |			of this module and put it in to grab.c.
 |=============================================================================*/
 
-char	*id = "@(#)netl by graham the ollis <ollisg@wwa.com>";
+static char	*id = "@(#)netl by graham the ollis <ollisg@wwa.com>";
 
 #include <errno.h>
 #include <string.h>
@@ -63,104 +63,10 @@ char	*id = "@(#)netl by graham the ollis <ollisg@wwa.com>";
 
 int (*grab)(char *buf);
 
-char *out_path = "out";
-char *filt_path = "filt";
-
 // grab globals
 char *in_path = "in";
 void *grab_module = NULL;
 int (*grab)(char *);
-
-/*==============================================================================
-| it's the clean up function!  it really doesn't need to do much so...
-| (btw- clo is the name of the planet the decepticons invaded shortly after 
-| the battle with unicron.  the autobots initially sustained incredable 
-| losses, optimus prime returns and turns the tide with the help of the 
-| "last autobot".  however, this has nothing to do with the clean up function)
-|=============================================================================*/
-
-void cleanup()
-{
-	clo();
-}
-
-/*==============================================================================
-| int main(int, char **)
-|=============================================================================*/
-
-int
-main(int argc, char *argv[])
-{
-#ifndef NO_SYSLOGD
-	pid_t		temp;
-#endif
-
-	prog = argv[0];
-
-	//setservent(TRUE);
-	parsecmdline(argc, argv); 
-	if(displayVersion) {
-		fputs("netl ", stdout);
-		puts(COPYVER);
-	}
-
-	preconfig();
-	if(argc != 1) 
-		while(--argc > 0) {
-			argv++;
-			if(argv[0][0] != '-') {
-				parseconfigline(argv[0]);
-				configfile = NULL;
-			}
-		}
-
-	if(configfile != NULL)
-#ifdef NO_SYSLOGD
-		readconfig(configfile);
-#endif
-#ifndef NO_SYSLOGD
-		readconfig(configfile, TRUE);
-#endif
-	postconfig();
-
-	if(debug_mode) {
-		//printconfig();
-		return 1;
-	}
-
-	if(output_mode == OUT_MODE_C) {
-		FILE *fp;
-		if(output_name[0] == '-' && output_name[1] == 0)
-			fp = stdout;
-		else
-			fp = fopen(output_name, "w");
-		if(fp == NULL) {
-			fprintf(stderr, "%s: error opening %s for write!\n",
-				prog, output_name);
-		}
-		generate_c(fp);
-		fclose(fp);
-		return 0;
-	}
-
-#ifndef NO_SYSLOGD
-	if(noBackground)
-#endif
-		return netl(netdevice);
-#ifndef NO_SYSLOGD
-	else {
-		if((temp = fork()) == 0) 
-			return netl(netdevice);
-
-		if(temp == -1) {
-			fprintf(stderr, "%s: unable to fork\n", prog);
-			return 1;
-		}
-	}
-#endif
-
-	return 0;
-}
 
 /*==============================================================================
 | prepare dl wrapper

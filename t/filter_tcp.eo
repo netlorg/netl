@@ -1,0 +1,37 @@
+starting netl, logging eth0
+signal handler installed
+syn 10.10.10.2:1135 => 10.10.10.4:80 ()
+syn 10.10.10.4:80 => 10.10.10.2:1135 ()
+input file EOF
+starting netl, logging eth0
+signal handler installed
+www_connect 10.10.10.2:1135 => 10.10.10.4:80 ()
+input file EOF
+starting netl, logging eth0
+signal handler installed
+client 10.10.10.2:1135 => 10.10.10.4:80 ()
+server 10.10.10.4:80 => 10.10.10.2:1135 ()
+client 10.10.10.2:1135 => 10.10.10.4:80 ()
+client 10.10.10.2:1135 => 10.10.10.4:80 ()
+server 10.10.10.4:80 => 10.10.10.2:1135 ()
+server 10.10.10.4:80 => 10.10.10.2:1135 ()
+client 10.10.10.2:1135 => 10.10.10.4:80 ()
+server 10.10.10.4:80 => 10.10.10.2:1135 ()
+client 10.10.10.2:1135 => 10.10.10.4:80 ()
+client 10.10.10.2:1135 => 10.10.10.4:80 ()
+server 10.10.10.4:80 => 10.10.10.2:1135 ()
+input file EOF
+starting netl, logging eth0
+signal handler installed
+client figment:1135 => starscream:80 ()
+server starscream:80 => figment:1135 ()
+client figment:1135 => starscream:80 ()
+client figment:1135 => starscream:80 ()
+server starscream:80 => figment:1135 ()
+server starscream:80 => figment:1135 ()
+client figment:1135 => starscream:80 ()
+server starscream:80 => figment:1135 ()
+client figment:1135 => starscream:80 ()
+client figment:1135 => starscream:80 ()
+server starscream:80 => figment:1135 ()
+input file EOF

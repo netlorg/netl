@@ -1,14 +1,14 @@
 #H SEE ALSO
 
 sa<netl>(8), sa<netl.conf>(5), sa<netlcc>(1), sa<netl_install>(1),
-sa<netl_module>(1), sa<neta>(1), sa<dcp>(1) and sa<xd>(1)
+sa<netl_module>(1), sa<neta>(1), sa<hwpassive>(8), sa<dcp>(1) and sa<xd>(1)
 
 #H BUGS
 
 there are almost certainly bugs, please report them to me.  my email
 address is Graham Ollis <ollisg@wwa.com>, and the CORE home page is at
-http://www.wwa.com/~ollisg/core.html, which should contain up to date
-information on b<netl>.
+http://www.wwa.com/~ollisg/netl/index.html, which should contain up to
+date information on b<netl>.
 
 #H COPYING
 

@@ -12,9 +12,9 @@
 .SH NAME
 .PP
 .I netl_module
-- user defined 
+- 
 .I netl
-module API.
+API.
 .PP
 .SH DESCRIPTION
 .PP
@@ -38,9 +38,9 @@ by default relies rather heavily on modules in the
 distribution.
 .PP
 a 
-.B netl
+.I netl
 module is just a dynamic object file (.so) similar to the
-dynamic libraries that you file in your lib directories
+dynamic libraries that you file in your library directories
 (/lib/libc.so.6.1) for example.  
 .I netl
 decides at run time which
@@ -121,9 +121,18 @@ typically this means /usr/local/lib/netl/in.
 .PP
 a filter module decides if the ethernet frame passed to it is worthy of
 note.  this is how the protocol filters are implemented.  you can program
-you filter to do with the packet as you please, but a better design would
-be to pass the packet (if it is a `hit') to the output module, which will
-be passed to the module from the netl main code.
+you filter to do with the packet as you please (e.g. directly log to
+syslogd or dump to a file), but a better design would be to pass the
+packet (if it is a `hit') to the output module specified by the
+particular rule.
+.PP
+when loading a user netl filter module, you will have to prefix it with
+an ampersand ('&') character to indicate that it is not an `official'
+module.  some of the modules netl ships with are in this state, not
+because they are defective, but because they haven't been implemented by
+the compiler (for more information on the compiler, see 
+.BR netlcc (1)
+).
 .PP
 a filter module should include (in this order) these header files which
 come with the 
@@ -151,8 +160,8 @@ when you ping a host).
 .PP
 .nf
 /*==============================================================================
-| icmp
-|   parse an icmp datagram
+| ping
+|   log pings (ICMP_ECHO) and pongs (ICMP_ECHOREPLY)
 |
 |   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
 |
@@ -228,8 +237,8 @@ here is a more complicated module, which i use on my system.
 .PP
 .nf
 /*==============================================================================
-| icmp
-|   parse an icmp datagram
+| gnr
+|   stadard rules for the Graham New Republic
 |
 |   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
 |
@@ -392,8 +401,20 @@ where ever
 is searching for modules.  this is usually
 /usr/local/lib/netl/out.
 .PP
+a netl output module is sometimes also refered to an action module, since
+the output modules are the ones which actually act once a packet has been
+filtered.
+.PP
+when loading a user netl action module, you will have to prefix it with
+an at sign ('@') character to indicate that it is not an `official'
+module.  some of the modules netl ships with are in this state, not
+because they are defective, but because they haven't been implemented by
+the compiler (for more information on the compiler, see 
+.BR netlcc (1)
+).
+.PP
 possible uses for this type of module include an X interface which sends
-popup messages to a user when someone is trying to hack into his machine.  
+pop up messages to a user when someone is trying to hack into his machine.  
 this is just an idea.
 .PP
 an output module should define an integer 
@@ -439,6 +460,8 @@ none really worth going over at the moment.
 , 
 .BR neta (1)
 , 
+.BR hwpassive (8)
+, 
 .BR dcp (1)
 and 
 .BR xd (1)
@@ -447,8 +470,8 @@ and
 .PP
 there are almost certainly bugs, please report them to me.  my email
 address is Graham Ollis <ollisg@wwa.com>, and the CORE home page is at
-http://www.wwa.com/~ollisg/core.html, which should contain up to date
-information on 
+http://www.wwa.com/~ollisg/netl/index.html, which should contain up to
+date information on 
 .B netl
 .
 .PP

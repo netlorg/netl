@@ -1,0 +1,326 @@
+#!/bin/sh
+
+VER="1.04"
+TDR_VER="1.00"
+NETL_VER_MAJOR=1
+NETL_VER_MINOR=4
+
+if test "$CC" = "" ; then
+	CC=gcc
+fi
+
+if test "$CFLAGS" = "" ; then
+	CFLAGS="-O3 -Wall"
+fi
+
+if test "$LDFLAGS" = "" ; then
+	LDFLAGS="-L. -rdynamic"
+fi
+
+PREFIX=/usr/local
+SUBINPATH=$PREFIX/sbin
+BINPATH=$PREFIX/bin
+MANPATH=$PREFIX/man
+LIBPATH=$PREFIX/lib/netl-$VER
+INCLUDEPATH=$LIBPATH/include
+
+while test "$1" != ""; do
+
+	arg=$1;
+	shift
+	case $arg in
+		-*=*) opt=`echo "$arg" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+		*) opt= ;;
+	esac
+
+	case $arg in
+		--prefix=*)
+			PREFIX=$opt
+			SUBINPATH=$PREFIX/sbin
+			BINPATH=$PREFIX/bin
+			MANPATH=$PREFIX/man
+			LIBPATH=$PREFIX/lib/netl-$VER
+			INCLUDEPATH=$LIBPATH/include
+		;;
+
+		--libdir=*)
+			LIBPATH=$opt
+			INCLUDEPATH=$LIBPATH/include
+		;;
+
+		--incdir=*)
+			INCDIR=$opt
+		;;
+
+		--subinpath=*)
+			SUBINPATH=$opt
+		;;
+		--binpath=*)
+			BINPATH=$opt
+		;;
+		--manpath=*)
+			MANPATH=$opt
+		;;
+
+		--help)
+			cat <<EOF
+Usage: configure [options]
+Configuration:
+  --help                print out this message
+  --compiler=CC         use alternative compiler
+  --debug		include debug symbols in compile
+  --prefix=DIR		base directory to install into [/usr/local]
+  --libdir=DIR		directory to install support files into 
+			[PREFIX/lib/netl]
+  --incdir=DIR		directory to install header files into
+			[LIBDIR/include]
+  --bindir=DIR		directory to install user programs [PREFIX/bin]
+  --subindir=DIR	directory to install daemons [PREFIX/sbin]
+  --manpath=DIR		directory to install man pages [PREFIX/man]
+Environemnt:
+  CC			C Compiler [gcc]
+  CFLAGS		flags [-O3 -Wall]
+  LDFLAGS		linker flags [-L. -rdynamic]
+
+  LEX			lexical analizer generator [flex]
+  LEXFLAGS		lex flags [-F]
+  LEX_LIBS		libraries required by lex [-lfl]
+
+  YACC			parser generator [bison]
+  YACCFLAGS		yacc flags [-v -d]
+  YACC_LIBS		libraries required by yacc []
+
+  AR			library creator [ar]
+  RANLIB		archive indexer [ranlib]
+  MISC_LIBS		additional libraries [-ldl]
+EOF
+			exit
+		;;
+
+		--compiler=*)
+			CC=$opt
+		;;
+
+		--debug)
+			CFLAGS="-g3 -Wall"
+		;;
+
+		*)
+			echo invalid option $opt
+		;;
+	esac
+done
+
+################################################################################
+# compiler test
+################################################################################
+
+cat > test_prog.c <<EOF
+#include <stdio.h>
+int main(int arcg, char *argv[]) { printf("hello world\n"); return 0;}
+EOF
+
+if $CC $CFLAGS $LDFLAGS test_prog.c -o test_prog 1> /dev/null 2> /dev/null; then
+	echo gcc compile test good
+else
+	echo gcc is not right!
+	rm -f test_prog.c test_prog
+	exit
+fi
+
+if test_prog 1> /dev/null 2> /dev/null; then
+	echo gcc run test good
+else
+	echo gcc output failed!
+	rm -f test_prog.c test_prog
+	exit
+fi
+
+rm -f test_prog.c test_prog
+
+################################################################################
+# flex test
+################################################################################
+
+if test "$LEX" = "" ; then
+	LEX=flex
+fi
+if test "$LEXFLAGS" = "" ; then
+	LEXFLAGS="-F"
+fi
+if test "$LEX_LIBS" = "" ; then
+	LEX_LIBS="-lfl"
+fi
+
+mkdir .lextest
+cd .lextest
+
+cat > test.l <<EOF
+%%
+%%
+int main() { return 0; }
+EOF
+
+
+if $LEX $LEXFLAGS test.l 1>/dev/null 2> /dev/null; then
+	echo lex generate test good
+else
+	echo lex is not right!
+	cd ..
+	rm -rf .lextest
+	exit
+fi
+
+if $CC $CFLAGS $LDFLAGS lex.yy.c $LEX_LIBS 1> /dev/null 2> /dev/null ; then
+	echo lex compile test good
+else
+	echo lex compile is not right!
+	cd ..
+	rm -rf .lextest
+	exit
+fi
+
+if a.out 1> /dev/null 2>/dev/null ; then
+	echo lex run test good
+else
+	echo lex runtime is not right!
+	cd ..
+	rm -rf .lextest
+	exit
+fi
+
+cd ..
+rm -rf .lextest
+
+################################################################################
+# yacc test
+################################################################################
+
+if test "$YACC" = "" ; then
+	YACC=bison
+fi
+if test "$YACCFLAGS" = "" ; then
+	YACCFLAGS="-v -d"
+fi
+if test "$YACC_LIBS" = "" ; then
+	YACC_LIBS=
+fi
+
+mkdir .yacctest
+cd .yacctest
+
+cat > test.y <<EOF
+%%
+start: ;
+%%
+int yyerror(char *s) { return 1; }
+int yylex() { return 1; }
+int main() { return 0; }
+EOF
+
+if $YACC $YACCFLAGS test.y 1> /dev/null 2> /dev/null; then
+	echo yacc generate test good
+else
+	echo yacc is not right!
+	cd ..
+	rm -rf .yacctest
+	exit
+fi
+
+
+if $CC $CFLAGS $LDFLAGS test.tab.c $YACC_LIBS $LEX_LIBS 1> /dev/null 2> /dev/null; then
+	echo yacc compile test good
+else
+	echo yacc compile is not right!
+	cd ..
+	rm -rf .yacctest
+	exit
+fi
+
+if a.out 1> /dev/null 2>/dev/null ; then
+	echo yacc run test good
+else
+	echo yacc runtime is not right!
+	cd ..
+	rm -rf .yacctest
+	exit
+fi
+
+cd ..
+rm -rf .yacctest
+
+################################################################################
+# misc programs, no tests
+################################################################################
+
+if test "$AR" = "" ; then
+	AR=ar
+fi
+if test "$RANLIB" = "" ; then
+	RANLIB=ranlib
+fi
+if test "$LN" = "" ; then
+	LN=ln
+fi
+if test "$RM" = "" ; then
+	RM="rm -f"
+fi
+if test "$CP" = "" ; then
+	CP=cp
+fi
+if test "$PGP" = "" ; then
+	PGP=pgp262
+fi
+if test "$M4" = "" ; then
+	M4=m4
+fi
+if test "$M4FLAGS" = "" ; then
+	M4FLAGS=
+fi
+if test "$MISC_LIBS" = "" ; then
+	MISC_LIBS=-ldl
+fi
+if test "$PERL" = "" ; then
+	PERL=perl
+fi
+
+echo generating Makefile.inc
+
+echo "#do not modify" > Makefile.inc
+echo "CC=$CC" >> Makefile.inc
+echo "CFLAGS=$CFLAGS" >> Makefile.inc
+echo "LDFLAGS=$LDFLAGS" >> Makefile.inc
+echo "LEX=$LEX" >> Makefile.inc
+echo "LEXFLAGS=$LEXFLAGS" >> Makefile.inc
+echo "LEX_LIBS=$LEX_LIBS" >> Makefile.inc
+echo "YACC=$YACC" >> Makefile.inc
+echo "YACCFLAGS=$YACCFLAGS" >> Makefile.inc
+echo "YACC_LIBS=$YACC_LIBS" >> Makefile.inc
+echo "AR=$AR" >> Makefile.inc
+echo "RANLIB=$RANLIB" >> Makefile.inc
+echo "LN=$LN" >> Makefile.inc
+echo "RM=$RM" >> Makefile.inc
+echo "CP=$CP" >> Makefile.inc
+echo "M4=$M4" >> Makefile.inc
+echo "M4FLAGS=$M4FLAGS" >> Makefile.inc
+echo "VER=$VER" >> Makefile.inc
+echo "NETL_VER_MAJOR=$NETL_VER_MAJOR" >> Makefile.inc
+echo "NETL_VER_MINOR=$NETL_VER_MINOR" >> Makefile.inc
+echo "TDR_VER=$TDR_VER" >> Makefile.inc
+echo "PREFIX=$PREFIX" >> Makefile.inc
+echo "SUBINPATH=$SUBINPATH" >> Makefile.inc
+echo "BINPATH=$BINPATH" >> Makefile.inc
+echo "MANPATH=$MANPATH" >> Makefile.inc
+echo "LIBPATH=$LIBPATH" >> Makefile.inc
+echo "INCLUDEPATH=$INCLUDEPATH" >> Makefile.inc
+echo "NETL_LIBS=" >> Makefile.inc
+echo "MISC_LIBS=$MISC_LIBS" >> Makefile.inc
+echo "PERL=$PERL" >> Makefile.inc
+
+echo generating include/netl/version.h
+
+echo "/* do not modify */" > include/netl/version.h
+echo "#define NETL_VER_MAJOR $NETL_VER_MAJOR" >> include/netl/version.h
+echo "#define NETL_VER_MINOR $NETL_VER_MINOR" >> include/netl/version.h
+echo "#define COPYVER \"$VER copyright 1997-1999 Graham THE Ollis <ollisg@wwa.com>\"" >> include/netl/version.h
+echo "#define NETL_LIB_PATH \"$LIBPATH\"" >> include/netl/version.h

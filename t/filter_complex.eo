@@ -1,0 +1,18 @@
+starting netl, logging eth0
+signal handler installed
+syn figment:1135 => starscream:80 ()
+syn_ack starscream:80 => figment:1135 ()
+client figment:1135 => starscream:80 ()
+client figment:1135 => starscream:80 ()
+server starscream:80 => figment:1135 ()
+server starscream:80 => figment:1135 ()
+client figment:1135 => starscream:80 ()
+fin_ack starscream:80 => figment:1135 ()
+client figment:1135 => starscream:80 ()
+fin_ack figment:1135 => starscream:80 ()
+server starscream:80 => figment:1135 ()
+ping localhost => localhost ()
+udp localhost:1261 => localhost:47 ()
+ping figment => starscream ()
+pong starscream => figment ()
+input file EOF

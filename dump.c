@@ -91,22 +91,27 @@ readentire(char *fn, size_t *size, size_t max, char *prog)
 
 void dumpdata(unsigned char *data, size_t size)
 {
+	dumpdatafile(data, size, stdout);
+}
+
+void dumpdatafile(unsigned char *data, size_t size, FILE *fd)
+{
 	size_t offset = 0;
 	int i;
 
-	puts("data:");
+	fprintf(fd, "data:\n");
 	while(offset < size) {
-		printf("  %04x ", (int) offset);
+		fprintf(fd, "  %04x ", (int) offset);
 		for(i=0; i<16 && offset+i < size; i++)
-			printf("%02x ", data[offset+i]);
+			fprintf(fd, "%02x ", data[offset+i]);
 		while(i++<16)
-			fputs("   ", stdout);
+			fputs("   ", fd);
 		for(i=0; i<16 && offset+i < size; i++)
 			if(data[offset+i] > 31 && data[offset+i] <127)
-				putchar(data[offset+i]);
+				putc(data[offset+i], fd);
 			else
-				putchar('.');
-		putchar('\n');
+				putc('.', fd);
+		putc('\n', fd);
 		offset+=i;
 	}
 }

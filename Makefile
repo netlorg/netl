@@ -47,7 +47,7 @@ COREDIR=tarquin.macro core.head core.line core.tail
 
 MOD=in.nmod filt.nmod out.nmod
 
-all : $(EXEC) $(MOD)
+all : $(EXEC) $(MOD) libnetl.so
 
 %.nmod:
 	$(MAKE) -k -C $*
@@ -57,7 +57,7 @@ gnr:all web dist
 test:all
 	cd t;$(TDR) -n *.t
 
-dist:README INSTALL MANIFEST.BIN doc.nmod $(DIST)-$(VER).tar.gz
+dist:README INSTALL MANIFEST.BIN doc.nmod Makefile.dep $(DIST)-$(VER).tar.gz tdr-$(TDR_VER).tar.gz
 
 sigs:$(DIST)-$(VER).tar.gz.sig \
      $(DIST)-$(VER)-bin.tar.gz $(DIST)-$(VER)-bin.tar.gz.sig \
@@ -85,6 +85,11 @@ README INSTALL:
 $(DIST)-$(VER).zip:$(DIST)-$(VER).tar
 	zip -r $(DIST)-$(VER).zip $(DIST)-$(VER)
 
+tdr-$(TDR_VER).tar:
+	install -d tdr-$(TDR_VER)
+	cp tdr.pl doc/tdr.1 tdr-$(TDR_VER)
+	tar cf tdr-$(TDR_VER).tar tdr-$(TDR_VER)
+
 $(DIST)-$(VER).tar:
 	install -d $(DIST)-$(VER)
 	cp -aP `cat MANIFEST` $(DIST)-$(VER)
@@ -100,7 +105,8 @@ $(DIST)-$(VER)-bin.tar:$(EXEC) $(MOD)
 # executables:
 #===============================================================================
 
-NETLOBJ=netl.o sighandle.o config.tab.o lex.yy.o lookup.o options.o check.o filter.o action.o resolve.o dump.o io.o compiler.o ipv6.o
+NETLOBJ=netl.o sighandle.o config.tab.o lex.yy.o lookup.o options.o check.o \
+filter.o action.o resolve.o dump.o io.o compiler.o ipv6.o main.o
 netl:$(NETLOBJ)
 	$(CC) $(LDFLAGS) $(CFLAGS) -o netl $(NETLOBJ) $(NET_LIBS) $(MISC_LIBS) $(LEX_LIBS) $(YACC_LIBS)
 
@@ -111,6 +117,16 @@ neta:$(NETAOBJ)
 XDOBJ=xd.o resolve.o dump.o io.o
 xd:$(XDOBJ)
 	$(CC) $(LDFLAGS) $(CFLAGS) -o xd $(XDOBJ) $(MISC_LIBS)
+
+LIBOBJ=action.o check.o compiler.o dump.o filter.o \
+io.o ipv6.o lookup.o options.o resolve.o \
+sighandle.o lex.yy.o config.tab.o netl.o catch.o
+libnetl.a:$(LIBOBJ)
+	$(AR) rc libnetl.a $(LIBOBJ)
+	$(RANLIB) libnetl.a
+
+libnetl.so:$(LIBOBJ)
+	$(CC) -shared $(LDFLAGS) $(CFLAGS) -o libnetl.so $(LIBOBJ)
 
 #===============================================================================
 # object files:
@@ -150,16 +166,19 @@ install:
 	install -g 0 -o 0 -m 555 dcp.pl $(BINPATH)/dcp
 	install -g 0 -o 0 -m 555 tdr.pl $(BINPATH)/tdr
 	install -g 0 -o 0 -m 555 netlcc.pl $(BINPATH)/netlcc
+	install -g 0 -o 0 -m 555 hwpassive.pl $(SUBINPATH)/hwpassive
 	install -d -g 0 -o 0 -m 700 /tmp/netl
 	install -d $(MANPATH) $(MANPATH)/man1 $(MANPATH)/man5 $(MANPATH)/man8
 	install -g 0 -o 0 -m 644 doc/*.1 $(MANPATH)/man1
 	install -g 0 -o 0 -m 644 doc/*.5 $(MANPATH)/man5
 	install -g 0 -o 0 -m 644 doc/*.8 $(MANPATH)/man8
 	install -d $(LIBPATH)
+	$(RM) /usr/local/lib/netl
 	ln -s $(LIBPATH) /usr/local/lib/netl
 	install -d $(LIBPATH)/dump
 	install -d $(INCLUDEPATH)/netl
 	install -g 0 -o 0 -m 644 include/netl/*.h $(INCLUDEPATH)/netl
+	install -g 0 -o 0 -m 755 libnetl.so $(LIBPATH)
 	cd in; $(MAKE) install
 	cd out; $(MAKE) install
 	cd filt; $(MAKE) install
@@ -174,19 +193,31 @@ clean:
 	$(RM) dcp dcp.exe
 	$(RM) tmp.dat core a.out 
 	$(RM) *.o *.html *.tar *.tmp
-	$(RM) -r $(DIST)-$(VER) $(DIST)-$(VER)-bin
+	$(RM) -r $(DIST)-$(VER) $(DIST)-$(VER)-bin tdr-$(TDR_VER)
 	$(RM) t/*.diff t/*.diffERR t/*.ao t/*.aERR t/*.aRET
 	$(RM) t/tdr.log t/core
-	$(RM) lib*.so* lib*.a
+	$(RM) lib*.so* lib*.a tdr.log
 	$(RM) lex.yy.c config.tab.h config.tab.c config.output config_test
 	$(RM) userfilter.c *.so README INSTALL conf/*.c conf/*.so conf/*.o
+	$(RM) *.a *.so
 	cd in; $(MAKE) clean
 	cd filt; $(MAKE) clean
 	cd out; $(MAKE) clean
 
 distclean:clean
+
+realclean:clean
 	$(RM) *.tar.gz *.zip *.sig MANIFEST.BIN
+	$(RM) Makefile.dep */Makefile.dep include/netl/version.h
 	cd doc; $(MAKE) clean
 
 wc:
 	wc -l *.{c,y,l,pl} include/netl/*.h {in,filt,out}/*.{c,h} |sort -n | tee .wc
+
+Makefile.dep:
+	$(PERL) makedepend.pl
+
+Makefile.inc:
+	./configure
+
+include Makefile.dep

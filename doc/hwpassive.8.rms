@@ -1,0 +1,35 @@
+#TITLE hwpassive
+#SECTION 8
+#HEAD CORE software
+#TAIL 2 July 1999
+#START
+
+#H NAME
+
+i<hwpassive> - passively scan for, and keep a database of hardware/ip
+address mappings.
+
+#H SYNOPSIS
+
+i<hwpassive> [options] ['config rule'] [...]
+
+#H DESCRIPTION
+
+i<hwpassive> is a program for gathering hardware/ip address mappings.  
+it is implemented as a sa<netl>(8) module and sa<perl>(1) script front
+end.  when i<hwpassive> sees a hardware address it has not seen before,
+or if the existing mapping is different, then it will send it to syslogd
+(default) or stdout (with the --background option).
+
+i<hwpassive> writes its database to /usr/local/lib/netl/hwpassive on
+exit, or if you send it the sa<dcp>(1) message "hwpassive:write", ie:
+
+% hwpassive
+
+% dcp "hwpassive:write"
+
+#H OPTIONS
+
+i<hwpassive> takes the same options and config rules as sa<netl>(8).
+
+#EXEC tail

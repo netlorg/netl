@@ -27,18 +27,24 @@ is a way of passing messages to
 and related programs.  
 in the case of 
 .BR netl (8)
-there is currently only one message you can
-send it.  "netl:readconfig" will order 
+there is currently only two messages you can
+send it.
+.PP
+"netl:readconfig" will order 
 .BR netl (8)
-(if it's listening,
-see the man page for details on the 
+(if it's listening, see the man
+page for details on the 
 .I listen
-directive) to terminate
-it's current configuration and read the netl.conf file again.  this is
-handy if you make modifications to netl.conf while 
+directive) to terminate it's current
+configuration and read the netl.conf file again.  this is handy if you
+make modifications to netl.conf while 
 .BR netl (8)
-is
-running.
+is running.
+.PP
+"hwpassive:write" tells 
+.BR hwpassive (8)
+to write its database to disk.  
+it is wise to do this occasionally, in case of system crash.
 .PP
 .SH EXAMPLE
 .PP
@@ -66,6 +72,8 @@ this is sent to syslogd) that the configuration was re-read.
 , 
 .BR neta (1)
 , 
+.BR hwpassive (8)
+, 
 .BR dcp (1)
 and 
 .BR xd (1)
@@ -74,8 +82,8 @@ and
 .PP
 there are almost certainly bugs, please report them to me.  my email
 address is Graham Ollis <ollisg@wwa.com>, and the CORE home page is at
-http://www.wwa.com/~ollisg/core.html, which should contain up to date
-information on 
+http://www.wwa.com/~ollisg/netl/index.html, which should contain up to
+date information on 
 .B netl
 .
 .PP

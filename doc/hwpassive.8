@@ -1,0 +1,105 @@
+.ad b
+.TH hwpassive 8 "2 July 1999" "CORE software" "CORE software"
+.AT 3
+.de sh
+.br
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.PP
+.SH NAME
+.PP
+.I hwpassive
+- passively scan for, and keep a database of hardware/ip
+address mappings.
+.PP
+.SH SYNOPSIS
+.PP
+.I hwpassive
+[options] ['config rule'] [...]
+.PP
+.SH DESCRIPTION
+.PP
+.I hwpassive
+is a program for gathering hardware/ip address mappings.  
+it is implemented as a 
+.BR netl (8)
+module and 
+.BR perl (1)
+script front
+end.  when 
+.I hwpassive
+sees a hardware address it has not seen before,
+or if the existing mapping is different, then it will send it to syslogd
+(default) or stdout (with the --background option).
+.PP
+.I hwpassive
+writes its database to /usr/local/lib/netl/hwpassive on
+exit, or if you send it the 
+.BR dcp (1)
+message "hwpassive:write", ie:
+.PP
+% hwpassive
+.PP
+% dcp "hwpassive:write"
+.PP
+.SH OPTIONS
+.PP
+.I hwpassive
+takes the same options and config rules as 
+.BR netl (8)
+.
+.PP
+.SH SEE ALSO
+.PP
+.BR netl (8)
+, 
+.BR netl.conf (5)
+, 
+.BR netlcc (1)
+, 
+.BR netl_install (1)
+,
+.BR netl_module (1)
+, 
+.BR neta (1)
+, 
+.BR hwpassive (8)
+, 
+.BR dcp (1)
+and 
+.BR xd (1)
+.PP
+.SH BUGS
+.PP
+there are almost certainly bugs, please report them to me.  my email
+address is Graham Ollis <ollisg@wwa.com>, and the CORE home page is at
+http://www.wwa.com/~ollisg/netl/index.html, which should contain up to
+date information on 
+.B netl
+.
+.PP
+.SH COPYING
+.PP
+Copyright 1996, 1997, 1999 Graham THE Ollis
+.PP
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+.PP
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License for more details.
+.PP
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+675 Mass Ave, Cambridge, MA 02139, USA.
+.PP
+.PP
+.SH AUTHOR
+.PP
+Graham THE Ollis <ollisg@wwa.com>

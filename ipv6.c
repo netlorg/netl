@@ -23,6 +23,8 @@
 |  26 jun 99  G. Ollis	created module
 |=============================================================================*/
 
+/* please NOTE: this is unfinished.  it is UNLIKELY that any of this works yet */
+
 #include "netl/global.h"
 #include "netl/ether.h"
 #include "netl/ip.h"

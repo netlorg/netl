@@ -26,10 +26,10 @@
 	(c->check_dst_hw_not && memcmp(c->dst_hw_not, dg, 6) == 0)
 
 #define ip_packets \
-	(c->check_src_ip && c->src_ip != ip->saddr)		||\
-	(c->check_dst_ip && c->dst_ip != ip->daddr)		||\
-	(c->check_src_ip_not && c->src_ip_not == ip->saddr)	||\
-	(c->check_dst_ip_not && c->dst_ip_not == ip->daddr) 
+	(c->check_src_ip && c->src_ip != (ip->saddr & c->src_ip_mask))	||\
+	(c->check_dst_ip && c->dst_ip != (ip->daddr & c->dst_ip_mask))	||\
+	(c->check_src_ip_not && c->src_ip_not == (ip->saddr & c->src_ip_not_mask))	||\
+	(c->check_dst_ip_not && c->dst_ip_not == (ip->daddr & c->dst_ip_not_mask)) 
 
 #define ip6_packets \
 	(c->check_src_ip6 && memcmp(&c->src_ip6, &ip->saddr, 16)!=0)	||\

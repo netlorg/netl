@@ -26,5 +26,6 @@
 
 unsigned char *readentire(char *fn, size_t *size, size_t max, char *prog);
 void dumpdata(unsigned char *data, size_t size);
+void dumpdatafile(unsigned char *data, size_t size, FILE *fp);
 
 #endif

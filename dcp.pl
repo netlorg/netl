@@ -30,15 +30,15 @@
 use Socket;
 
 while(defined $ARGV[0] and $ARGV[0] =~ m/^-/) {
-  $option = shift @ARGV;
-  if($option eq '-o') {
-    $old = 1;
-  }
+	$option = shift @ARGV;
+	if($option eq '-o') {
+		$old = 1;
+	}
 }
 
 if($#ARGV == -1) {
-  print STDERR "usage: $0 [-o] message [port]\n";
-  exit 2;
+	print STDERR "usage: $0 [-o] message [port]\n";
+	exit 2;
 }
 
 $message = shift @ARGV;
@@ -46,21 +46,21 @@ $port = shift @ARGV || 47;
 $len = length $message; 
 
 if(defined $old) {
-  $data = pack 'Nn', $$, $len;
-  $pid = open(NC, "|nc -u localhost $port");
-  print NC $data;
-  print NC $message;
-  kill $pid;
+	$data = pack 'Nn', $$, $len;
+	$pid = open(NC, "|nc -u localhost $port");
+	print NC $data;
+	print NC $message;
+	kill $pid;
 } else {
-  $data = pack "Nna$len", $$, $len, $message;
-  $proto = getprotobyname('udp') ||
-	die "getprotobyname(): $!\n";
-  socket(Socket_Handle, PF_INET, SOCK_DGRAM, $proto) ||
-	die "socket(): $!\n";
-  $iaddr = gethostbyname('localhost') ||
-	die "gethostbyname(): $!\n";
-  $sin = sockaddr_in($port, $iaddr) ||
-	die "sockaddr_in(): $!\n";
-  send(Socket_Handle, $data, 0, $sin) ||
-	die "send(): $!\n";
+	$data = pack "Nna$len", $$, $len, $message;
+	$proto = getprotobyname('udp') ||
+		die "getprotobyname(): $!\n";
+	socket(Socket_Handle, PF_INET, SOCK_DGRAM, $proto) ||
+		die "socket(): $!\n";
+	$iaddr = gethostbyname('localhost') ||
+		die "gethostbyname(): $!\n";
+	$sin = sockaddr_in($port, $iaddr) ||
+		die "sockaddr_in(): $!\n";
+	send(Socket_Handle, $data, 0, $sin) ||
+		die "send(): $!\n";
 }

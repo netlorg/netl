@@ -6,7 +6,7 @@
 
 #H NAME
 
-i<netlcc> - convert i<netl> configuration files into i<netl> modules
+i<netlcc> - convert i<netl> configuration files into i<netl> modules / i<gcc> front end for i<netl> modules
 
 #H SYNOPSIS
 

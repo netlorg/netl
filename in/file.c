@@ -49,7 +49,14 @@ grab(char *buf)
 	char buffer[1024];
 	long len,r;
 
-	gets(buffer); len = strlen(buffer);
+	buffer[0] = 0;
+	while(buffer[0] == 0) {
+		if(feof(stdin)) {
+			log("input file EOF");
+			exit(1);
+		}
+		gets(buffer); len = strlen(buffer);
+	}
 	if(buffer[len] == '\n')
 		buffer[len--]=0;
 	fp = fopen(buffer, "r");
@@ -57,6 +64,7 @@ grab(char *buf)
 		err("could not open \"%s\"!", buffer);
 		exit(1);
 	}
+	buffer[0] = 0;
 	fseek(fp, 0, SEEK_END);
 	len = ftell(fp);
 	fseek(fp, 0, SEEK_SET);

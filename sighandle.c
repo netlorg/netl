@@ -99,3 +99,16 @@ sig_handler(int sig)
 	exit(1);
 }
 
+/*==============================================================================
+| it's the clean up function!  it really doesn't need to do much so...
+| (btw- clo is the name of the planet the decepticons invaded shortly after 
+| the battle with unicron.  the autobots initially sustained incredable 
+| losses, optimus prime returns and turns the tide with the help of the 
+| "last autobot".  however, this has nothing to do with the clean up function)
+|=============================================================================*/
+
+void cleanup()
+{
+	clo();
+}
+

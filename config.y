@@ -23,6 +23,7 @@
 |  Date       Name	Revision
 |  ---------  --------  --------
 |  26 Mar 99  G. Ollis	Created module
+|  02 Jul 99  G. Ollis	added bitmask support for ip addresses (ie. x.x.0.0/16)
 |=============================================================================*/
 
 #include <string.h>
@@ -265,25 +266,39 @@ fld :		op_not FLD_NAME str
 					memcpy(&(ci.dst_ip6), &$<ip6a>3, 16);
 				}
 			}
-	|	op_not FLD_DSTIP str
+	|	op_not FLD_DSTIP str op_bitmask
 			{
+				u32 mask = $<x.i>4;
 				if($<x.i>1) {
-					ci.check_dst_ip_not = modifyip(
-						&ci.dst_ip_not, $<x.s>3);
+					if((ci.check_dst_ip_not = modifyip(
+						&ci.dst_ip_not, $<x.s>3))) {
+						ci.dst_ip_not_mask = mask;
+						ci.dst_ip_not &= mask;
+					}
 				} else {
-					ci.check_dst_ip = modifyip(
-						&ci.dst_ip, $<x.s>3);
+					if((ci.check_dst_ip = modifyip(
+						&ci.dst_ip, $<x.s>3))) {
+						ci.dst_ip_mask = mask;
+						ci.dst_ip &= mask;
+					}
 				}
 				free($<x.s>3);
 			}
-	|	op_not FLD_SRCIP str
+	|	op_not FLD_SRCIP str op_bitmask
 			{
+				u32 mask = $<x.i>4;
 				if($<x.i>1) {
-					ci.check_src_ip_not = modifyip(
-						&ci.src_ip_not, $<x.s>3);
+					if((ci.check_src_ip_not = modifyip(
+						&ci.src_ip_not, $<x.s>3))) {
+						ci.src_ip_not_mask = mask;
+						ci.src_ip &= mask;
+					}
 				} else {
-					ci.check_src_ip = modifyip(
-						&ci.src_ip, $<x.s>3);
+					if((ci.check_src_ip = modifyip(
+						&ci.src_ip, $<x.s>3))) {
+						ci.src_ip_mask = mask;
+						ci.src_ip &= mask;
+					}
 				}
 				free($<x.s>3);
 			}
@@ -363,11 +378,32 @@ fld :		op_not FLD_NAME str
 			}
 	;
 
+op_bitmask :	'/' CON_INT	
+			{
+				int num = $<x.i>2;
+				int mask = 0xffffffff << (32-num);
+				free($<x.s>2);
+				/*log("num:%d, mask:%x", num, mask);*/
+				$<x.i>$ = htonl(mask);
+			}
+	|	'/' '(' CON_INT '.' CON_INT '.' CON_INT '.' CON_INT ')'
+			{
+				u32 i;  char ip[4];
+				ip[0] = $<x.i>3; free($<x.s>3);
+				ip[1] = $<x.i>5; free($<x.s>5);
+				ip[2] = $<x.i>7; free($<x.s>7);
+				ip[3] = $<x.i>9; free($<x.s>9);
+				memcpy(&i, ip, 4);
+				$<x.i>$ = i;
+			}
+	|			{ $<x.i>$ = htonl(0xffffffff); }
+	;
+
 op_not :	'!'	{ $<x.i>$ = 1; }
 	|		{ $<x.i>$ = 0; }
 	;
 
-flgs :		flgs ',' flg	{ $<i>$ = $<i>1 & $<i>3; }
+flgs :		flgs ',' flg	{ $<i>$ = $<i>1 | $<i>3; }
 	|	flg		{ $<i>$ = $<i>1; }
 	;
 
@@ -666,7 +702,6 @@ modifyip(u32 *num, char *name)
 	u8	*tmp = (char *) num;
 	char	*buff, *element;
 	int	i=0;
-/*	struct hostent *herhost;*/
 
 	if((*num=searchbyname(name))!=0) {
 		return TRUE;
@@ -679,11 +714,6 @@ modifyip(u32 *num, char *name)
 		while(i < 4) {
 			if(element == NULL) {
 
-/* ieee! 
-	if((herhost = gethostbyname(name)) != NULL) {
-		num = (u32 *) herhost->h_addr_list[0];
-		return TRUE;
-	}*/
 				err("warning: could not parse ip address %s (line %d)",
 					name, line_number);
 				return FALSE;

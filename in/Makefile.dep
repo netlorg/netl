@@ -1,0 +1,16 @@
+stub.o: \
+	../include/netl/global.h \
+	../include/netl/io.h \
+	../include/netl/ether.h \
+	../include/netl/grab.h 
+pcap.o: 
+linux-ether.o: \
+	../include/netl/global.h \
+	../include/netl/io.h \
+	../include/netl/ether.h \
+	../include/netl/grab.h 
+file.o: \
+	../include/netl/global.h \
+	../include/netl/io.h \
+	../include/netl/ether.h \
+	../include/netl/ip.h 

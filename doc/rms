@@ -1,14 +1,87 @@
 #!/usr/bin/perl -w
 
+$version = shift @ARGV;
+
+open(INDEX, '>index.html') || die "unable to write to index.html $!";
+
+$line = "<center><img src=coreLine.gif alt=
+\"----------------------------------------------------------------------\">
+</center>\n";
+
+print INDEX "<html><head><title>CORE software : netl homepage</title></head>
+<body bgcolor=#f1f1f1 text=#000000 link=#0000ff vlink=#9090ff>
+<h2>CORE software : netl homepage</h2>
+
+<p><i>netl</i> intended to be a customizable low level network logger.</p>
+
+<p><i>netl</i> can be configured to look for particular TCP, UDP or ICMP
+packets, or can be setup to look for generic IP packets or even raw
+ethernet frames.</p>
+
+<p>For example, <i>netl's</i> TCP filters allow individual SYNs and ACKs
+(or any combination of flags) to be logged into syslogd or stdout, or
+dumped into a file for later perusal.  the companion program <a
+href=neta.1.html>neta (1)</a> is used to disassemble those packets in a
+human readable form.</p>
+
+$line
+
+<h3>netl source code</h3>
+
+<p>The latest version of netl is $version.  For more information on
+recent advances in the netl source base, consult the <a
+href=HISTORY>HISTORY</a> file.
+
+<ul><li><a href=netl-$version.tar.gz>netl-$version.tar.gz</a></ul>
+
+$line
+
+<h3>netl documentation</h3>
+
+<p>It's best to start out with the main daemon <a
+href=netl.8.html>netl(8)</a>, unless you haven't managed to install
+netl yet, in which case it's best to start with the <a
+href=netl_install.1.html>install guide</a>.  The newest, and most
+exciting new features for netl are the new <a
+href=netl_module.1.html>netl modules</a> and <a href=netlcc.1.html>netl
+compiler</a>.  Modules are considered stable, netl 1.02 and later are
+module based.  The compiler is experimental, but useable.</p>
+
+<ul>
+";
+
+$tail_text = "
+$line
+<center>
+[
+<a href=..>Tarquin Hill</a> |
+<a href=../core.html>CORE</a> |
+<a href=index.html>netl</a>
+]
+</center>
+$line
+<address><center>
+<a href=../bio.html>ollisg</a>
+(<a href=mailto:ollisg\@wwa.com>mail</a>)
+</center></address>
+<center><h6>
+<img src=copyright.gif alt=\"(c)\"> 1999 CORE software international
+</h6></center>
+</body></html>\n\n";
+
 for(@ARGV) {
 	$filename = $_;
 	($root = $filename) =~ s/\.rms//i;
 
 	my $title = ''; my $section = 1;  my $header = ''; my $tail = '';  my $line = 0;
 
-	open(FP, $filename);
-	open(TXT, ">$root.txt");
-	open(MAN, ">$root");
+	open(FP, $filename) || die "unable to read $filename $!";
+	open(TXT, ">$root.txt") || die "unable to write to $root.txt $!";
+	open(MAN, ">$root") || die "unable to write to $root";
+	open(HTML, ">$root.html") || die "unable to write $root.html";
+	$html = '';
+	$html_toc = '';
+	$section_number = 0;
 
 	while(<FP>) {
 		chomp;
@@ -21,11 +94,16 @@ for(@ARGV) {
 		if(/^#EXEC (.*)$/) { $filename = "$1.rms"; $line = 0; open(FP, "$1.rms") || die "unable to open $1.rms $!"; next; }
 
 		if(/^#INCLUDE (.*)$/) {
-			open(FRED, $1);
+			open(FRED, $1) || die "unable to read $1 $!";
 			print MAN ".nf\n";
+			$html .= "\n\n<pre>";
 			while(<FRED>) {
-				print MAN "$_"; print TXT;
+				print MAN; print TXT;  
+				($tmp47 = $_) =~ s!\&!&amp;!g;
+				$tmp47 =~ s!\<!&lt;!g;
+				$html .= $tmp47;
 			}
+			$html .= "</pre>\n\n";
 			print MAN ".fi\n";
 			next;
 		}
@@ -41,6 +119,9 @@ for(@ARGV) {
 \\fB\\\\\$1\\fR
 .PP
 ..\n";
+			print HTML "<html><head><title>$header : $title($section)</title></head>
+<body bgcolor=#f1f1f1 text=#000000 link=#0000ff vlink=#9090ff>
+<h2>$header : $title($section)</h2>\n";
 			print TXT "$title\($section\)
 $header
 $tail";
@@ -52,6 +133,13 @@ $tail";
 		if(/^#H (.*)$/) {
 			print MAN ".SH $1\n";
 			print TXT "\n$1\n";
+			$section_number++;
+			$html .= "<a name=sec$section_number><h3>$1</h3>\n\n";
+			$html_toc .= "  <li><a href=#sec$section_number>$1</a>\n";
+			if($1 eq 'NAME') {
+				print INDEX "  <li><a href=$root.html>$title($section)</a>\n";
+				$go_name = 1;
+			}
 			next;
 		}
 
@@ -60,23 +148,38 @@ $tail";
 		if($_ eq '') {
 			print MAN ".PP\n";
 			print TXT "\n";
+			$html .= "<p>\n";
 			next;
 		}
 
 		($man = $_) =~ s/i\<(.*?)\>\s*/\n.I $1\n/mg;
 		$man =~ s/b\<(.*?)\>\s*/\n.B $1\n/mg;
 		$man =~ s/sa\<(.*?)\>\((.*?)\)\s*/\n.BR $1 ($2)\n/mg;
+		($tmp = $_) =~ s!i\<(.*?)\>\s*! <i>$1</i> !mg;
+		$tmp =~ s!b\<(.*?)\>\s*! <b>$1</b> !mg;
+		$tmp =~ s!sa\<(.*?)\>\((.*?)\)\s*! <a href=$1.$2.html>$1 ($2)</a> !mg;
+		$tmp =~ s!\b(http://.*?)\s!<a href=$1>$1</a>!mg;
 		($txt = $_) =~ s/[ib]\<(.*?)\>/$1/mg;
 		$txt =~ s/sa\<(.*?)\>/$1/mg;
 
 
 		chomp($man);
 		$man =~ s/^\n//gm;
+		$html .= "$tmp\n";
 
 		warn "$filename:$line:newline" if $_ =~ /\n/m;
 		warn "$filename:$line:blank" if $_ eq '';
 
 		print MAN "$man\n";
 		print TXT "$txt\n";
+		if($go_name) {
+			($tmp2 = $tmp) =~ s/^.*?-//;
+			print INDEX "$tmp2\n";
+			$go_name = 0;
+		}
 	}
+
+	print HTML "<h3>table of content</h3>\n<ul>\n$html_toc\n</ul>\n$html\n$tail_text";
 }
+
+print INDEX "</ul>$tail_text";

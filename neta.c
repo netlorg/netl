@@ -25,7 +25,7 @@
 |			moved read() and dumpdata() to dump.c
 |=============================================================================*/
 
-char	*id = "@(#)neta (c) 1997 graham the ollis <ollisg@wwa.com>";
+static char	*id = "@(#)neta (c) 1997 graham the ollis <ollisg@wwa.com>";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -186,6 +186,7 @@ printip(u8 *buff)
 			printf("unknown [%02x]\n", ip->protocol);
 			printaddr(buff);
 			break;
+
 	}  
 
 	return doff;
@@ -272,7 +273,7 @@ printicmp(u8 *buff, size_t len)
 
 	printf("  code:              %02d ", icmp->code);
 	for(i=0; i<MAXICMPCODE; i++) {
-		if(icmptype[i].index == icmp->type) {
+		if(icmpcode[i].index == icmp->code) {
 			fputs(icmpcode[i].name, stdout);
 			putchar(' ');
 		}
