@@ -31,16 +31,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "global.h"
+#include "netl/global.h"
 
-#include "resolve.h"
-#include "options.h"
-#include "io.h"
+#include "netl/resolve.h"
+#include "netl/options.h"
+#include "netl/io.h"
 
 typedef struct lt {
-  u32 ip;				/* ip number: x.x.x.x		*/
-  struct lt *next;			/* next node			*/
-  char *name;				/* hostname			*/
+	u32 ip;				/* ip number: x.x.x.x		*/
+	struct lt *next;			/* next node			*/
+	char *name;				/* hostname			*/
 } listtype;
 
 static listtype *cache = NULL;
@@ -50,6 +50,54 @@ char *search(u32 ip);
 int resolveHostnames=TRUE;
 
 /*==============================================================================
+| alias_dump() - for the netl compiler
+|=============================================================================*/
+
+void
+reverse_dump(FILE *fp, listtype *l)
+{
+	if(l == NULL)
+		return;
+	reverse_dump(fp, l->next);
+	{
+		u8 *ptr;
+
+		ptr = (u8 *) &l->ip;
+		fprintf(fp, "\taddip(\"%s\", %u); /* %u.%u.%u.%u */ \n", 
+				l->name, l->ip,
+				ptr[0], ptr[1], ptr[2], ptr[3]);
+	}
+}
+
+void
+alias_dump(FILE *fp)
+{
+	reverse_dump(fp, cache);
+}
+
+/*==============================================================================
+| printalias()
+|=============================================================================*/
+
+void
+printalias(void)
+{
+	listtype *tmp;
+	char *c;
+
+	printf("debug ip cache========================\n");
+
+	tmp = cache;
+	while(tmp != NULL) {
+		c = (char *) &tmp->ip;
+		printf("%s => %d.%d.%d.%d\n", 
+			tmp->name,
+			c[0], c[1], c[2], c[3]);
+		tmp = tmp->next;
+	}
+}
+
+/*==============================================================================
 | addip();
 | add an ip/hostname to the search stack.  this is handy for local aliases.
 |=============================================================================*/
@@ -57,17 +105,17 @@ int resolveHostnames=TRUE;
 char *
 addip(const char *s, u32 ip)
 {
-  listtype	*tmp;
-  int		len;
+	listtype	*tmp;
+	int		len;
 
-  tmp = (listtype *) allocate(sizeof(listtype));
-  tmp->name = (char *) allocate((len = strlen(s) + 1));
-  memcpy(tmp->name, s, len);
-  tmp->ip = ip;
-  tmp->next = cache;
-  cache = tmp;
+	tmp = (listtype *) allocate(sizeof(listtype));
+	tmp->name = (char *) allocate((len = strlen(s) + 1));
+	memcpy(tmp->name, s, len);
+	tmp->ip = ip;
+	tmp->next = cache;
+	cache = tmp;
 
-  return tmp->name;
+	return tmp->name;
 }
 
 /*==============================================================================
@@ -79,31 +127,31 @@ addip(const char *s, u32 ip)
 char *
 ip2string(u32 ip)
 {
-  char			buff[20];
-  struct hostent *	herhost;
-  u8 			*tmp = NULL;
+	char			buff[20];
+	struct hostent *	herhost;
+	u8 			*tmp = NULL;
 
-  if(!resolveHostnames) {
-    tmp = (char *) &ip;
-    sprintf(buff, "%d.%d.%d.%d", tmp[0], tmp[1], tmp[2], tmp[3]);
-    return addip(buff, ip);
-  }
+	if(!resolveHostnames) {
+		tmp = (char *) &ip;
+		snprintf(buff, 20, "%d.%d.%d.%d", tmp[0], tmp[1], tmp[2], tmp[3]);
+		return addip(buff, ip);
+	}
 
-  if((tmp=search(ip)) != NULL)
-    return tmp;
+	if((tmp=search(ip)) != NULL)
+		return tmp;
 
-  tmp = (char *) &ip;
-  sprintf(buff, "%d.%d.%d.%d", tmp[0], tmp[1], tmp[2], tmp[3]);
-  if(
-     ((herhost = gethostbyname(buff)) != NULL) &&
-     ((herhost = gethostbyaddr(herhost->h_addr_list[0], 
-                          herhost->h_length,
+	tmp = (char *) &ip;
+	snprintf(buff, 20, "%d.%d.%d.%d", tmp[0], tmp[1], tmp[2], tmp[3]);
+	if(
+		 ((herhost = gethostbyname(buff)) != NULL) &&
+		 ((herhost = gethostbyaddr(herhost->h_addr_list[0], 
+													herhost->h_length,
 			  herhost->h_addrtype)) != NULL)
-    ) 
-    return addip(herhost->h_name, ip);
+		) 
+		return addip(herhost->h_name, ip);
 
-  /* ELSE */
-  return addip(buff, ip);
+	/* ELSE */
+	return addip(buff, ip);
 }
 
 /*==============================================================================
@@ -115,14 +163,14 @@ ip2string(u32 ip)
 char *
 search(u32 ip) 
 {
-  listtype *tmp;
+	listtype *tmp;
 
-  for(tmp = cache; tmp != NULL; tmp = tmp->next) 
-    if(ip == tmp->ip) 
-      return tmp->name;
+	for(tmp = cache; tmp != NULL; tmp = tmp->next) 
+		if(ip == tmp->ip) 
+			return tmp->name;
 
-  /* else */
-  return NULL;
+	/* else */
+	return NULL;
 }
 
 /*==============================================================================
@@ -132,14 +180,14 @@ search(u32 ip)
 u32
 searchbyname(char *name) 
 {
-  listtype *tmp;
+	listtype *tmp;
 
-  for(tmp = cache; tmp != NULL; tmp = tmp->next) 
-    if(!strcmp(name, tmp->name)) 
-      return tmp->ip;
+	for(tmp = cache; tmp != NULL; tmp = tmp->next) 
+		if(!strcmp(name, tmp->name)) 
+			return tmp->ip;
 
-  /* else */
-  return 0;
+	/* else */
+	return 0;
 }
 
 /*==============================================================================
@@ -148,17 +196,17 @@ searchbyname(char *name)
 |=============================================================================*/
 
 void
-clearipcache()
+clearipcache(void)
 {
-  listtype *tmp1, *tmp2;
+	listtype *tmp1, *tmp2;
 
-  tmp1 = cache;
-  while(tmp1 != NULL) {
-    tmp2 = tmp1->next;
-    free(tmp1->name);
-    free(tmp1);
-    tmp1 = tmp2;
-  }
+	tmp1 = cache;
+	while(tmp1 != NULL) {
+		tmp2 = tmp1->next;
+		free(tmp1->name);
+		free(tmp1);
+		tmp1 = tmp2;
+	}
 
-  cache = NULL;
+	cache = NULL;
 }

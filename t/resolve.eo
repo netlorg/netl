@@ -12,7 +12,7 @@ IP:
   frag offset        0000
   time to live       40
   protocol           icmp
-  LOCALHOST => LOCALHOST
+  localhost => localhost
   type:              echo
   code:              00 frag_needed 
   id:                d007

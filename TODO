@@ -1,10 +1,13 @@
  * hwpassive program to passivly get hardware => IP mappings
  * implement a dgprintf function 
  * add ipx protocol
- * add igmp protocol
+ * add igmp protocol (a proper implementation)
  * add arp protocol
  * PPP interface
  * win32 port
- * use lex/yacc instead of config.c
  * write/use a loadable kernel module which filters packets for me
  * add -lpcap support just for the fun of it
+ * need to redocument :)
+ * change internal rule format; allow more than one dstip per line, etc.
+ * implement braces {} and inclusive or ||
+ * integrity check on location of IP subheader.

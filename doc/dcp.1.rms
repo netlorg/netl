@@ -1,0 +1,35 @@
+#TITLE dcp
+#SECTION 1
+#HEAD CORE software
+#TAIL 18 June 1999
+#START
+
+#H NAME
+
+i<dcp> - discrete communication protocol client.
+
+#H SYNOPSIS
+
+i<dcp> message [port]
+
+#H DESCRIPTION
+
+i<dcp> is a way of passing messages to sa<netl>(8) and related programs.  
+in the case of sa<netl>(8) there is currently only one message you can
+send it.  "netl:readconfig" will order sa<netl>(8) (if it's listening,
+see the man page for details on the i<listen> directive) to terminate
+it's current configuration and read the netl.conf file again.  this is
+handy if you make modifications to netl.conf while sa<netl>(8) is
+running.
+
+#H EXAMPLE
+
+run sa<netl>(8) with the listen directive, then type this, as a ordinary
+user:
+
+% dcp "netl:readconfig"
+
+if it worked, then there should be a note in the netl output (typically,
+this is sent to syslogd) that the configuration was re-read.
+
+#EXEC tail

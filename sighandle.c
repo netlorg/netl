@@ -32,10 +32,10 @@
 #include <signal.h>
 #include <stdio.h>
 
-#include "global.h"
+#include "netl/global.h"
 
-#include "sighandle.h"
-#include "io.h"
+#include "netl/sighandle.h"
+#include "netl/io.h"
 
 /*==============================================================================
 | handle();
@@ -45,29 +45,29 @@
 void
 handle()
 {
-  void	(*old_handler)();
+	void	(*old_handler)();
 
-  old_handler = signal(SIGTERM, &sig_handler);
-  if(old_handler == SIG_ERR)
-    err("unable to replace SIGTERM handler TERM");
+	old_handler = signal(SIGTERM, &sig_handler);
+	if(old_handler == SIG_ERR)
+		err("unable to replace SIGTERM handler TERM");
 
-  old_handler = signal(SIGQUIT, &sig_handler);
-  if(old_handler == SIG_ERR)
-    err("unable to replace SIGQUIT handler TERM");
+	old_handler = signal(SIGQUIT, &sig_handler);
+	if(old_handler == SIG_ERR)
+		err("unable to replace SIGQUIT handler TERM");
 
-  old_handler = signal(SIGHUP, &sig_handler);
-  if(old_handler == SIG_ERR)
-    err("unable to replace SIGHUP handler TERM");
+	old_handler = signal(SIGHUP, &sig_handler);
+	if(old_handler == SIG_ERR)
+		err("unable to replace SIGHUP handler TERM");
 
-  old_handler = signal(SIGINT, &sig_handler);
-  if(old_handler == SIG_ERR)
-    err("unable to replace SIGINT handler TERM");
+	old_handler = signal(SIGINT, &sig_handler);
+	if(old_handler == SIG_ERR)
+		err("unable to replace SIGINT handler TERM");
 
-  old_handler = signal(SIGSEGV, &sig_handler);
-  if(old_handler == SIG_ERR)
-    err("unable to replace SIGSEGV handler TERM");
+	old_handler = signal(SIGSEGV, &sig_handler);
+	if(old_handler == SIG_ERR)
+		err("unable to replace SIGSEGV handler TERM");
 
-  log("signal handler installed");
+	log("signal handler installed");
 }
 
 /*==============================================================================
@@ -81,24 +81,21 @@ void cleanup();		/* somewhere else, not quite as much of a hack */
 void
 sig_handler(int sig)
 {
-  switch(sig) {
-    case SIGTERM : log("termination signal"); break;
-    case SIGTRAP : log("trace/breakpoint trap"); break;
-    case SIGQUIT : log("keyboard quit"); break;
-    case SIGHUP  : log("hangup detected"); break;
-    case SIGINT  : log("interupt from keyboard"); break;
+	switch(sig) {
+		case SIGTERM : log("termination signal"); break;
+		case SIGTRAP : log("trace/breakpoint trap"); break;
+		case SIGQUIT : log("keyboard quit"); break;
+		case SIGHUP  : log("hangup detected"); break;
+		case SIGINT  : log("interupt from keyboard"); break;
 
-    case SIGSEGV : 
-      if(line != 0) 
-        log("invalid memory refrence (line %d)", line); 
-      else
-        log("invalid memory refrence");
-      break;
+		case SIGSEGV : 
+				log("invalid memory refrence");
+			break;
 
-    default: break;
-  }
-  err("caught signal %d, die", sig);
-  cleanup();
-  exit(1);
+		default: break;
+	}
+	err("caught signal %d, die", sig);
+	cleanup();
+	exit(1);
 }
 

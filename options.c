@@ -26,18 +26,32 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "global.h"
-#include "config.h"
-#include "options.h"
-#include "io.h"
+#include "netl/global.h"
+#include "netl/ether.h"
+#include "netl/ip.h"
+#include "netl/netl.h"
+#include "netl/global.h"
+#include "netl/filter.h"
+#include "netl/action.h"
+#include "netl/config.h"
+#include "netl/options.h"
+#include "netl/io.h"
 
 /*==============================================================================
 | global "options" 
 |=============================================================================*/
 
+char *so_path_default = "/usr/local/lib/netl";
+char *so_path = "/usr/local/lib/netl";
+char *grab_module_name = "default";
+char *dump_dir = "/usr/local/lib/netl/dump";
+
 int displayVersion = TRUE;
+int useIPv6 = FALSE;
 int debug_mode = FALSE;
-char netdevice[255] = "eth0";
+int output_mode = 0;
+char *output_name = "userfilter.c";
+char *netdevice = "eth0";
 
 char *configfile = NETL_CONFIG;
 
@@ -50,11 +64,11 @@ char *configfile = NETL_CONFIG;
 void
 openteefile(char *s)
 {
-  teefile = fopen(s, "a");
-  if(teefile == NULL) {
-    fprintf(stderr, "%s: error opening %s for append\n", prog, s);
-    exit(1);
-  }
+	teefile = fopen(s, "a");
+	if(teefile == NULL) {
+		fprintf(stderr, "%s: error opening %s for append\n", prog, s);
+		exit(1);
+	}
 }
 #endif
 
@@ -66,58 +80,116 @@ openteefile(char *s)
 void
 parsecmdline(int argc, char *argv[])
 {
-  while(--argc > 0) {
-    argv++;
-    if(argv[0][0] == '-') 
+	while(--argc > 0) {
+		argv++;
+		if(argv[0][0] == '-') {
 
-      /*========================================================================
-      | it's an option
-      |=======================================================================*/
+			/*========================================================================
+			| it's an option
+			|=======================================================================*/
 
-      switch(argv[0][1]) {
+			if(argv[0][1] == '-') {		/* long options... */
+				if(!strcmp("--forground", argv[0]))
+					noBackground = 1;
+				else if(!strcmp("--background", argv[0]))
+					noBackground = 0;
+				else if(!strcmp("--resolve", argv[0]))
+					resolveHostnames = 1;
+				else if(!strcmp("--dont-resolve", argv[0]))
+					resolveHostnames = 0;
+				else if(!strcmp("--debug", argv[0]))
+					debug_mode = 1;
+				else if(!strcmp("--tee", argv[0])) {
+					openteefile(argv[1]); argv[1] = "-";
+					argv++;  argc--;
+				} else if(!strcmp("--help", argv[0])) {
+					printusage();
+					exit(1);
+				} else if(!strcmp("--file", argv[0])) {
+					configfile = argv[1]; argv[1] = "-";
+					argv++;  argc--;
+				} else if(!strcmp("--lib-dir", argv[0])) {
+					so_path = argv[1]; argv[1] = "-";
+					argv++;  argc--;
+				} else if(!strcmp("--input", argv[0])) {
+					grab_module_name = argv[1]; 
+					argv[1] = "-";
+					argv++;  argc--;
+				} else if(!strcmp("--generate-c", argv[0])) {
+					output_mode = OUT_MODE_C;
+				} else if(!strcmp("--stdout", argv[0])) {
+					output_mode = OUT_MODE_C;
+					output_name = "-";
+				} else if(!strcmp("--output-name", argv[0])) {
+					output_name = argv[1]; argv[1] = "-";
+					argv++; argc--;
+				} else if(!strcmp("--dump-dir", argv[0])) {
+					dump_dir = argv[1]; argv[1] = "-";
+					argv++; argc--;
+				} else
+					fprintf(stderr, "%s: warning: unknown option %s, use -h for help\n",
+									prog, argv[0]);
+			} else switch(argv[0][1]) {
 
-#ifndef NO_SYSLOGD
-        case 'z' :
-          noBackground = booleanValue(argv[0][2]);
-	  break;
-#endif
 
-#ifndef NO_TEEOUT
-	case 'o' :
-          openteefile(&argv[0][2]);
-	  break;
-#endif
+				#ifndef NO_SYSLOGD
+					case 'z' :
+						noBackground = booleanValue(argv[0][2]);
+					  break;
+				#endif
 
-        case 'v' :
-          displayVersion = booleanValue(argv[0][2]);
-          break;
+				#ifndef NO_TEEOUT
+					case 'o' :
+						openteefile(&argv[0][2]);
+						break;
+				#endif
 
-        case 'r' :
-          resolveHostnames = booleanValue(argv[0][2]);
-          break;
+				case 'v' :
+					displayVersion = booleanValue(argv[0][2]);
+					break;
 
-        case 'f' :
-          if(argv[0][2] == 0)
-            configfile = NULL;
-          else
-            configfile = &argv[0][2];
-          break;
+				case '6' :
+					useIPv6 = booleanValue(argv[0][2]);
+					break;
 
-        case 'h' :
-          printusage();
-          exit(1);
+				case 'r' :
+					resolveHostnames = booleanValue(argv[0][2]);
+					break;
 
-	case 'd' :
-	  debug_mode = 1;
-	  break;
+				case 'f' :
+					if(argv[0][2] == 0)
+						configfile = NULL;
+					else
+						configfile = &argv[0][2];
+					break;
 
-        default :
-          fprintf(stderr, "%s: warning: unknown option %s, use -h for help\n",
-                  prog, argv[0]);
-          break;
+				case 'L' :
+					if(argv[0][2] == 0)
+						so_path = so_path_default;
+					else
+						so_path = &argv[0][2];
+					break;
 
-      }
-  }
+				case 'i' :
+					grab_module_name = &argv[0][2];
+					break;
+
+				case 'h' :
+					printusage();
+					exit(1);
+
+				case 'd' :
+					debug_mode = booleanValue(argv[0][2]);
+					break;
+
+				default :
+					fprintf(stderr, "%s: warning: unknown option %s, use -h for help\n",
+									prog, argv[0]);
+					break;
+
+			}
+		}
+	}
 }
 
 /*==============================================================================
@@ -128,17 +200,17 @@ parsecmdline(int argc, char *argv[])
 int
 booleanValue(char c)
 {
-  switch(c) {
-    case '+' : case 0 :
-      return TRUE;
+	switch(c) {
+		case '+' : case 0 :
+			return TRUE;
 
-    case '-' :
-      return FALSE;
+		case '-' :
+			return FALSE;
 
-    default :
-      fprintf(stderr, "%s: warning: boolean options should be followed by + or -\n", prog);
-      return TRUE;
-  }
+		default :
+			fprintf(stderr, "%s: warning: boolean options should be followed by + or -\n", prog);
+			return TRUE;
+	}
 }
 
 /*==============================================================================
@@ -148,26 +220,43 @@ booleanValue(char c)
 void
 printusage()
 {
-  puts("usage: netl [options] [requirements]
+	puts("usage: netl [options] [requirements]
 usage: neta [options] [datagram-file]
 
 where options can be any of the following:
--v   display version number copyright information [on]
--r   resolve IP numbers to hostname [on]
--f   set config file [/etc/netl.conf]
--d   print out configeration and DON\'T run (debug option)
--h   this help message");
+-v			display version number copyright information [on]
+-r, --resolve		resolve IP numbers to hostname [on]
+    --dont-resolve	do not resolve
+-f, --file		set config file [/etc/netl.conf]
+-d, --debug		print out configeration and DON\'T run (debug option)
+-h, --help		this help message
+-i, --input		module to use for input
+-L, --lib-dir		directory to load dynamic netl modules from
+    --generate-c	instead of running as a daemon process, generate c 
+			code for a netl module equivalent to the given
+			configeration.
+    --output-name	change the name of the c file output using the
+			--generate-c option.  the default is userfilter.c
+    --dump-dir		specify a directory to put the packet dumps into.
+			by default, this is /usr/local/lib/netl/dump
+    -stdout		a combination of --generate-c and --output-name which
+			sends the netl module c code to stdout.
+-6			use experimental IPv6 filters.  (off by default)\n");
 #ifndef NO_SYSLOGD
-  puts("-z   do not run in background, send all output to STDOUT and STDERR");
+	puts(
+"-z, --forground		do not run in background, send all output to STDOUT and STDERR
+    --background	run in the background, send all output to syslogd");
 #endif
 #ifndef NO_TEEOUT
-  puts("-o   send a copy of output to specified file");
+	puts(
+"-o, -tee 		send a copy of output to specified file");
 #endif
-  puts("
-defaults are in the [].  to turn off an option append a -,
-to turn on append a +.  the default is +, so to turn version
-display off, pass \"-v-\" as a command line argument.
+	puts("
+defaults are in the [].  for single character options, 
+turn off an option append a -, to turn on append a +.  
+the default is +, so to turn version display off, 
+pass \"-v-\" as a command line argument.
 
 for -f:  use -ffilename to set config file to filename, or
--f by itself to force netl not to read a config file");
+-f by itself to force netl not to read a config file.");
 }

@@ -1,0 +1,89 @@
+.ad b
+.TH neta 1 "18 June 1999" "CORE software" "CORE software"
+.AT 3
+.de sh
+.br
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.PP
+.SH NAME
+.PP
+.I neta
+- network packet analyzer
+.PP
+.SH SYNOPSIS
+.PP
+.I neta
+[options] file [...]
+.PP
+.SH DESCRIPTION
+.PP
+.I neta
+is a network packet analyzer.  it was designed to decode an IP
+packet stored as a file.  usually this will be a packet dumped by
+.BR netl (8)
+.  first the address is shown, followed by header data.  the
+final part is a hex dump, which displays offset, hex data, and character
+data. because the header data is interpreted for you, it is not included
+in the hex dump.
+.PP
+.SH OPTIONS
+.PP
+.I neta
+uses a subset of the options from 
+.BR netl (8)
+.  these include -h,
+-r and -v.  the reminder do not make sense.
+.PP
+.SH SEE ALSO
+.PP
+.BR netl (8)
+, 
+.BR netl.conf (5)
+, 
+.BR netlcc (1)
+, 
+.BR netl_install (1)
+,
+.BR netl_module (1)
+, 
+.BR neta (1)
+, 
+.BR dcp (1)
+and 
+.BR xd (1)
+.PP
+.SH BUGS
+.PP
+there are almost certainly bugs, please report them to me.  my email
+address is Graham Ollis <ollisg@wwa.com>, and the CORE home page is at
+http://www.wwa.com/~ollisg/core.html, which should contain up to date
+information on 
+.B netl
+.
+.PP
+.SH COPYING
+.PP
+Copyright 1996, 1997, 1999 Graham THE Ollis
+.PP
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+.PP
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License for more details.
+.PP
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+675 Mass Ave, Cambridge, MA 02139, USA.
+.PP
+.PP
+.SH AUTHOR
+.PP
+Graham THE Ollis <ollisg@wwa.com>

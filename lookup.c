@@ -23,9 +23,9 @@
 |  25 Feb 97  G. Ollis	.92 created module
 |=============================================================================*/
 
-#include "global.h"	/* needed for ether.h */
-#include "ether.h"
-#include "lookup.h"
+#include "netl/global.h"	/* needed for ether.h */
+#include "netl/ether.h"
+#include "netl/lookup.h"
 
 /*==============================================================================
 | for config.c
@@ -46,6 +46,30 @@ struct lookupitem icmptype[MAXICMPTYPE] =
 				{ICMP_ADDRESS,		"address"},
 				{ICMP_ADDRESSREPLY,	"addressreply"}
 			      };
+
+struct lookupitem icmp6type[MAXICMP6TYPE] = {
+				{ICMP6_DEST_UNREACH,	"dest_unreach"},
+				{ICMP6_PACKET_TOO_BIG,	"packet_too_big"},
+				{ICMP6_TIME_EXCEEDED,	"time_exceeded"},
+				{ICMP6_PARAMETER_PROB,	"parameter_prob"},
+				{ICMP6_ECHO_REQUEST,	"echo_request"},
+				{ICMP6_ECHO_REPLY,	"echo_reply"},
+				{ICMP6_GMQUERY,		"gmquery"},
+				{ICMP6_GMQUERY,		"group_management_query"},
+				{ICMP6_GMREPORT,	"gmreport"},
+				{ICMP6_GMREPORT,	"group_management_report"},
+				{ICMP6_GMREDUCTION,	"gmreduction"},
+				{ICMP6_GMREDUCTION,	"group_management_reduction"},
+				{ICMP6_ROUTER_SOLICITATION,
+							"router_solicitation"},
+				{ICMP6_ROUTER_ADVERTISEMENT,
+							"router_advertisement"},
+				{ICMP6_NEIGHBOR_SOLICITATION,
+							"neighbor_solicitation"},
+				{ICMP6_NETGHBOR_ADVERTISEMENT,
+							"neighbor_advertisement"},
+				{ICMP6_REDIRECT,	"redirect"}
+			};
 
 struct lookupitem icmpcode[MAXICMPCODE] =
 			      { {ICMP_NET_UNREACH,	"net_unreach"},

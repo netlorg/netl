@@ -19,9 +19,6 @@
 #   a network datagram analizer handy for inspecting those files which you
 #   have made using the dump action
 #
-# hwpassive
-#   passively sniff IP packets for hardware addresses
-#
 # xd
 #   simple diagnostic tool for dumping file in hex format to stdout
 #===============================================================================
@@ -35,58 +32,49 @@
 #  05 Aug 97  G. Ollis	changed netl => $(DIST) for filenames and stuff
 #===============================================================================
 
-#===============================================================================
-# here is the stuff you may be interested in changing.
-#===============================================================================
-
-CC=gcc
-CFLAGS=-O3 -Wall
-#CFLAGS=-g3 -Wall
-LDFLAGS=-L.
-
-PREFIX=/usr/local
-SUBINPATH=$(PREFIX)/sbin
-BINPATH=$(PREFIX)/bin
-SYSTEMMANPATH=$(PREFIX)/man/man8
-USERMANPATH=$(PREFIX)/man/man1
-LIBPATH=$(PREFIX)/lib
-INCLUDEPATH=$(PREFIX)/include
-
-NET_LIBS=
-MISC_LIBS=
-
-M4=m4
-M4FLAGS=
-COREDIR=tarquin.macro core.head core.line core.tail
+include Makefile.inc
 
 #===============================================================================
 # don't go below this line unless your in to that sort of thing
 #===============================================================================
 
-TDR=tdr
-AR=ar
-RANLIB=ranlib
-LIB_NAME=netl
-NETL_LIB=lib$(LIB_NAME).so.1.1
-LIB_NETL=$(NETL_LIB)
-LN=ln
-VER=1.01
-RM=rm -f
-CP=cp
-EXEC=netl neta xd hwpassive dcp
+CFLAGS+=-I include
+TDR=../tdr.pl
+EXEC=netl neta xd
 DIST=netl
-PGP=pgp262
 
-all:$(EXEC) $(LIB_NETL) lib$(LIB_NAME).a
+COREDIR=tarquin.macro core.head core.line core.tail
+
+MOD=in.nmod filt.nmod out.nmod
+
+all : $(EXEC) $(MOD)
+
+%.nmod:
+	$(MAKE) -k -C $*
 
 gnr:all web dist
 
 test:all
-	cd t;$(TDR) tcp.t udp.t icmp.t resolve.t xd.t
+	cd t;$(TDR) -n *.t
 
-dist:$(DIST)-$(VER).tar.gz $(DIST)-$(VER).tar.gz.sig \
+dist:README INSTALL MANIFEST.BIN doc.nmod $(DIST)-$(VER).tar.gz
+
+sigs:$(DIST)-$(VER).tar.gz.sig \
      $(DIST)-$(VER)-bin.tar.gz $(DIST)-$(VER)-bin.tar.gz.sig \
      $(DIST)-$(VER).zip $(DIST)-$(VER).zip.sig 
+
+MANIFEST.BIN:MANIFEST
+	$(CP) MANIFEST MANIFEST.BIN
+	echo 'MANIFEST.BIN' >> MANIFEST.BIN
+	echo 'netl' >> MANIFEST.BIN
+	echo 'neta' >> MANIFEST.BIN
+	echo 'xd' >> MANIFEST.BIN
+	find -name \*.so -print >> MANIFEST.BIN
+
+README INSTALL:
+	cd doc;$(MAKE)
+	cp doc/netl.8.txt README
+	cp doc/netl_install.1.txt INSTALL
 
 %.gz:%
 	gzip < $< > $@
@@ -99,47 +87,30 @@ $(DIST)-$(VER).zip:$(DIST)-$(VER).tar
 
 $(DIST)-$(VER).tar:
 	install -d $(DIST)-$(VER)
-	cp -P `cat MANIFEST` $(DIST)-$(VER)
+	cp -aP `cat MANIFEST` $(DIST)-$(VER)
 	tar cf $(DIST)-$(VER).tar $(DIST)-$(VER)
 
-$(DIST)-$(VER)-bin.tar:$(EXEC)
+$(DIST)-$(VER)-bin.tar:$(EXEC) $(MOD)
 	install -d $(DIST)-$(VER)-bin
 	cp -P `cat MANIFEST.BIN` $(DIST)-$(VER)-bin
+	cd $(DIST)-$(VER)-bin; rm default.so; ln -s linux-ether.so default.so
 	tar cf $(DIST)-$(VER)-bin.tar $(DIST)-$(VER)-bin
 
 #===============================================================================
 # executables:
 #===============================================================================
 
-SOOBJ=resolve.o dump.o io.o
-$(LIB_NETL):$(SOOBJ)
-	$(CC) $(LDFLAGS) $(CFLAGS) -shared -o $(LIB_NETL) $(SOOBJ)
-	$(LN) -fs $(LIB_NETL) lib$(LIB_NAME).so.1
-	$(LN) -fs $(LIB_NETL) lib$(LIB_NAME).so
+NETLOBJ=netl.o sighandle.o config.tab.o lex.yy.o lookup.o options.o check.o filter.o action.o resolve.o dump.o io.o compiler.o ipv6.o
+netl:$(NETLOBJ)
+	$(CC) $(LDFLAGS) $(CFLAGS) -o netl $(NETLOBJ) $(NET_LIBS) $(MISC_LIBS) $(LEX_LIBS) $(YACC_LIBS)
 
-lib$(LIB_NAME).a:$(SOOBJ)
-	$(AR) cru lib$(LIB_NAME).a $(SOOBJ)
-	$(RANLIB) lib$(LIB_NAME).a
+NETAOBJ=neta.o lookup.o options.o resolve.o dump.o io.o
+neta:$(NETAOBJ)
+	$(CC) $(LDFLAGS) $(CFLAGS) -o neta $(NETAOBJ) $(MISC_LIBS)
 
-NETLOBJ=netl.o sighandle.o config.o lookup.o options.o dcp.o grab.o parse.o dgprintf.o
-netl:$(NETLOBJ) $(LIB_NETL)
-	$(CC) $(LDFLAGS) $(CFLAGS) -o netl $(NETLOBJ) $(NET_LIBS) $(MISC_LIBS) -lnetl
-
-HWPOBJ=hwpassive.o options.o sighandle.o
-hwpassive:$(HWPOBJ)
-	$(CC) $(LDFLAGS) $(CFLAGS) -o hwpassive $(HWPOBJ) $(NET_LIBS) $(MISC_LIBS) -lnetl
-
-NETAOBJ=neta.o lookup.o options.o
-neta:$(NETAOBJ) $(LIB_NETL)
-	$(CC) $(LDFLAGS) $(CFLAGS) -o neta $(NETAOBJ) $(MISC_LIBS) -lnetl
-
-XDOBJ=xd.o 
-xd:$(XDOBJ) $(LIB_NETL)
-	$(CC) $(LDFLAGS) $(CFLAGS) -o xd $(XDOBJ) $(MISC_LIBS) -lnetl
-
-DCPOBJ=dcpclient.o
-dcp:$(DCPOBJ)
-	$(CC) $(LDFLAGS) $(CFLAGS) -o dcp $(DCPOBJ) $(MISC_LIBS) $(NET_LIBS) -lnetl
+XDOBJ=xd.o resolve.o dump.o io.o
+xd:$(XDOBJ)
+	$(CC) $(LDFLAGS) $(CFLAGS) -o xd $(XDOBJ) $(MISC_LIBS)
 
 #===============================================================================
 # object files:
@@ -148,25 +119,23 @@ dcp:$(DCPOBJ)
 %.o:%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-hwpassive.o:hwpassive.c io.h global.h ether.h options.h config.h sighandle.h
-netl.o:netl.c global.h ether.h netl.h sighandle.h io.h options.h config.h \
-resolve.h ip.h parse.h grab.h
-neta.o:neta.c global.h ether.h dump.h lookup.h options.h resolve.h ip.h
-xd.o:xd.c dump.h
-dcp.o:dcp.c dcp.h global.h ether.h io.h config.h options.h resolve.h ip.h
-io.o:io.c global.h io.h
-dump.o:dump.c dump.h
-lookup.o:lookup.c lookup.h global.h ether.h
-config.o:config.c global.h ether.h config.h resolve.h lookup.h io.h options.h \
-         ip.h
-resolve.o:resolve.c global.h resolve.h io.h
-sighandle.o:sighandle.c sighandle.h io.h global.h
-options.o:options.c global.h config.h options.h io.h
-dcpclient.o:dcpclient.c global.h io.h
-grab.o:grab.c grab.h io.h ether.h
-parse.o:parse.c parse.h global.h ether.h ip.h config.h io.h resolve.h dcp.h \
-dgprintf.h
-dgprintf.o:dgprintf.c global.h ether.h ip.h io.h
+#
+# scanner
+#
+
+lex.yy.o: lex.yy.c config.tab.h 
+
+lex.yy.c:config.l config.tab.h
+	$(LEX) $(LEXFLAGS) config.l
+
+#
+# parser
+#
+
+config.tab.o:config.tab.h config.tab.c
+
+config.tab.h config.tab.c:config.y
+	$(YACC) $(YACCFLAGS) config.y
 
 #===============================================================================
 # install:
@@ -175,23 +144,25 @@ dgprintf.o:dgprintf.c global.h ether.h ip.h io.h
 .PHONY: install
 install:
 	install -d $(SUBINPATH)
-	install -g 0 -o 0 -m 500 netl hwpassive $(SUBINPATH)
+	install -g 0 -o 0 -m 511 netl $(SUBINPATH)
 	install -d $(BINPATH)
-	install -g 0 -o 0 -m 511 neta xd dcp.pl $(BINPATH)
+	install -g 0 -o 0 -m 511 neta xd $(BINPATH)
+	install -g 0 -o 0 -m 555 dcp.pl $(BINPATH)/dcp
+	install -g 0 -o 0 -m 555 tdr.pl $(BINPATH)/tdr
+	install -g 0 -o 0 -m 555 netlcc.pl $(BINPATH)/netlcc
 	install -d -g 0 -o 0 -m 700 /tmp/netl
-	install -d $(SYSTEMMANPATH) $(USERMANPATH)
-	install -g 0 -o 0 -m 644 netl.8 $(SYSTEMMANPATH)
-	install -g 0 -o 0 -m 644 hwpassive.8 $(SYSTEMMANPATH)
-	install -g 0 -o 0 -m 644 neta.1 $(USERMANPATH)
-	install -g 0 -o 0 -m 644 xd.1 $(USERMANPATH)
-	install -g 0 -o 0 -m 644 dcp.1 $(USERMANPATH)
+	install -d $(MANPATH) $(MANPATH)/man1 $(MANPATH)/man5 $(MANPATH)/man8
+	install -g 0 -o 0 -m 644 doc/*.1 $(MANPATH)/man1
+	install -g 0 -o 0 -m 644 doc/*.5 $(MANPATH)/man5
+	install -g 0 -o 0 -m 644 doc/*.8 $(MANPATH)/man8
 	install -d $(LIBPATH)
-	install -g 0 -o 0 -m 755 $(NETL_LIB) $(LIBPATH)
-	cd $(LIBPATH);$(LN) -fs $(NETL_LIB) lib$(LIB_NAME).so
-	cd $(LIBPATH);$(LN) -fs $(NETL_LIB) lib$(LIB_NAME).so.1
-	install -g 0 -o 0 -m 644 lib$(LIB_NAME).a $(LIBPATH)
-	install -d $(INCLUDEPATH)/$(LIB_NAME)
-	install -g 0 -o 0 -m 644 resolve.h dump.h io.h $(INCLUDEPATH)/$(LIB_NAME)
+	ln -s $(LIBPATH) /usr/local/lib/netl
+	install -d $(LIBPATH)/dump
+	install -d $(INCLUDEPATH)/netl
+	install -g 0 -o 0 -m 644 include/netl/*.h $(INCLUDEPATH)/netl
+	cd in; $(MAKE) install
+	cd out; $(MAKE) install
+	cd filt; $(MAKE) install
 
 #===============================================================================
 # clean:
@@ -199,7 +170,7 @@ install:
 
 .PHONY: clean
 clean:
-	$(RM) netl netl.exe neta neta.exe xd xd.exe hwpassive hwpassive.exe
+	$(RM) netl netl.exe neta neta.exe xd xd.exe
 	$(RM) dcp dcp.exe
 	$(RM) tmp.dat core a.out 
 	$(RM) *.o *.html *.tar *.tmp
@@ -207,17 +178,15 @@ clean:
 	$(RM) t/*.diff t/*.diffERR t/*.ao t/*.aERR t/*.aRET
 	$(RM) t/tdr.log t/core
 	$(RM) lib*.so* lib*.a
+	$(RM) lex.yy.c config.tab.h config.tab.c config.output config_test
+	$(RM) userfilter.c *.so README INSTALL conf/*.c conf/*.so conf/*.o
+	cd in; $(MAKE) clean
+	cd filt; $(MAKE) clean
+	cd out; $(MAKE) clean
 
 distclean:clean
-	$(RM) *.tar.gz *.zip *.sig
+	$(RM) *.tar.gz *.zip *.sig MANIFEST.BIN
+	cd doc; $(MAKE) clean
 
-#===============================================================================
-# web page
-#===============================================================================
-
-web:netl.html
-
-netl.html:netl.html.m4 $(COREDIR)
-
-%.html:%.html.m4
-	$(M4) $(M4MACROS) $< > $@
+wc:
+	wc -l *.{c,y,l,pl} include/netl/*.h {in,filt,out}/*.{c,h} |sort -n | tee .wc

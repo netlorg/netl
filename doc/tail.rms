@@ -1,0 +1,34 @@
+#H SEE ALSO
+
+sa<netl>(8), sa<netl.conf>(5), sa<netlcc>(1), sa<netl_install>(1),
+sa<netl_module>(1), sa<neta>(1), sa<dcp>(1) and sa<xd>(1)
+
+#H BUGS
+
+there are almost certainly bugs, please report them to me.  my email
+address is Graham Ollis <ollisg@wwa.com>, and the CORE home page is at
+http://www.wwa.com/~ollisg/core.html, which should contain up to date
+information on b<netl>.
+
+#H COPYING
+
+Copyright 1996, 1997, 1999 Graham THE Ollis
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+675 Mass Ave, Cambridge, MA 02139, USA.
+
+
+#H AUTHOR
+
+Graham THE Ollis <ollisg@wwa.com>

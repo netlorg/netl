@@ -40,30 +40,36 @@ char	*id = "@(#)netl by graham the ollis <ollisg@wwa.com>";
 #include <stdio.h>
 #include <netdb.h>
 #include <time.h>
-#ifdef OS_WIN32
-  #include <winsock.h>
-#endif
 
-#include "global.h"
-#include "ether.h"
-#include "ip.h"
+#include "netl/global.h"
+#include "netl/ether.h"
+#include "netl/ip.h"
 
-#include "netl.h"
-#include "sighandle.h"
-#include "io.h"
-#include "options.h"
-#include "config.h"
-#include "resolve.h"
-#include "dcp.h"
-#include "grab.h"
-#include "parse.h"
+#include "netl/netl.h"
+#include "netl/sighandle.h"
+#include "netl/io.h"
+#include "netl/options.h"
+#include "netl/filter.h"
+#include "netl/action.h"
+#include "netl/config.h"
+#include "netl/resolve.h"
+#include "netl/grab.h"
+#include "netl/check.h"
+#include "netl/compiler.h"
 
 /*==============================================================================
-| Globals
+| GLOBALS
 |=============================================================================*/
 
-u8 localhardware[6] = {0, 0, 0, 0, 0, 0};
-u8 localip[4] = {127, 0, 0, 1};
+int (*grab)(char *buf);
+
+char *out_path = "out";
+char *filt_path = "filt";
+
+// grab globals
+char *in_path = "in";
+void *grab_module = NULL;
+int (*grab)(char *);
 
 /*==============================================================================
 | it's the clean up function!  it really doesn't need to do much so...
@@ -75,7 +81,7 @@ u8 localip[4] = {127, 0, 0, 1};
 
 void cleanup()
 {
-  clo();
+	clo();
 }
 
 /*==============================================================================
@@ -86,94 +92,147 @@ int
 main(int argc, char *argv[])
 {
 #ifndef NO_SYSLOGD
-  pid_t		temp;
+	pid_t		temp;
 #endif
 
-  prog = argv[0];
+	prog = argv[0];
 
-  setservent(TRUE);
-  parsecmdline(argc, argv); 
-  if(displayVersion) {
-    fputs("netl ", stdout);
-    puts(COPYVER);
-  }
+	//setservent(TRUE);
+	parsecmdline(argc, argv); 
+	if(displayVersion) {
+		fputs("netl ", stdout);
+		puts(COPYVER);
+	}
 
-  preconfig();
-  if(argc != 1) 
-    while(--argc > 0) {
-      argv++;
-      if(argv[0][0] != '-') {
-        parseconfigline(argv[0]);
-        configfile = NULL;
-      }
-    }
+	preconfig();
+	if(argc != 1) 
+		while(--argc > 0) {
+			argv++;
+			if(argv[0][0] != '-') {
+				parseconfigline(argv[0]);
+				configfile = NULL;
+			}
+		}
 
-  if(configfile != NULL)
+	if(configfile != NULL)
 #ifdef NO_SYSLOGD
-    readconfig(configfile);
+		readconfig(configfile);
 #endif
 #ifndef NO_SYSLOGD
-    readconfig(configfile, TRUE);
+		readconfig(configfile, TRUE);
 #endif
-  postconfig();
+	postconfig();
 
-  if(debug_mode) {
-    printconfig();
-    return 1;
-  }
+	if(debug_mode) {
+		//printconfig();
+		return 1;
+	}
 
-  if(getuid() != 0) {
-    fprintf(stderr, "%s: must be run as root\n", prog);
-    return 1;
-  }
+	if(output_mode == OUT_MODE_C) {
+		FILE *fp;
+		if(output_name[0] == '-' && output_name[1] == 0)
+			fp = stdout;
+		else
+			fp = fopen(output_name, "w");
+		if(fp == NULL) {
+			fprintf(stderr, "%s: error opening %s for write!\n",
+				prog, output_name);
+		}
+		generate_c(fp);
+		fclose(fp);
+		return 0;
+	}
 
 #ifndef NO_SYSLOGD
-  if(noBackground)
+	if(noBackground)
 #endif
-    return netl(netdevice);
+		return netl(netdevice);
 #ifndef NO_SYSLOGD
-  else {
-    if((temp = fork()) == 0) 
-      return netl(netdevice);
+	else {
+		if((temp = fork()) == 0) 
+			return netl(netdevice);
 
-    if(temp == -1) {
-      fprintf(stderr, "%s: unable to fork\n", prog);
-      return 1;
-    }
-  }
+		if(temp == -1) {
+			fprintf(stderr, "%s: unable to fork\n", prog);
+			return 1;
+		}
+	}
 #endif
 
-  return 0;
+	return 0;
+}
+
+/*==============================================================================
+| prepare dl wrapper
+|=============================================================================*/
+
+void
+prepare(char *dev)
+{
+	char str_buffer[1024];
+	void (*prepare_function)(char *);
+
+	if(grab_module != NULL) {
+		nmclose(grab_module);
+	}
+	snprintf(str_buffer, 1024, "%s/%s/%s.so", so_path, in_path, grab_module_name);
+	grab_module = nmopen(str_buffer);
+
+	prepare_function = nmsym(grab_module, "prepare");
+
+	prepare_function(dev);
+
+	grab = nmsym(grab_module, "grab");
 }
 
 /*==============================================================================
 | void netl(char *)
 |=============================================================================*/
 
+int reload_config_file = 0;
+
 int
 netl(char *dev)
 {
-  int		l;
-  unsigned char buf[4096];
+	int		l;
+	unsigned char buf[4096];
 
-  ope("netl");
-  log("starting netl, logging %s", dev);
-  handle();
+	ope("netl");
+	log("starting netl, logging %s", dev);
+	handle();
 
-  prepare(dev);
+	prepare(dev);
 
-  /*============================================================================
-  | Entering the data collection loop
-  |===========================================================================*/
+	/*============================================================================
+	| Entering the data collection loop
+	|===========================================================================*/
 
-  while(47) {
-    if((l = grab(buf)) < 0) {
-      log(strerror(errno));
-      err("Error receiving RAW packet");
-    } else 
-      parsedg(buf, l);
-  }
+	while(47) {			/* valnumdez's NoOp */
+		if((l = grab(buf)) < 0) {
+			log(strerror(errno));
+			err("Error receiving RAW packet");
+		} else {
+			check(buf, l);
+		}
 
-  return 0;
+		if(reload_config_file) {
+			reload_config_file = 0;
+
+			clearipcache();
+			log("old ip cache cleared");
+
+			clearconfig();
+
+			preconfig();
+			#ifdef NO_SYSLOGD
+				readconfig(configfile);
+			#else
+				readconfig(configfile, noBackground);
+			#endif
+			postconfig();
+			log("re-read configfile %s", configfile);
+		}
+	}
+
+	return 0;
 }
-

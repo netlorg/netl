@@ -1,0 +1,60 @@
+#TITLE netl_install
+#SECTION 8
+#HEAD CORE software
+#TAIL 18 June 1999
+#START
+
+#H NAME
+
+b<netl_install> - i<netl> install instructions.
+
+#H DESCRIPTION
+
+these are directions for installing the i<netl> package.  you will need
+to download the i<netl> package.  the latest version should be available
+at ftp://sunsite.unc.edu/pub/Linux/system/network/monitor/
+
+#H DIRECTIONS
+
+ AS NOT ROOT:
+
+ 1. edit `Makefile.inc' and `global.h' with your favorite text editor.  
+if your
+    platform is supported, you shouldn't have to do anything but change
+    CFLAGS or one of the global config items at the top of global.h.
+
+ 2. type `make'
+
+ 3. optionally run the regression tests.  you will need perl.
+    type `make test'.  any failed tests will produce `.ao' (actual
+    output) files which you can read, if you speak gibberish.
+    alternatively, you can e-mail me .ao files for any failed test case.
+
+ 4. take a look at conf/netl.conf.  modify it to your liking.
+    in the very least, READ IT, as this will save you a lot of trouble.
+
+ AS ROOT
+
+ 5. type `netl -z -fconf/netl.conf -L.' to try out the configuration.
+    go to another virtual terminal and send yourself a ping (or something
+    else you are logging), come back and see if it shows up on the
+    screen.
+
+    the -z tells i<netl> to run in the foreground, -f indicates the
+config
+    file and -L is for the module directory.  see i<netl>(8) for more
+    information on b<netl> options.
+
+ 6. type `make install'
+
+ 7. copy conf/netl.conf to your /etc directory, and run `netl' with no
+    arguments to have it run in the background.  when it runs in this
+    manner, output is sent to syslog and will show up in your
+    ~adm/messages file (unless you modify /etc/syslog.conf).  you may
+want
+    to run b<netl> from one of your startup scripts in /etc/rc.d or
+    thereabouts.
+
+ 8. read the documentation.  start with the b<netl>(8) man page.
+
+#EXEC tail

@@ -28,12 +28,14 @@
 |			replaced putchar() with a couple of putc()s
 |=============================================================================*/
 
+#include <dlfcn.h>
 #include <syslog.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include "global.h"
-#include "io.h"
+
+#include "netl/global.h"
+#include "netl/io.h"
 
 #ifndef NO_SYSLOGD
 int noBackground = FALSE;
@@ -52,63 +54,63 @@ char *prog="[unassigned]";
 void
 log(char *cp,...)
 {
-  char buff[1024];	/* this should be enough memory */
+	char buff[2048];	/* this should be enough memory */
 
-  va_list vararg;
-  if(cp && *cp) {
-    va_start(vararg, cp);
-    vsprintf(buff, cp, vararg);
-    va_end(vararg);
-  }
+	va_list vararg;
+	if(cp && *cp) {
+		va_start(vararg, cp);
+		vsnprintf(buff, 2040, cp, vararg);
+		va_end(vararg);
+	}
 
 #ifndef NO_SYSLOGD
-  if(noBackground) {
+	if(noBackground) {
 #endif
-    puts(buff);
+		puts(buff);
 #ifndef NO_TEEOUT
-    if(teefile != NULL) {
-      fputs(buff, teefile);
-      fputc('\n', teefile);
-      fflush(teefile);
-    }
+		if(teefile != NULL) {
+			fputs(buff, teefile);
+			fputc('\n', teefile);
+			fflush(teefile);
+		}
 #endif
 #ifndef NO_SYSLOGD
-  } else {
-    syslog(LOG_INFO, buff);
-  }
+	} else {
+		syslog(LOG_INFO, buff);
+	}
 #endif
 }
 
 void
 err(char *cp,...)
 {
-  char buff[1024];	/* this should be enough memory */
+	char buff[2048];	/* this should be enough memory */
 
-  va_list vararg;
-  if(cp && *cp) {
-    va_start(vararg, cp);
-    vsprintf(buff, cp, vararg);
-    va_end(vararg);
-  }
+	va_list vararg;
+	if(cp && *cp) {
+		va_start(vararg, cp);
+		vsnprintf(buff, 2040, cp, vararg);
+		va_end(vararg);
+	}
 
 #ifndef NO_SYSLOGD
-  if(noBackground) {
+	if(noBackground) {
 #endif
-    fputs(prog, stderr);
-    putc(':', stderr);
-    fputs(buff, stderr);
-    putc('\n', stderr);
+		fputs(prog, stderr);
+		putc(':', stderr);
+		fputs(buff, stderr);
+		putc('\n', stderr);
 #ifndef NO_TEEOUT
-    if(teefile != NULL) {
-      fputs("error:", teefile);
-      fputs(buff, teefile);
-      fputc('\n', teefile);
-      fflush(teefile);
-    }
+		if(teefile != NULL) {
+			fputs("error:", teefile);
+			fputs(buff, teefile);
+			fputc('\n', teefile);
+			fflush(teefile);
+		}
 #endif
 #ifndef NO_SYSLOGD
-  } else
-    syslog(LOG_ERR, buff);
+	} else
+		syslog(LOG_ERR, buff);
 #endif
 }
 
@@ -119,14 +121,14 @@ err(char *cp,...)
 void *
 allocate(size_t size)
 {
-  void *tmp;
+	void *tmp;
 
-  if((tmp = malloc(size)) == NULL) {
-    err("error: could not malloc(), die");
-    exit(2);
-  }
+	if((tmp = malloc(size)) == NULL) {
+		err("error: could not malloc(), die");
+		exit(2);
+	}
 
-  return tmp;
+	return tmp;
 }
 
 /*==============================================================================
@@ -139,14 +141,58 @@ allocate(size_t size)
 void
 ope(char *s)
 {
-  if(!noBackground)
-    openlog(s, 0, NETL_LOG_FACILITY);
+	if(!noBackground)
+		openlog(s, 0, NETL_LOG_FACILITY);
 }
 
 void
 clo()
 {
-  if(!noBackground)
-    closelog();
+	if(!noBackground)
+		closelog();
 }
 #endif
+
+void *
+nmopen(char *name)
+{
+	void *handle;
+	void (*f)(void);
+
+	handle = dlopen(name, RTLD_NOW);
+	if(handle == NULL) {
+		err("could not load %s; reason:%s", name, dlerror());
+		exit(1);
+	}
+
+	f = dlsym(handle, "construct");
+	if(f != NULL) 
+		f();
+
+	return handle;
+}
+
+int 
+nmclose(void *handle)
+{
+	void (*f)(void);
+
+	f = dlsym(handle, "destroy");
+	if(f != NULL)
+		f();
+
+	return dlclose(handle);
+}
+
+void *
+nmsym(void *handle, char *symbol)
+{
+	void *sym;
+
+	sym = dlsym(handle, symbol);
+	if(sym == NULL) {
+		err("could not resolve unknown::%s; reason:%s", symbol, dlerror());
+		exit(1);
+	}
+	return sym;
+}

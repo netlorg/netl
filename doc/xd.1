@@ -1,0 +1,95 @@
+.ad b
+.TH xd 8 "18 June 1999" "CORE software" "CORE software"
+.AT 3
+.de sh
+.br
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.PP
+.SH NAME
+.PP
+.I xd
+- hex dump
+.PP
+.SH SYNOPSIS
+.PP
+.I xd
+filename [ ... ]
+.PP
+.SH DESCRIPTION
+.PP
+.I xd
+will give you a nifty hex dump of the files you give it.  along
+with the ultra useful ascii values (only the readable ones), and the
+offset of the byte beginning on each line.  
+.I xd
+doesn't have as many
+nifty options as the classic 
+.BR od (1)
+for example, but on the other
+hand this means you don't have to memorize anything.  
+.I xd
+was just
+taken from the 
+.BR neta (1)
+source code in the 
+.BR netl (8)
+distribution,
+but isn't that interesting unless you want to sniff/log network packets.
+.PP
+.SH OPTIONS
+.PP
+none
+.PP
+.SH SEE ALSO
+.PP
+.BR netl (8)
+, 
+.BR netl.conf (5)
+, 
+.BR netlcc (1)
+, 
+.BR netl_install (1)
+,
+.BR netl_module (1)
+, 
+.BR neta (1)
+, 
+.BR dcp (1)
+and 
+.BR xd (1)
+.PP
+.SH BUGS
+.PP
+there are almost certainly bugs, please report them to me.  my email
+address is Graham Ollis <ollisg@wwa.com>, and the CORE home page is at
+http://www.wwa.com/~ollisg/core.html, which should contain up to date
+information on 
+.B netl
+.
+.PP
+.SH COPYING
+.PP
+Copyright 1996, 1997, 1999 Graham THE Ollis
+.PP
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+.PP
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License for more details.
+.PP
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+675 Mass Ave, Cambridge, MA 02139, USA.
+.PP
+.PP
+.SH AUTHOR
+.PP
+Graham THE Ollis <ollisg@wwa.com>

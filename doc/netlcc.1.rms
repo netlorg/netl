@@ -1,0 +1,55 @@
+#TITLE netlcc
+#SECTION 8
+#HEAD CORE software
+#TAIL 25 June 1999
+#START
+
+#H NAME
+
+i<netlcc> - convert i<netl> configuration files into i<netl> modules
+
+#H SYNOPSIS
+
+i<netlcc> [gcc options] netl.conf
+
+#H DESCRIPTION
+
+PLEASE NOTE: the i<netl> compiler is still somewhat experimental.  you
+are encouraged to use it to generate i<netl> modules which you then
+modify by hand.
+
+i<netlcc> takes a i<netl> configuration file and converts it into a
+i<netl> module, which can be loaded dynamically.  the advantage to a
+i<netl> module is that it is compiled code and therefore theoretically
+faster.  any .conf files are given to sa<netl>(8) to generate a .c file.  
+this .c file is then compiled using sa<gcc>(1), with any other options
+that have been passed to the command line.  by default, a .so (shared
+object file) is generated, which can be copied into the i<netl> modules
+directory.
+
+for more information on the i<netl> configuration format, see
+sa<netl.conf>(5).
+
+for more information on i<netl> modules, see sa<netl_module>(1).
+
+for more information on i<netl> in general, see sa<netl>(8).
+
+#H OPTIONS
+
+i<netlcc> grabs two options, if seen, and passes the rest to gcc when it
+reaches the compile stage.  therefore all the options you would expect to
+work for a compiler such as -c or -O2 should work with i<netlcc>.
+
+-generate-c
+
+	generate c code and stop.  this is handy, if you want to hand
+optimize the module generated from your configuration file.
+
+-install
+
+	once the module has been compiled successfully, this option will
+direct i<netlcc> to install it in the correct place so that sa<netl>(8)
+can find it.  this option only works when compiling modules from
+configuration files.
+
+#EXEC tail

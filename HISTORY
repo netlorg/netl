@@ -1,3 +1,30 @@
+version 1.02
+------------
+
+ . switched to flex/bison to parse the configeration files.
+ . created new modular design.  see netl_module(1)
+ . this is a MAJOR (internal) revision
+ . redid the man pages.  they still aren't that good, but at least they
+   are up to date again.  actually it's nice to have documentation on the
+   new module system.
+ . wrote netlcc front end and compiler.c backend for the netl compiler.
+   see netlcc(1) for details.
+ . moved the dump directory from /tmp/netl to /usr/local/lib/netl/dump
+ . added --dump-dir option for specifying an alternate dump directory.
+ . began preliminary support for IPv6.  see info in man page on -6 option,
+   and the netl.conf(5) man page.  aside from the fact that this code
+   is virtually untested, the main missing piece is the check for source
+   and destination IP addresses.
+ . wrote some regression tests which are based on the compiler output.  
+   they are designed to test both config.y and compiler.c
+ . fixed tdr so that it doesn't delete your /dev/null file if you
+   run as root!
+
+version 1.01
+------------
+
+ . modified the header files such that they would compile under glibc2
+
 version 1.00
 ------------
 

@@ -31,7 +31,8 @@ char *id = "@(#)xd (c) 1997 graham the ollis <ollisg@wwa.com>";
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "dump.h"
+
+#include "netl/dump.h"
 
 /*==============================================================================
 | main
@@ -40,18 +41,18 @@ char *id = "@(#)xd (c) 1997 graham the ollis <ollisg@wwa.com>";
 int
 main(int argc, char *argv[])
 {
-  int i;
-  unsigned char *buff;
-  size_t size;
+	int i;
+	unsigned char *buff;
+	size_t size;
 
-  for(i=1; i<argc; i++) {
-    if((buff=read(argv[i], &size, 0, argv[0]))!=NULL) {
-      printf("%s:\n", argv[i]);
-      dumpdata(buff, size);
-      free(buff);
-    }
-  }
+	for(i=1; i<argc; i++) {
+		if((buff=readentire(argv[i], &size, 0, argv[0]))!=NULL) {
+			printf("%s:\n", argv[i]);
+			dumpdata(buff, size);
+			free(buff);
+		}
+	}
 
-  return 0;
+	return 0;
 }
 

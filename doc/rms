@@ -1,0 +1,82 @@
+#!/usr/bin/perl -w
+
+for(@ARGV) {
+	$filename = $_;
+	($root = $filename) =~ s/\.rms//i;
+
+	my $title = ''; my $section = 1;  my $header = ''; my $tail = '';  my $line = 0;
+
+	open(FP, $filename);
+	open(TXT, ">$root.txt");
+	open(MAN, ">$root");
+
+	while(<FP>) {
+		chomp;
+		$line++;
+
+		if(/^#TITLE (.*)$/) { $title = $1; next }
+		if(/^#SECTION (.*)$/) { $section = $1; next }
+		if(/^#HEAD (.*)$/) { $header = $1; next }
+		if(/^#TAIL (.*)$/) { $tail = $1; next }
+		if(/^#EXEC (.*)$/) { $filename = "$1.rms"; $line = 0; open(FP, "$1.rms") || die "unable to open $1.rms $!"; next; }
+
+		if(/^#INCLUDE (.*)$/) {
+			open(FRED, $1);
+			print MAN ".nf\n";
+			while(<FRED>) {
+				print MAN "$_"; print TXT;
+			}
+			print MAN ".fi\n";
+			next;
+		}
+
+		if(/^#START/) {
+			print MAN ".ad b
+.TH $title $section \"$tail\" \"$header\" \"$header\"
+.AT 3
+.de sh
+.br
+.ne 5
+.PP
+\\fB\\\\\$1\\fR
+.PP
+..\n";
+			print TXT "$title\($section\)
+$header
+$tail";
+
+			next;
+
+		}
+
+		if(/^#H (.*)$/) {
+			print MAN ".SH $1\n";
+			print TXT "\n$1\n";
+			next;
+		}
+
+		warn "$filename:$line:unknown directive" if /^#/;
+
+		if($_ eq '') {
+			print MAN ".PP\n";
+			print TXT "\n";
+			next;
+		}
+
+		($man = $_) =~ s/i\<(.*?)\>\s*/\n.I $1\n/mg;
+		$man =~ s/b\<(.*?)\>\s*/\n.B $1\n/mg;
+		$man =~ s/sa\<(.*?)\>\((.*?)\)\s*/\n.BR $1 ($2)\n/mg;
+		($txt = $_) =~ s/[ib]\<(.*?)\>/$1/mg;
+		$txt =~ s/sa\<(.*?)\>/$1/mg;
+
+
+		chomp($man);
+		$man =~ s/^\n//gm;
+
+		warn "$filename:$line:newline" if $_ =~ /\n/m;
+		warn "$filename:$line:blank" if $_ eq '';
+
+		print MAN "$man\n";
+		print TXT "$txt\n";
+	}
+}
