@@ -50,7 +50,7 @@ struct lookupitem icmptype[MAXICMPTYPE] =
 struct lookupitem icmpcode[MAXICMPCODE] =
 			      { {ICMP_NET_UNREACH,	"net_unreach"},
 				{ICMP_HOST_UNREACH,	"host_unreach"},
-				{ICMP_PROT_UNREACH,	"prot_unreach"},
+				{ICMP_PROT_UNREACH,	"port_unreach"},
 				{ICMP_PORT_UNREACH,	"port_unreach"},
 				{ICMP_FRAG_NEEDED,	"frag_needed"},
 				{ICMP_SR_FAILED,	"sr_failed"},

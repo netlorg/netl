@@ -32,6 +32,7 @@
 #  28 Feb 97  G. Ollis	updated stuff for .92 release
 #  10 Mar 97  G. Ollis	updated stuff for .93 release
 #  03 May 97  G. Ollis	began .94 release
+#  05 Aug 97  G. Ollis	changed netl => $(DIST) for filenames and stuff
 #===============================================================================
 
 #===============================================================================
@@ -53,33 +54,35 @@ MISC_LIBS=
 # don't go below this line unless your in to that sort of thing
 #===============================================================================
 
-VER=0.94
+VER=0.95
 RM=rm -f
 CP=cp
+EXEC=netl neta xd hwpassive dcp
+DIST=netl
 
-all:netl neta xd hwpassive
+all:$(EXEC)
 
 test:all
 	cd t;$(TDR) tcp.t udp.t icmp.t resolve.t xd.t
 
-dist:netl-$(VER).tar.gz netl-$(VER).tar.gz.sig netl-$(VER).zip netl-$(VER).zip.sig
+dist:$(DIST)-$(VER).tar.gz $(DIST)-$(VER).tar.gz.sig $(DIST)-$(VER).zip $(DIST)-$(VER).zip.sig
 
-netl-$(VER).zip.sig:netl-$(VER).zip
-	pgp -sb netl-$(VER).zip
+$(DIST)-$(VER).zip.sig:$(DIST)-$(VER).zip
+	pgp -sb $(DIST)-$(VER).zip
 
-netl-$(VER).zip:netl-$(VER).tar
-	zip -r netl-$(VER).zip netl-$(VER)
+$(DIST)-$(VER).zip:$(DIST)-$(VER).tar
+	zip -r $(DIST)-$(VER).zip $(DIST)-$(VER)
 
-netl-$(VER).tar.gz.sig:netl-$(VER).tar.gz
-	pgp -sb netl-$(VER).tar.gz
+$(DIST)-$(VER).tar.gz.sig:$(DIST)-$(VER).tar.gz
+	pgp -sb $(DIST)-$(VER).tar.gz
 
-netl-$(VER).tar.gz:netl-$(VER).tar
-	gzip < netl-$(VER).tar > netl-$(VER).tar.gz
+$(DIST)-$(VER).tar.gz:$(DIST)-$(VER).tar
+	gzip < $(DIST)-$(VER).tar > $(DIST)-$(VER).tar.gz
 
-netl-$(VER).tar:
-	install -d netl-$(VER)
-	cp -P `cat MANIFEST` netl-$(VER)
-	tar cf netl-$(VER).tar netl-$(VER)
+$(DIST)-$(VER).tar:
+	install -d $(DIST)-$(VER)
+	cp -P `cat MANIFEST` $(DIST)-$(VER)
+	tar cf $(DIST)-$(VER).tar $(DIST)-$(VER)
 
 #===============================================================================
 # executables:
@@ -88,18 +91,27 @@ netl-$(VER).tar:
 HWPOBJ=hwpassive.o io.o options.o sighandle.o
 hwpassive:$(HWPOBJ)
 	$(CC) $(CFLAGS) -o hwpassive $(HWPOBJ) $(NET_LIBS) $(MISC_LIBS)
+	strip hwpassive || true
 
 NETLOBJ=netl.o resolve.o sighandle.o config.o lookup.o options.o io.o dcp.o
 netl:$(NETLOBJ)
 	$(CC) $(CFLAGS) -o netl $(NETLOBJ) $(NET_LIBS) $(MISC_LIBS)
+	strip netl || true
 
 NETAOBJ=neta.o resolve.o lookup.o options.o dump.o io.o
 neta:$(NETAOBJ)
 	$(CC) $(CFLAGS) -o neta $(NETAOBJ) $(MISC_LIBS)
+	strip neta || true
 
 XDOBJ=xd.o dump.o
 xd:$(XDOBJ)
 	$(CC) $(CFLAGS) -o xd $(XDOBJ) $(MISC_LIBS)
+	strip xd || true
+
+DCPOBJ=dcpclient.o io.o
+dcp:$(DCPOBJ)
+	$(CC) $(CFLAGS) -o dcp $(DCPOBJ) $(MISC_LIBS) $(NET_LIBS)
+	strip dcp || true
 
 #===============================================================================
 # object files:
@@ -122,6 +134,7 @@ config.o:config.c global.h ether.h config.h resolve.h lookup.h io.h options.h \
 resolve.o:resolve.c global.h resolve.h io.h
 sighandle.o:sighandle.c sighandle.h io.h global.h
 options.o:options.c global.h config.h options.h io.h
+dcpclient.o:dcpclient.c global.h io.h
 
 #===============================================================================
 # install:
@@ -129,6 +142,7 @@ options.o:options.c global.h config.h options.h io.h
 
 .PHONY: install
 install:
+	strip $(EXEC)
 	install -d $(SUBIN)
 	install -g 0 -o 0 -m 500 netl hwpassive $(SUBIN)
 	install -d $(BIN)
@@ -147,8 +161,9 @@ install:
 .PHONY: clean
 clean:
 	$(RM) *.o netl netl.exe neta neta.exe xd xd.exe hwpassive hwpassive.exe
+	$(RM) dcp dcp.exe
 	$(RM) tmp.dat core a.out *.tar
-	$(RM) -r netl-$(VER) t/*.diff t/*.diffERR t/*.ao t/*.aERR t/*.aRET
+	$(RM) -r $(DIST)-$(VER) t/*.diff t/*.diffERR t/*.ao t/*.aERR t/*.aRET
 	$(RM) t/tdr.log t/core
 
 distclean:clean

@@ -1,8 +1,8 @@
 before we get to a final release on netl:
 
- * consider an ipx logger
+ * add a format string option, e.g. "%name %ip => %ip"
 
- * better documentation, maybe a man page
+ * consider an ipx logger
 
  * figure out why it's dumping core on sparc linux
 
@@ -13,6 +13,3 @@ before we get to a final release on netl:
 
  * port aliasing
 
- * perl path
-
- * localname?

@@ -1,0 +1,96 @@
+version .95
+-----------
+
+ . created man page documentation.
+
+ . added `detect' config line, see the netl(8) manpage for details.
+   this will reduce the amount of configeration you will have to do
+   in the netl.conf file.
+
+ . modified dist version of netl.conf so that it's more portable.
+   in particular, i put in literal port numbers rather than using
+   port names.
+
+ . dcp.pl uses perl native Socket module instead of using net cat.
+   `dcp.pl -o' uses the old method.
+
+version .94
+-----------
+
+ . changed all the struct declerations to typedef declerations.  get off my
+   back ok?  i've been programming perl for so long, forgot some of that
+   strange C language. 
+
+ . no longer depending on linux .h files for IP (and sub) headers.  this
+   is for portability reasons.  if you are doing a port, make sure you get
+   the endian type right!  there are now three global headers:
+	global.h - general global stuff (endian integer conversion etc.)
+	ether.h - ethernet specific data types, #defines
+	ip.h - ip protocol specific data types, #defines
+   logically, if your adding an interface (ATM, token ring, ppp, etc.)
+   you'd want to start in ether.h.  if your adding an OS, look at global.h
+   first.  if you want to add a protocol (IPX, etc.) start with ip.h and
+   modify/add to these files.  if your trying to do all of this at once,
+   god help you. 
+
+ . fixed the clearipcache() function.  thus now, when you send a 
+   netl:readconfig, netl will clear the ip cache before reading the file,
+   avoiding all sorts of potential duplicates.  though you probably have
+   an enourmous amount of memory like me and don't care... 
+
+ . added some global options with ports to win32 in mind.  NO_SYSLOGD, if 
+   defined in global.h will not even compile with the syslogd library stuff.  
+   this is a good idea if your running from a non unix system.  note that 
+   syslogd is really nice in that it partially compresses lines by indicating 
+   repeated lines.  this won't save you if you get strobed, but will keep your 
+   log file neat if some one ping -f's you from only one site.
+
+ . added NO_TEEOUT option which is defined for unix.  the -o option should 
+   only be necessary in win32 only.  even then, you should only compile with
+   this option if your thinking of using it.  -o copies output to the specified
+   file.
+
+0.93 (and 0.92)
+---------------
+
+ a. -z option allows you to run netl in the foreground.  output is sent to
+    stdout instead of syslogd.
+
+ b. you can include configeration lines in the command line.  when you do
+    this, the config file /etc/netl.conf will NOT be read.  note that (a)
+    and (b) are meant to be used in concert with each other for testing
+    and quick monitoring. 
+
+ c. dcp is partially implemented.  netl will listen to port 47 udp
+    (silently) if you `listen 47' in your config file.  when you send the
+    message `netl:readconfig' netl is suppose to re read your config file. 
+    dcp.pl is a perl script (you'll need net cat for this to work) which
+    sends this message.  what is left to do for dcp?
+	1. generic server side dcp interface libdcp.a file or somesuch.
+	2. more solid C version of dcp client.
+
+ d. netl is now officially under the GPL, see COPYING for more information.
+
+ e. icmp codes are now included in some .h file somewhere rather than
+    depending on your linux being overly up to date.
+
+ f. neta no longer swaps source/destination ip/ethernet addresses
+    inapropriately. 
+
+ g. started work on hwpassive, which is no where near complete.
+
+ h. tdr.pl is no included with netl distribution for convenience.  get
+    your own version at: 
+
+http://www.u.arizona.edu/~ollisg/core.html
+	[ CORE ]
+
+netl 0.91
+---------
+
+ minor updates
+
+netl 0.90
+---------
+
+ initial release

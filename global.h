@@ -62,7 +62,7 @@
 | end configure (hopefully this is far as you need to go)
 ==============================================================================*/
 
-#define COPYVER "0.94 (c) 1997 Graham THE Ollis <ollisg@ns.arizona.edu>"
+#define COPYVER "0.95 copyright 1997 Graham THE Ollis <ollisg@ns.arizona.edu>"
 
 #ifndef TRUE
   #define TRUE			1

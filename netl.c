@@ -40,6 +40,9 @@ char	*id = "@(#)netl by graham the ollis <ollisg@ns.arizona.edu>";
 #include <time.h>
 #include <stdarg.h>
 #include <netdb.h>
+#ifdef OS_WIN32
+  #include <winsock.h>
+#endif
 
 #include "global.h"
 #include "ether.h"
@@ -57,13 +60,16 @@ char	*id = "@(#)netl by graham the ollis <ollisg@ns.arizona.edu>";
 | Globals
 |=============================================================================*/
 
-struct ifreq oldifr, ifr;
 char *prog;
 u8 localhardware[6] = {0, 0, 0, 0, 0, 0};
 u8 localip[4] = {127, 0, 0, 1};
 
 /*==============================================================================
 | it's the clean up function!  it really doesn't need to do much so...
+| (btw- clo is the name of the planet the decepticons invaded shortly after 
+| the battle with unicron.  the autobots, though initially sustaining 
+| incredable losses, optimus prime turns the tide with the help of the 
+| "last autobot".  however, this has nothing to do with the clean up function)
 |=============================================================================*/
 
 void cleanup()
@@ -158,6 +164,7 @@ netl(char *dev) {
   struct	sockaddr_in name;
   unsigned char buf[4096];
   unsigned int	fromlen;
+  struct ifreq	oldifr, ifr;
 
   ope("netl");
   log("starting netl, logging %s", dev);
@@ -167,7 +174,11 @@ netl(char *dev) {
   | Get a socket which will collect all packets
   |===========================================================================*/
 
+#ifdef OS_WIN32
+  if((sock = socket(AF_INET, SOCK_PACKET, 0)) < 0) {
+#else
   if((sock = socket(AF_INET, SOCK_PACKET, htons(ETH_P_ALL))) < 0) {
+#endif
     err("cannot open raw socket, die");
     return 1;
   }
@@ -177,8 +188,15 @@ netl(char *dev) {
   |===========================================================================*/
 
   strcpy(ifr.ifr_name, dev);
-  strcpy(oldifr.ifr_name, dev);
 
+#ifdef OS_WIN32
+  /*============================================================================
+  | go in to `p' mode
+  |===========================================================================*/
+
+  
+
+#else
   /*============================================================================
   | Get flags and place them in ifr structure
   |===========================================================================*/
@@ -187,17 +205,7 @@ netl(char *dev) {
     err("unable to get %s flags, die", dev);
     return 1;
   }
-
-  /*============================================================================
-  | Get flags and place them in oldifr structure
-  | This will be used later to change ether device characteristics back
-  | to their original value
-  |===========================================================================*/
-
-  if(ioctl(sock, SIOCGIFFLAGS, &oldifr) < 0) {
-    err("unable to get %s flags, die", dev);
-    return 1;
-  }
+  memcpy(&oldifr, &ifr, sizeof(struct ifreq));
 
   /*============================================================================
   | Set the promiscous flag
@@ -213,6 +221,7 @@ netl(char *dev) {
     err("Unable to set %s flags, die", dev);
     return 1;
   } 
+#endif
 
   /*============================================================================
   | Set up sockaddr
@@ -408,7 +417,6 @@ checktcp(u8 *dg, iphdr ip, tcphdr *h, size_t len)
       default:
         break;
     }
-
   }
 }
 
@@ -420,7 +428,7 @@ void
 checkudp(u8 *dg, iphdr ip, udphdr *h, size_t len)
 {
   int i;
-  int logged=FALSE,dumped=FALSE;
+  int logged=FALSE, dumped=FALSE;
   struct configitem *c;
   u16 source=ntohs(h->source), dest=ntohs(h->dest);
 
@@ -499,7 +507,6 @@ checkudp(u8 *dg, iphdr ip, udphdr *h, size_t len)
       default:
 	break;
     }
-
   }
 }
 

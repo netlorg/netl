@@ -3,6 +3,7 @@ MANIFEST
 Makefile
 README
 README.FIRST
+HISTORY
 TODO
 config.c
 config.h
@@ -60,3 +61,4 @@ netl.8
 neta.1
 xd.1
 dcp.1
+dcpclient.c
