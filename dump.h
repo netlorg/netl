@@ -1,5 +1,5 @@
 /*==============================================================================
-| sighandle.h - catch some crash crash conditions so that we can log and exit
+| dump.h - hex file dump routines used by neta and xd
 | 
 | coded and tested under linux 2.0.23, 2.0.26, stealth kernel 2.0.29
 |  by graham the ollis <ollisg@ns.arizona.edu>
@@ -9,14 +9,10 @@
 | changes in some readable manner.
 ==============================================================================*/
 
-#ifndef SIGHANDLE_H
-#define SIGHANDLE_H
+#ifndef DUMP_H
+#define DUMP_H
 
-/*==============================================================================
-| prototypes
-==============================================================================*/
+unsigned char *read(char *fn, size_t *size, size_t max, char *prog);
+void dumpdata(unsigned char *data, size_t size);
 
-void	handle();
-void	sig_handler(int sig);
-
-#endif /* NETL_H */
+#endif

@@ -1,5 +1,5 @@
 /*==============================================================================
-| sighandle.h - catch some crash crash conditions so that we can log and exit
+| global.h - macros everyone needs
 | 
 | coded and tested under linux 2.0.23, 2.0.26, stealth kernel 2.0.29
 |  by graham the ollis <ollisg@ns.arizona.edu>
@@ -9,14 +9,24 @@
 | changes in some readable manner.
 ==============================================================================*/
 
-#ifndef SIGHANDLE_H
-#define SIGHANDLE_H
+#ifndef GLOBAL_H
+#define GLOBAL_H
 
-/*==============================================================================
-| prototypes
-==============================================================================*/
+#ifndef linux
+  #error netl requires linux
+#endif
 
-void	handle();
-void	sig_handler(int sig);
+#define COPYVER "0.92 (c) 1997 Graham THE Ollis <ollisg@ns.arizona.edu>"
 
-#endif /* NETL_H */
+#include <linux/types.h>
+
+typedef __u8 u8;
+typedef __u16 u16;
+typedef __u32 u32;
+
+#define TRUE			1
+#define FALSE			0
+
+extern char *prog;
+
+#endif /* GLOBAL_H */

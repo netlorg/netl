@@ -4,6 +4,10 @@
 |
 | (c) 1997 Graham THE Ollis
 |
+| your free to modify and distribute this program as long as this header is
+| retained, source code is made *freely* available and you document your 
+| changes in some readable manner.
+|
 |  Date       Name	Revision
 |  ---------  --------  --------
 |  08 Feb 97  G. Ollis	created
@@ -16,7 +20,9 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "netl.h"
+#include "global.h"
+#include "resolve.h"
+#include "options.h"
 
 struct listtype {
   u32 ip;				/* ip number: x.x.x.x		*/
@@ -60,7 +66,13 @@ ip2string(u32 ip)
 {
   char			buff[20];
   struct hostent *	herhost;
-  u8 			*tmp;
+  u8 			*tmp = NULL;
+
+  if(!resolveHostnames) {
+    tmp = (char *) &ip;
+    sprintf(buff, "%d.%d.%d.%d", tmp[0], tmp[1], tmp[2], tmp[3]);
+    return addip(buff, ip);
+  }
 
   if((tmp=search(ip)) != NULL)
     return tmp;
@@ -72,13 +84,11 @@ ip2string(u32 ip)
      ((herhost = gethostbyaddr(herhost->h_addr_list[0], 
                           herhost->h_length,
 			  herhost->h_addrtype)) != NULL)
-    ) {
-    tmp = addip(herhost->h_name, ip);
-  } else {
-    tmp = addip(buff, ip);
-  }
+    ) 
+    return addip(herhost->h_name, ip);
 
-  return tmp;
+  /* ELSE */
+  return addip(buff, ip);
 }
 
 /*==============================================================================

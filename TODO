@@ -1,9 +1,14 @@
 before we get to a final release on netl:
 
- * datagram analysis software (for dumped files)
-
  * consider an ipx logger
 
  * better documentation, maybe a man page
 
- * add no hostname resolution option
+ * add running comunication using udp or something.
+
+ * figure out why it's dumping core on sparc linux
+
+ * store the hostname lookup cache as a binary tree
+   (sorted by native version of the IP)
+
+ * hwpassive program to passivly get hardware => IP mappings

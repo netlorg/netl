@@ -1,5 +1,5 @@
 /*==============================================================================
-| sighandle.h - catch some crash crash conditions so that we can log and exit
+| options.h - parse command line options
 | 
 | coded and tested under linux 2.0.23, 2.0.26, stealth kernel 2.0.29
 |  by graham the ollis <ollisg@ns.arizona.edu>
@@ -9,14 +9,16 @@
 | changes in some readable manner.
 ==============================================================================*/
 
-#ifndef SIGHANDLE_H
-#define SIGHANDLE_H
+#ifndef OPTIONS_H
+#define OPTIONS_H
 
-/*==============================================================================
-| prototypes
-==============================================================================*/
+extern int displayVersion;
+extern int resolveHostnames;
+extern char *configfile;
 
-void	handle();
-void	sig_handler(int sig);
+void parsecmdline(int argc, char *argv[]);
+int booleanValue(char c);
+void printusage();
+void parseconfigline(char *buff);
 
-#endif /* NETL_H */
+#endif /* OPTIONS_H */

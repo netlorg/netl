@@ -14,6 +14,8 @@
 |  01 Feb 97  G. Ollis	modified, commented (and debugged)
 |  08 Feb 97  G. Ollis	added IP address resolving.
 |  23 Feb 97  G. Ollis	combined all network monitoring in to single program
+|  28 Feb 97  G. Ollis	.92 added the -z option [ and the log() function to
+|			replace syslog()]
 |=============================================================================*/
 
 char	*id = "@(#)netl by graham the ollis <ollisg@ns.arizona.edu>";
@@ -23,10 +25,18 @@ char	*id = "@(#)netl by graham the ollis <ollisg@ns.arizona.edu>";
 #include <netinet/in.h>
 #include <stdio.h>
 #include <time.h>
+#include <stdarg.h>
 #include <syslog.h>
+
+#include "global.h"
+#include "ether.h"
 
 #include "netl.h"
 #include "sighandle.h"
+#include "io.h"
+#include "options.h"
+#include "config.h"
+#include "resolve.h"
 
 /*==============================================================================
 | Globals
@@ -34,6 +44,7 @@ char	*id = "@(#)netl by graham the ollis <ollisg@ns.arizona.edu>";
 
 struct ifreq oldifr, ifr;
 u32 dumpindex = 0;
+char *prog;
 
 /*==============================================================================
 | int main(int, char **)
@@ -44,28 +55,43 @@ main(int argc, char *argv[])
 {
   pid_t		temp;
 
+  prog = argv[0];
+
+  parsecmdline(argc, argv); 
+  if(displayVersion) {
+    fputs("netl ", stdout);
+    puts(COPYVER);
+  }
+
   if(getuid() != 0) {
     fprintf(stderr, "%s: must be run as root\n", argv[0]);
     return 1;
   }
 
-  if(argc > 2) {
-    fprintf(stderr, "usage: %s [conf-file]\n", argv[0]);
-    return 1;
-  }
-  if(argc == 2) 
-    readconfig(argv[0], argv[1]);
-  else
-    readconfig(argv[0], NETL_CONFIG);
+  preconfig();
+  if(argc != 1) 
+    while(--argc > 0) {
+      argv++;
+      if(argv[0][0] != '-') {
+        parseconfigline(argv[0]);
+        configfile = NULL;
+      }
+    }
 
-  puts("netl 0.91 by graham the ollis <ollisg@ns.arizona.edu>");
+  if(configfile != NULL)
+    readconfig(configfile);
+  postconfig();
 
-  if((temp = fork()) == 0) 
+  if(noBackground)
     return netl(netdevice);
+  else {
+    if((temp = fork()) == 0) 
+      return netl(netdevice);
 
-  if(temp == -1) {
-    fprintf(stderr, "%s: unable to fork\n", argv[0]);
-    return 1;
+    if(temp == -1) {
+      fprintf(stderr, "%s: unable to fork\n", argv[0]);
+      return 1;
+    }
   }
 
   return 0;
@@ -84,7 +110,7 @@ netl(char *dev) {
   unsigned int	fromlen;
 
   openlog("netl", 0, NETL_LOG_FACILITY);
-  syslog(LOG_INFO, "starting netl, logging %s", dev);
+  log("starting netl, logging %s", dev);
   handle();
 
   /*============================================================================
@@ -93,7 +119,7 @@ netl(char *dev) {
   sock = socket(AF_INET, SOCK_PACKET, htons(ETH_P_ALL));
 
   if (sock < 0) {
-    syslog(LOG_ERR, "cannot open raw socket, die\n", stderr);
+    err("cannot open raw socket, die");
     return 1;
   }
 
@@ -109,7 +135,7 @@ netl(char *dev) {
   |===========================================================================*/
 
   if(ioctl(sock, SIOCGIFFLAGS, &ifr) < 0) {
-    syslog(LOG_ERR, "unable to get %s flags, die", dev);
+    err("unable to get %s flags, die", dev);
     return 1;
   }
 
@@ -120,7 +146,7 @@ netl(char *dev) {
   |===========================================================================*/
 
   if(ioctl(sock, SIOCGIFFLAGS, &oldifr) < 0) {
-    syslog(LOG_ERR, "unable to get %s flags, die\n", dev);
+    err("unable to get %s flags, die", dev);
     return 1;
   }
 
@@ -135,7 +161,7 @@ netl(char *dev) {
   |===========================================================================*/
 
   if(ioctl(sock, SIOCSIFFLAGS, &ifr) < 0) {
-    syslog(LOG_ERR, "Unable to set %s flags, die", dev);
+    err("Unable to set %s flags, die", dev);
     return 1;
   } 
 
@@ -150,7 +176,7 @@ netl(char *dev) {
   length = sizeof(name);
 
   if (getsockname(sock, (struct sockaddr *) &name, &length) < 0) {
-    syslog(LOG_ERR, "Error: Can't get socket name, die");
+    err("Error: Can't get socket name, die");
     return 1;
   }
 
@@ -161,7 +187,7 @@ netl(char *dev) {
   for(;;) {
     if((l = recvfrom(sock, buf, 1024, 0, 
                      (struct sockaddr *)&name, &fromlen)) < 0)
-      syslog(LOG_ERR, "Error receiving RAW packet\n");
+      err("Error receiving RAW packet");
     else 
       parsedg(buf, l);
   }
@@ -180,11 +206,11 @@ void dgdump(u8 *dg, char *name, int len)
 
   sprintf(fn, "/tmp/netl/%s-%d-%d", name, getpid(), dumpindex++);
   if((fp=fopen(fn, "w"))==NULL) {
-    syslog(LOG_ERR, "unable to open dump file %s", fn);
+    err("unable to open dump file %s", fn);
     return;
   }
   if(fwrite(dg, 1, len, fp) != len)
-    syslog(LOG_ERR, "error writing to dump file %s", fn);
+    err("error writing to dump file %s", fn);
   fclose(fp);
 }
 
@@ -222,8 +248,7 @@ checkicmp(u8 *dg, struct iphdr ip, struct icmphdr *h, int len)
 
     switch(c->action) {
       case ACTION_LOG:
-        syslog(LOG_NOTICE,
-		"%s %s => %s\n",
+        log(	"%s %s => %s",
                 c->logname,
                 ip2string(ip.saddr),
                 ip2string(ip.daddr));
@@ -292,8 +317,7 @@ checktcp(u8 *dg, struct iphdr ip, struct tcphdr *h, int len)
 
     switch(c->action) {
       case ACTION_LOG:
-        syslog(LOG_NOTICE,
-		"%s %s:%d => %s:%d\n",
+        log(	"%s %s:%d => %s:%d",
                 c->logname,
                 ip2string(ip.saddr),
 		net16(h->source),
@@ -357,8 +381,7 @@ checkudp(u8 *dg, struct iphdr ip, struct udphdr *h, int len)
 
     switch(c->action) {
       case ACTION_LOG:
-        syslog(LOG_NOTICE,
-		"%s %s:%d => %s:%d\n",
+        log(	"%s %s:%d => %s:%d",
                 c->logname,
                 ip2string(ip.saddr),
 		source,

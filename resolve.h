@@ -1,5 +1,5 @@
 /*==============================================================================
-| sighandle.h - catch some crash crash conditions so that we can log and exit
+| resolve.h - ip => hostname resolution and cacheing functions
 | 
 | coded and tested under linux 2.0.23, 2.0.26, stealth kernel 2.0.29
 |  by graham the ollis <ollisg@ns.arizona.edu>
@@ -9,14 +9,17 @@
 | changes in some readable manner.
 ==============================================================================*/
 
-#ifndef SIGHANDLE_H
-#define SIGHANDLE_H
+#ifndef RESOLVE_H
+#define RESOLVE_H
 
 /*==============================================================================
 | prototypes
 ==============================================================================*/
 
-void	handle();
-void	sig_handler(int sig);
+char	*addip(const char *s, u32 ip);
+char	*ip2string(u32 ip);
+char	*search(u32 ip);
+u32	searchbyname(char *);
+void	clearipcache();
 
-#endif /* NETL_H */
+#endif /* RESOLVE_H */

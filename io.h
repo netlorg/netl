@@ -1,5 +1,5 @@
 /*==============================================================================
-| sighandle.h - catch some crash crash conditions so that we can log and exit
+| io.h - io module for deamon/forground class programs
 | 
 | coded and tested under linux 2.0.23, 2.0.26, stealth kernel 2.0.29
 |  by graham the ollis <ollisg@ns.arizona.edu>
@@ -9,14 +9,14 @@
 | changes in some readable manner.
 ==============================================================================*/
 
-#ifndef SIGHANDLE_H
-#define SIGHANDLE_H
+#ifndef IO_H
+#define IO_H
 
-/*==============================================================================
-| prototypes
-==============================================================================*/
+#define TRUE			1
+#define FALSE			0
 
-void	handle();
-void	sig_handler(int sig);
+void log(char *cp,...);
+void err(char *cp,...);
+extern int noBackground;
 
-#endif /* NETL_H */
+#endif

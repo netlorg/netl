@@ -4,7 +4,6 @@
 |
 | this code is (c) 1997 Graham THE Ollis
 |
-|   this program is now written like it should be.
 |   your free to modify and distribute this program as long as this header is
 |   retained, source code is made *freely* available and you document your 
 |   changes in some readable manner.
@@ -19,70 +18,23 @@
 #include <string.h>
 #include <stdlib.h>
 #include <netdb.h>
-#include "netl.h"
+
+#include "global.h"
+#include "ether.h"
+
+#include "config.h"
+#include "resolve.h"
+#include "lookup.h"
 
 /*==============================================================================
 | globals
 ==============================================================================*/
 
 static int line=0;
-static char *prog = NULL;
 struct configlist icmp_req, tcp_req, udp_req;
 int configmax = 0;
 char *emptystring = "";
 char netdevice[255] = "eth0";
-
-/*==============================================================================
-| lookup tables
-==============================================================================*/
-
-struct lookupitem {
-  int	index;
-  char	*name;
-};
-
-#define MAXICMPTYPE		13
-static struct lookupitem icmptype[MAXICMPTYPE] = 
-			      { {ICMP_ECHOREPLY,	"echoreply"},
-				{ICMP_DEST_UNREACH,	"dest_unreach"},
-				{ICMP_SOURCE_QUENCH,	"source_quench"},
-				{ICMP_REDIRECT,		"redirect"},
-				{ICMP_ECHO,		"echo"},
-				{ICMP_TIME_EXCEEDED,	"time_exceeded"},
-				{ICMP_PARAMETERPROB,	"parameterprob"},
-				{ICMP_TIMESTAMP,	"timestamp"},
-				{ICMP_TIMESTAMPREPLY,	"timestampreply"},
-				{ICMP_INFO_REQUEST,	"info_request"},
-				{ICMP_INFO_REPLY,	"info_reply"},
-				{ICMP_ADDRESS,		"address"},
-				{ICMP_ADDRESSREPLY,	"addressreply"}
-			      };
-
-#define MAXICMPCODE		22
-static struct lookupitem icmpcode[MAXICMPCODE] =
-			      { {ICMP_NET_UNREACH,	"net_unreach"},
-				{ICMP_HOST_UNREACH,	"host_unreach"},
-				{ICMP_PROT_UNREACH,	"prot_unreach"},
-				{ICMP_PORT_UNREACH,	"port_unreach"},
-				{ICMP_FRAG_NEEDED,	"frag_needed"},
-				{ICMP_SR_FAILED,	"sr_failed"},
-				{ICMP_NET_UNKNOWN,	"net_unknown"},
-				{ICMP_HOST_UNKNOWN,	"host_unknown"},
-				{ICMP_HOST_ISOLATED,	"host_isolated"},
-				{ICMP_NET_ANO,		"net_ano"},
-				{ICMP_HOST_ANO,		"host_ano"},
-				{ICMP_NET_UNR_TOS,	"net_unr_tos"},
-				{ICMP_HOST_UNR_TOS,	"host_unr_tos"},
-				{ICMP_PKT_FILTERED,	"pkt_filtered"},
-				{ICMP_PREC_VIOLATION,	"prec_violation"},
-				{ICMP_PREC_CUTOFF,	"prec_cutoff"},
-				{ICMP_REDIR_NET,	"redir_net"},
-				{ICMP_REDIR_HOST,	"redir_host"},
-				{ICMP_REDIR_NETTOS,	"redir_nettos"},
-				{ICMP_REDIR_HOSTTOS,	"redir_hosttos"},
-				{ICMP_EXC_TTL,		"exc_ttl"},
-				{ICMP_EXC_FRAGTIME,	"exc_fragtime"}
-			      };
 
 /*==============================================================================
 | copyname
@@ -326,42 +278,18 @@ additem(struct configlist *l, struct configitem *c)
 }
 
 /*==============================================================================
-| readconfig(char *prog)
-|
-|  this function reads the config file and alters the config structure
-|  apropriately
+| parse a single config line
 ==============================================================================*/
 
 void
-readconfig(char *programname, char *confname)
+parseconfigline(char *buff)
 {
-  FILE		*fp;
-  char		buff[NETL_CONFIG_MAXWIDTH];
   char		*tokens[NETL_CONFIG_MAXTOKENS];
   int		i,n;
   u32		tmp;
   struct configitem
 		citem;
 
-  prog = programname;
-
-  setlist(&icmp_req);
-  setlist(&tcp_req);
-  setlist(&udp_req);
-
-  if((fp=fopen(confname, "r")) == NULL) {
-    fprintf(stderr, "%s: error opening %s for read\n", prog, NETL_CONFIG);
-    exit(2);
-  }
-
-  setservent(TRUE);
-
-  while(fgets(buff, NETL_CONFIG_MAXWIDTH, fp) != NULL) {
-    line++;
-
-    /* skip comment lines */
-    if(buff[0] == '#') 
-      continue;
 
     /* tokenize the config line */
     tokens[0] = strtok(buff, "\t\n ");
@@ -371,24 +299,24 @@ readconfig(char *programname, char *confname)
 
     /* blank line, go to the next one */
     if(tokens[0] == NULL)
-      continue;
+      return;
 
     if(!strcmp(tokens[0], "device")) {
       if(tokens[1] == NULL) 
-        continue;
+        return;
       strncpy(netdevice, tokens[1], 255);
-      continue;
+      return;
     }
 
     if(i < 3) {
       fprintf(stderr, "%s: warning: bad config line %d\n", prog, line);
-      continue;
+      return;
     }
 
     if(!strcmp(tokens[0], "alias")) {
       modifyip(&tmp, tokens[2]);
       addip(tokens[1], tmp);
-      continue;
+      return;
     }
 
     memset(&citem, 0, sizeof(struct configitem));
@@ -408,7 +336,7 @@ readconfig(char *programname, char *confname)
     else {
       fprintf(stderr, "%s: warning: unknown action %s (line %d)\n", 
               prog, tokens[0], line);
-      continue;
+      return;
     }
 
     /*==========================================================================
@@ -427,7 +355,7 @@ readconfig(char *programname, char *confname)
     else {
       fprintf(stderr, "%s: warning: unknown protocol %s (line %d)\n", 
               prog, tokens[1], line);
-      continue;
+      return;
     }
 
     /*==========================================================================
@@ -592,10 +520,66 @@ readconfig(char *programname, char *confname)
 	break;
     }
 
-  }
-  endservent();
+}
 
+/*==============================================================================
+| what happens before and after you do the config stuff.
+==============================================================================*/
+
+void
+preconfig()
+{
+  setlist(&icmp_req);
+  setlist(&tcp_req);
+  setlist(&udp_req);
+}
+
+void
+postconfig()
+{
   resizelist(&icmp_req, icmp_req.index);
   resizelist(&tcp_req, tcp_req.index);
   resizelist(&udp_req, udp_req.index);
+}
+
+/*==============================================================================
+| readconfig(char *prog)
+|
+|  this function reads the config file and alters the config structure
+|  apropriately
+==============================================================================*/
+
+void
+readconfig(char *confname)
+{
+  FILE		*fp;
+  char		buff[NETL_CONFIG_MAXWIDTH];
+  int		i;
+
+  if((fp=fopen(confname, "r")) == NULL) {
+    fprintf(stderr, "%s: error opening %s for read\n", prog, confname);
+    exit(2);
+  }
+
+  setservent(TRUE);
+
+  while(fgets(buff, NETL_CONFIG_MAXWIDTH, fp) != NULL) {
+    line++;
+
+    /* skip comment lines */
+    if(buff[0] == '#') 
+      continue;
+
+    for(i=0; buff[i]; i++) {
+      if(buff[i] == '#') {
+        buff[i] = 0;
+        break;
+      }
+    }
+
+    parseconfigline(buff);
+
+  }
+
+  endservent();
 }
