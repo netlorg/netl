@@ -2,7 +2,7 @@
 | ip4
 |   parse an ip datagram (IP 4)
 |
-|   Copyright (C) 1999 Graham THE Ollis <ollisg@wwa.com>
+|   Copyright (C) 1999 Graham THE Ollis <ollisg@netl.org>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -60,10 +60,7 @@ check(u8 *dg, size_t len)
 			)
 			continue;
 
-			if(c->action == ACTION_IGNORE)
-				return;
-			if(!*(c->action_done))
-				c->actionf(dg, c, len);
+		act(dg, c, len);
 
 	}
 }

@@ -1,5 +1,5 @@
 /*==============================================================================
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@netl.org>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 /* the IP specific portions are for IPv4 only */
 
 #define all_packets \
-	((c->action_done != NULL) && (*c->action_done))		||\
 	(c->check_src_hw && memcmp(c->src_hw, dg +6, 6) != 0 )  ||\
 	(c->check_dst_hw && memcmp(c->dst_hw, dg, 6) != 0 ) 	||\
 	(c->check_src_hw_not && memcmp(c->src_hw_not, dg +6, 6) == 0) ||\
@@ -47,3 +46,11 @@
 				ntohs(h->dest) < ntohs(c->dst_prt2)))
 
 
+#define act(dg, ci, len) {						\
+		int i;							\
+		for(i=0; i<ci->num_actionmod; i++) {			\
+			if(!*(ci->actionmod[i].action_done)) {		\
+				ci->actionmod[i].action(dg, ci, len);	\
+			}						\
+		}							\
+	}

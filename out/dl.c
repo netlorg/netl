@@ -1,8 +1,8 @@
 /*==============================================================================
 | log/dump output module for netl
-|   by Graham THE Ollis <ollisg@wwa.com>
+|   by Graham THE Ollis <ollisg@netl.org>
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@netl.org>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -81,8 +81,7 @@ construct(void)
 
 	action_dump = nmsym(handle_dump, "action");
 	if(action_dump == NULL) {
-		err("could not resolve necessary sysmbols in %s!", buffer);
-		exit(1);
+		die(1, "could not resolve necessary sysmbols in %s!", buffer);
 	}
 
 }

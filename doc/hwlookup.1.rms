@@ -1,0 +1,87 @@
+#TITLE hwlookup
+#SECTION 1
+#HEAD CORE software
+#TAIL 23 July 1999
+#START
+
+#H NAME
+
+i<hwlookup> - query the ethernet hardware address database off-line.
+
+#H SYNOPSIS
+
+i<hwlookup> [options] address [ address [ ... ] ]
+
+#H DESCRIPTION
+
+when sa<hwpassive>(8) exits, it leaves behind a database of the new
+address mappings it has found.  while sa<hwpassive>(8) is running, you
+are incouraged to use its set of sa<dcp>(1) commands to query the
+database realtime.  when it is not running, you can use i<hwlookup>
+instead.
+
+addess can either be an IP address, or a ethernet hardware address.  IP
+addresses must be specified as a dotted decimal, but may be followed by a
+netmask.  ie.
+
+% hwlookup 150.135.0.0/16
+
+returns all entries for the 150.135 subnet.  for ethernet hardware
+addresses, you need only specify the first digits if you wish, ie
+
+% hwlookup 00:d0:c0
+
+will match all ethernet hardware addresses beginning with the prefix
+00:d0:c0.
+
+there are two output modes, short and long.  the long mode is default and
+spits out more information.  here is an example of a long output
+
+==============================================
+HW:             00:c0:4f:93:6d:8c
+IP:             128.196.51.111
+first seen:     Fri Jul 23 11:42:32 1999
+last seen:      Fri Jul 23 12:18:34 1999
+card info:      Dell
+
+b<HW> and b<IP> are clearly the hardware/IP address mappings.  
+b<first seen> and b<last seen> are respectively the first and last time
+the mapping had been seen by sa<hwpassive>(8).  b<card info> specifies the
+vendor who uses the 3 byte prefix, if found in the hwcode database of
+known manufacturer/prefix mappings.
+
+note that the database file used by hwpassive and hwlookup are specific
+to their version of netl, and are also not platform portable.
+
+#H OPTIONS
+
+-v, -r, --resolve, --dont-resolve, -d, --debug, --help work as described
+in the sa<netl>(8) man page.
+
+
+b<-f>i<filename>, b<--file> i<filename>
+	specifies the database file which should be read, instead of
+/usr/local/lib/netl/hwpassive.
+
+b<-s>, b<--short>
+	use short output mode.  only the hardware/IP address mapping will
+be printed on a single line.
+
+b<-l>, b<--long>
+	use long output mode.  the address mapping will be followed by
+the time the mapping was first seen, last seen, and the manufacturer of
+the card, if known.
+
+#H HISTORY
+
+the genesis for this program came about when the author and a friend of
+his were tracking quake users on their university LAN.  thanks to the
+networking knowledge of said friend, determined programming of the author,
+and dominos pizza, we were able to track nearly every anonymous quaker to
+an email address, phone number, dorm, and sometimes even their room
+number.
+
+note that neither the author, nor the author's friend play quake anymore,
+and do not condone the senseless violence in many of today's video games.
+
+#EXEC tail

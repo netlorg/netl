@@ -1,0 +1,274 @@
+<html><head><title>CORE software : netl(8)</title></head>
+<body bgcolor=#f1f1f1 text=#000000 link=#0000ff vlink=#9090ff>
+<h2>CORE software : netl(8)</h2>
+<h3>table of content</h3>
+<ul>
+  <li><a href=#sec1>NAME</a>
+  <li><a href=#sec2>SYNOPSIS</a>
+  <li><a href=#sec3>DESCRIPTION</a>
+  <li><a href=#sec4>OPTIONS</a>
+  <li><a href=#sec5>PORTABILITY</a>
+  <li><a href=#sec6>CREDITS</a>
+  <li><a href=#sec7>SEE ALSO</a>
+  <li><a href=#sec8>BUGS</a>
+  <li><a href=#sec9>COPYING</a>
+  <li><a href=#sec10>AUTHOR</a>
+
+</ul>
+<p>
+<a name=sec1><h3>NAME</h3>
+
+<p>
+ <i>netl</i> - customizable network logger and sniffer
+<p>
+<a name=sec2><h3>SYNOPSIS</h3>
+
+<p>
+ <i>netl</i> [options] ['config rule'] [...]
+<p>
+<a name=sec3><h3>DESCRIPTION</h3>
+
+<p>
+ <i>netl</i> is a customizable low level network logger.
+<p>
+ <i>netl</i> can be configured to look for particular TCP, UDP or ICMP
+packets, or can be setup to look for generic IP packets or even raw
+ethernet frames.
+<p>
+ <i>netl's</i> TCP filters allow individual SYNs and ACKs (or any combination
+of flags) to be logged, or dumped into a file for later perusal.  the
+companion program  <a href=neta.1.html>neta (1)</a> is used to disassemble those packets in a
+human readable form.  typically, when a packet is dumped, it is sent into
+/usr/local/lib/netl/dump, which should be readable only to root.
+<p>
+ <i>netl</i> is customizable and extendable.  version 1.02 introduces a highly
+modular design, which allows you to write your own low level filters and
+action modules in c.  for more information see the  <a href=netl_module.1.html>netl_module (1)</a> man
+page.
+<p>
+ <i>netl</i> deals with low level packets and is not concerned with source or
+destination addresses.  by default, these fields in a IP packet are not
+checked, so  <i>netl</i> can be used as a sniffer, in order to examine packets
+which are caught by the interface, but not necessarily intended for your
+machine.  sniffers are legitimate software, so long as you don't misuse
+them.  DO NOT MISUSE  <i>netl</i> , IT IS FORBIDDEN BY THE AUTHOR.
+<p>
+ <i>netl</i> can be configured in one of three possible ways.  the first, and
+most common is through a configuration file.  see  <a href=netl.conf.5.html>netl.conf (5)</a> for
+specific details on the format of that file.  the second is by specifying
+a rule on the command line.  in this case, the configuration file will
+not be read, and only rules specified on the command line will be used.  
+this is typically useful for debugging netl and constructing new rules
+for testing.  the -z option is suggested in this case.  the final method
+of configuring  <i>netl</i> is to write a filter or output module your self.  
+this is by far the most efficient, but also the most time consuming, as
+such modules must be written in C.  see the  <a href=netl_module.1.html>netl_module (1)</a> man page
+for details.
+<p>
+<a name=sec4><h3>OPTIONS</h3>
+
+<p>
+all boolean options can be followed by a + or - to turn the value on or
+off (respectively).  the default is to turn the option on, even if the
+default value is also on.
+<p>
+ <b>-f</b> <i>filename</i> ,  <b>--file</b> <i>filename</i> 
+<p>
+	use an alternative config file.  if this option is not specified,
+then /etc/netl.conf shall be used.
+<p>
+ <b>-z</b> ,  <b>--foreground</b> ,  <b>--background</b> 
+<p>
+	run netl in the foreground, and send output to stdout.
+<p>
+ <b>-o</b> <i>filename</i> ,  <b>--tee</b> <i>filename</i> 
+<p>
+	when used with -z, this option sends output to filename as well
+as stdout.
+<p>
+ <b>-r</b> ,  <b>--resolve</b> ,  <b>--dont-resolve</b> 
+<p>
+	resolve IP numbers into fully qualified internet addresses, when
+logging packets.  by default this is on.
+<p>
+ <b>-d</b> ,  <b>--debug</b> 
+<p>
+	print out configuration and quit.
+<p>
+ <b>-h</b> ,  <b>--help</b> 
+<p>
+	print out usage and quit.
+<p>
+ <b>-i</b> <i>module</i> ,  <b>--input</b> <i>module</i> 
+<p>
+	use  <i>module</i> as the input module.  by default, the module
+default is used (which should be a symbolic link to the appropriate
+module on your architecture).
+<p>
+ <b>-L</b> <i>dir</i> ,  <b>--lib-dir</b> <i>dir</i> 
+<p>
+	specify an alternate module directory.  by default,
+/usr/local/lib/netl is used.
+<p>
+ <b>--generate-c</b> 
+<p>
+	generate a netl module in c format which can then be compiled by
+gcc.  typically, this is done through the netl compiler,  <a href=netlcc.1.html>netlcc (1)</a> .
+<p>
+ <b>--output-name</b> <i>filename</i> 
+<p>
+	when generating a c file (via that  <b>--generate-c</b> option), this
+option specifies the c file name.  this is generally invoked by
+ <a href=netlcc.1.html>netlcc (1)</a> .
+<p>
+ <b>--stdout</b> 
+<p>
+	combination of  <b>--generate-c</b> and  <b>--output-name</b> which sends the C
+code to stdout.
+<p>
+ <b>--dump-dir</b> directory
+<p>
+	specify a directory to put dumped datagrams into.  this is by
+default /usr/local/lib/netl/dump
+<p>
+ <b>-6</b> 
+<p>
+	use experimental IPv6 filters.  netl has special IPv6 filters
+which it uses when this option is invoked.  netl will still filter IPv4
+packets correctly.  see  <a href=netl.conf.5.html>netl.conf (5)</a> for more information.
+<p>
+<a name=sec5><h3>PORTABILITY</h3>
+
+<p>
+an older version of  <i>netl</i> reportedly dumps core on sparc linux.  i do
+not have access to this platform so i have no idea why.  if someone could
+help me out in this area i would appreciate it.
+<p>
+ <i>netl</i>  <i>should</i> work on any linux platform.  however i've only been
+able to test it on intel and alpha linux.  i have made consideration of
+the possibility that the platform  <i>netl</i> is compiled on may not in fact
+be little endian.  the big endian code is actually simpler and leads me
+to think big endian hardware is better for networking--but i have no bid
+endian hardware to test this on.
+<p>
+ <i>netl</i> probably will not work on any other unix platform with out a lot
+of work.  if you are successful in porting  <i>netl</i> to other platforms,
+please let me know what you did and i can add the appropriate code to my
+ <i>netl</i> source.  what you will need to do, is create an input module for
+your platform.  take a look at in/stub.c for a stub module.  the rest of
+the code is pretty good portable ANSI C code.
+<p>
+i have attempted porting  <i>netl</i> to Windows 32, but have failed
+miserably.  i have never in my life encountered an operating system which
+was more programmer hostile in my life.  i have experience with VMS mind
+you.
+<p>
+<a name=sec6><h3>CREDITS</h3>
+
+<p>
+tyler parsons
+<p>
+i couldn't have done this program without the networking knowledge of
+tyler parsons.  even after that, his alpha/beta testing has been
+extremely useful in making netl what it is today.
+<p>
+gordon lyon
+<p>
+fellow computer science student, and handy dandy beta tester.
+<p>
+jeff thompson
+<p>
+early versions of netl were heavily derived from a program by jeff
+thompson which didn't even quite work right.  i had to debug and correct
+it.  when i got deeper in to the problem i discovered that his
+`synlogger' (as it was called) was highly specialized and didn't have to
+be.  netl was thus born.
+<p>
+graham the ollis <ollisg@netl.org>
+<p>
+my name is graham the ollis, i'm a computer science/math major at the
+university of arizona.  or private contractor working as CORE software.  
+if you have anything relevant or non-relevant to say about netl then i
+would certainly like to hear from you.  especially if you have
+improvements for netl.
+<p>
+<a name=sec7><h3>SEE ALSO</h3>
+
+<p>
+ <a href=netl.8.html>netl (8)</a> ,  <a href=netl.conf.5.html>netl.conf (5)</a> ,  <a href=netlcc.1.html>netlcc (1)</a> ,  <a href=netl_install.1.html>netl_install (1)</a> ,
+ <a href=netl_module.1.html>netl_module (1)</a> ,  <a href=neta.1.html>neta (1)</a> ,  <a href=hwpassive.8.html>hwpassive (8)</a> ,  <a href=hwlookup.1.html>hwlookup (1)</a> ,
+ <a href=dcp.1.html>dcp (1)</a> and  <a href=xd.1.html>xd (1)</a> 
+<p>
+<a name=sec8><h3>BUGS</h3>
+
+<p>
+there are almost certainly bugs, please report them to me.  send bugs and
+bug fixes to netl@netl.org.  the netl home page is at
+<a href=http://www.netl.org,>http://www.netl.org,</a>which should contain up to date information on
+ <b>netl</b> .
+<p>
+i have attempted to write pretty readable documentation, however, i'm not
+really the best technically writer.  if you are, maybe we could
+colaborate?
+<p>
+<a name=sec9><h3>COPYING</h3>
+
+<p>
+Copyright 1996, 1997, 1999 Graham THE Ollis
+<p>
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+<p>
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License for more details.
+<p>
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+675 Mass Ave, Cambridge, MA 02139, USA.
+<p>
+<p>
+<a name=sec10><h3>AUTHOR</h3>
+
+<p>
+Graham THE Ollis <ollisg@netl.org>
+
+
+<center><img src=coreLine.gif alt=
+"----------------------------------------------------------------------">
+</center>
+
+
+<a name=contact></a>
+<h3>Contact Information</h3>
+
+<p>You can contact the netl team at <a
+href=mailto:netl@netl.org>netl@netl.org</a>.
+
+<center><img src=coreLine.gif alt=
+"----------------------------------------------------------------------">
+</center>
+
+<center>
+[
+<a href=http://www.whitedactyl.com/ollisg/>Tarquin Hill</a> |
+<a href=http://www.whitedactyl.com/core/>CORE</a> |
+<a href=http://www.netl.org/>netl</a>
+]
+</center>
+<center><img src=coreLine.gif alt=
+"----------------------------------------------------------------------">
+</center>
+
+<address><center>
+<a href=http://www.whitedactyl.com/ollisg/>ollisg</a>
+(<a href=mailto:netl@netl.org>netl@netl.org</a>)
+</center></address>
+<center><h6>
+<img src=copyright.gif alt="(c)"> 1999 CORE software international
+</h6></center>
+</body></html>
+

@@ -2,9 +2,7 @@
 | tcp4
 |   parse a tcp datagram. (IP 4)
 |
-|   optimized (and debugged) by Graham THE Ollis <ollisg@wwa.com>
-|
-|   Copyright (C) 1999 Graham THE Ollis <ollisg@wwa.com>
+|   Copyright (C) 1999 Graham THE Ollis <ollisg@netl.org>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -68,10 +66,6 @@ check(u8 *dg, size_t len)
 		if(ip_packets) continue;
 		if(tcp_and_udp_packets)	continue;
 
-/*		log("check_tcp_flags_on:%d", c->check_tcp_flags_on);
-		log("(flags & c->tcp_flags_on) != c->tcp_flags_on == (%d & %d == %d) != %d == %d",
-			flags, c->tcp_flags_on, flags & c->tcp_flags_on, c->tcp_flags_on, (flags & c->tcp_flags_on) != c->tcp_flags_on);
-*/
 		if(
 
 			 /*=======================================================================
@@ -86,10 +80,7 @@ check(u8 *dg, size_t len)
 			)
 			continue;
 
-			if(c->action == ACTION_IGNORE)
-				return;
-			if(!*(c->action_done))
-				c->actionf(dg, c, len);
+			act(dg, c, len);
 	}
 }
 

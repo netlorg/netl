@@ -14,7 +14,9 @@ tcp4.so tcp6.so tcp.so \
 udp4.so udp6.so udp.so \
 ignp.so \
 raw.so \
-dcp.so ping.so gnr.so tcp4_next.so hwpassive.so
+dcp.so ping.so gnr.so hwpassive.so
+
+#tcp4_next.so 
 
 all:$(FILT_MODULES)
 

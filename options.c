@@ -2,7 +2,7 @@
 | options.c
 |   parse the command line options for the netl/neta project
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@netl.org>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -70,7 +70,7 @@ openteefile(char *s)
 	teefile = fopen(s, "a");
 	if(teefile == NULL) {
 		fprintf(stderr, "%s: error opening %s for append\n", prog, s);
-		exit(1);
+		die(1, "%s: error opening %s for append\n", prog, s);
 	}
 }
 #endif
@@ -99,6 +99,12 @@ parsecmdline(int argc, char *argv[])
 			if(argv[0][1] == '-') {		/* long options... */
 				if(!strcmp("--foreground", argv[0]))
 					noBackground = 1;
+				if(!strcmp("--pipe", argv[0]))
+					#ifdef OPTIONS_NETL
+						lookup_act("pipe", ACTION_PIPE);
+					#else
+						;
+					#endif
 				else if(!strcmp("--long", argv[0]))
 					hwlookup_mode = HWLOOKUP_LONG;
 				else if(!strcmp("--short", argv[0]))
@@ -266,6 +272,7 @@ where options can be any of the following:
 			by default, this is /usr/local/lib/netl/dump
     --stdout		a combination of --generate-c and --output-name which
 			sends the netl module c code to stdout.
+    --pipe		force loading of the pipe (output) module
 -l, --long		hwlookup detailed output mode (default)
 -s, --short		hwlookup short output mode
 -n			hwlookup only count answers to the query

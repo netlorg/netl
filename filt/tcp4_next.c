@@ -2,9 +2,7 @@
 | tcp4_next
 |   parse a tcp datagram. (IP 4).  check falgs on first packet, but not next x.
 |
-|   optimized (and debugged) by Graham THE Ollis <ollisg@wwa.com>
-|
-|   Copyright (C) 1999 Graham THE Ollis <ollisg@wwa.com>
+|   Copyright (C) 1999 Graham THE Ollis <ollisg@netl.org>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by

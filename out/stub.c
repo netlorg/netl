@@ -1,8 +1,8 @@
 /*==============================================================================
 | stub output module for netl
-|   by Graham THE Ollis <ollisg@wwa.com>
+|   by Graham THE Ollis <ollisg@netl.org>
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@netl.org>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by

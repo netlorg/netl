@@ -1,6 +1,6 @@
 /*==============================================================================
 | filter.c "hey man, nice shot!"
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@netl.org>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -81,6 +81,7 @@ lookup_filter(char *name, int filter_code)
 	filt_mod fm;
 	char buffer[1024];
 	extern char *so_path, *filt_path;
+	extern int netl_nmopen_pretend;
 
 	if(!useIPv6) {
 		if(!strcmp(name, "icmp")) {
@@ -109,7 +110,13 @@ lookup_filter(char *name, int filter_code)
 
 	snprintf(buffer, 1024, "%s/%s/%s.so", so_path, filt_path, name);
 	fm.handle = nmopen(buffer);
-	fm.cf = nmsym(fm.handle, "req");	// that's short for requirement, in case your totally confused... ;)
+
+	if(netl_nmopen_pretend) {
+		fm.cf = allocate(sizeof(struct configlist));
+	} else {
+		fm.cf = nmsym(fm.handle, "req");	// that's short for requirement, in case your totally confused... ;)
+	}
+
 	set_config_list(fm.cf);
 	fm.check = nmsym(fm.handle, "check");
 	fm.name = allocate(strlen(name)+1);

@@ -1,8 +1,8 @@
 /*==============================================================================
 | netl
-|   optimized (and debugged) by Graham THE Ollis <ollisg@wwa.com>
+|   optimized (and debugged) by Graham THE Ollis <ollisg@netl.org>
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@netl.org>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@
 |			of this module and put it in to grab.c.
 |=============================================================================*/
 
-static char	*id = "@(#)netl by graham the ollis <ollisg@wwa.com>";
+static char	*id = "@(#)netl by graham the ollis <ollisg@netl.org>";
 static void dumb(char *d) { dumb(id); }
 
 #include <errno.h>
@@ -70,10 +70,13 @@ static void dumb(char *d) { dumb(id); }
 int
 main(int argc, char *argv[])
 {
+	extern int netl_nmopen_pretend;
 #ifndef NO_SYSLOGD
 	pid_t		temp;
 #endif
 	prog = argv[0];
+
+	/* netl_nmopen_pretend = 1; */
 
 	//setservent(TRUE);
 	parsecmdline(argc, argv); 
@@ -122,6 +125,14 @@ main(int argc, char *argv[])
 		fclose(fp);
 		return 0;
 	}
+
+	/*if(filters != NULL) {
+		int i;
+		for(i=0; i < filters->cf->index; i++) {
+			printf("%d:%s\n", 
+				i, netl_config_y_2str(&filters->cf->c[i]));
+		}
+	}*/
 
 #ifndef NO_SYSLOGD
 	if(noBackground)

@@ -2,7 +2,7 @@
 | resolve.c
 |   do host name look ups in something of an efficent manner
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@netl.org>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -64,7 +64,7 @@ reverse_dump(FILE *fp, listtype *l)
 		u8 *ptr;
 
 		ptr = (u8 *) &l->ip;
-		fprintf(fp, "\taddip(\"%s\", htonl(0x%08x); /* %u.%u.%u.%u */ \n",
+		fprintf(fp, "\taddip(\"%s\", htonl(0x%08x)); /* %u.%u.%u.%u */ \n",
 				l->name, ntohl(l->ip),
 				ptr[0], ptr[1], ptr[2], ptr[3]);
 	}

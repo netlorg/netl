@@ -14,7 +14,7 @@ netl [options] ['config rule'] [...]
 
 DESCRIPTION
 
-netl intended to be a customizable low level network logger.
+netl is a customizable low level network logger.
 
 netl can be configured to look for particular TCP, UDP or ICMP
 packets, or can be setup to look for generic IP packets or even raw
@@ -169,7 +169,7 @@ it.  when i got deeper in to the problem i discovered that his
 `synlogger' (as it was called) was highly specialized and didn't have to
 be.  netl was thus born.
 
-graham the ollis <ollisg@wwa.com>
+graham the ollis <ollisg@netl.org>
 
 my name is graham the ollis, i'm a computer science/math major at the
 university of arizona.  or private contractor working as CORE software.  
@@ -187,10 +187,10 @@ dcp(1) and xd(1)
 
 BUGS
 
-there are almost certainly bugs, please report them to me.  my email
-address is Graham Ollis <ollisg@wwa.com>, and the CORE home page is at
-http://www.wwa.com/~ollisg/netl/index.html, which should contain up to
-date information on netl.
+there are almost certainly bugs, please report them to me.  send bugs and
+bug fixes to netl@netl.org.  the netl home page is at
+http://www.netl.org, which should contain up to date information on
+netl.
 
 i have attempted to write pretty readable documentation, however, i'm not
 really the best technically writer.  if you are, maybe we could
@@ -219,4 +219,4 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 AUTHOR
 
-Graham THE Ollis <ollisg@wwa.com>
+Graham THE Ollis <ollisg@netl.org>

@@ -1,8 +1,8 @@
 /*==============================================================================
 | neta
-|   code by Graham THE Ollis <ollisg@wwa.com>
+|   code by Graham THE Ollis <ollisg@netl.org>
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@netl.org>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 |			moved read() and dumpdata() to dump.c
 |=============================================================================*/
 
-static char	*id = "@(#)neta (c) 1997 graham the ollis <ollisg@wwa.com>";
+static char	*id = "@(#)neta (c) 1997 graham the ollis <ollisg@netl.org>";
 static void dumb(char *c) { dumb(id); }
 
 #include <stdio.h>

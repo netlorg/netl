@@ -46,6 +46,21 @@ be used later in the configuration file (with the b<dstip=> and b<srcip=>
 options), and is also used to report the hostname to sa<syslogd>(8) when
 a log is triggered.
 
+b<dir lib> "directory"
+
+enables you to specify the directory where netl will look in order to
+find dynamic netl modules.  see sa<netl_modules>(1) for more information.
+by placing this strategically, you can draw modules from various
+different directories, though i don't see much point in this.  this is
+equivalent to the --lib-dir command line option.  see sa<netl>(8) for
+more information on that.
+
+b<dir dump> "directory"
+
+allows you to specify the directory netl will dump packets to when the
+dump action rule is used.  similar notations as to the b<dir lib> rule.  
+equivalent to the --dump-dir command line option.
+
 #H ACTION RULES
 
 rule syntax is as follows:

@@ -2,7 +2,7 @@
 | sighandle.c
 |   catch some simple signals 
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@netl.org>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -98,9 +98,8 @@ sig_handler(int sig)
 
 		default: break;
 	}
-	err("caught signal %d, die", sig);
 	cleanup();
-	exit(1);
+	die(1, "caught signal %d, die", sig);
 }
 
 /*==============================================================================

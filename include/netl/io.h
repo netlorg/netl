@@ -2,9 +2,9 @@
 | io.h - io module for deamon/forground class programs
 | 
 | coded and tested under linux 2.0.23, 2.0.26, stealth kernel 2.0.29
-|  by graham the ollis <ollisg@wwa.com>
+|  by graham the ollis <ollisg@netl.org>
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@netl.org>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -24,18 +24,23 @@
 #ifndef IO_H
 #define IO_H
 
-void log(char *cp,...);		/* syslod()/printf() */
-void err(char *cp,...);		/* syslog()/fprintf(stderr) */
+void netl_log(char *cp,...);		/* syslod()/printf() */
+void netl_err(char *cp,...);		/* syslog()/fprintf(stderr) */
+void netl_die(int, char *, ...);
 
-void *allocate(size_t size);	/* malloc with protection */
+char *netl_death_message;
+
+void *netl_allocate(size_t size);	/* malloc with protection */
 
 #ifdef NO_SYSLOGD
   #define ope(s)		/* it's the amazing do nothing function */
   #define clo()			/* actually this is even more amazing,
 				   it does nothing with nothing!	*/
 #else
-  void ope(char *s);		/* openlog/noop */
-  void clo();			/* closelog/noop */
+  void netl_ope(char *s);		/* openlog/noop */
+  void netl_clo();			/* closelog/noop */
+  #define ope(derf) netl_ope(derf)
+  #define clo() netl_clo()
   extern int noBackground;
 #endif
 
@@ -43,10 +48,19 @@ void *allocate(size_t size);	/* malloc with protection */
   extern FILE *teefile;		/* -o file */
 #endif
 
-void *nmopen(char *name);
-int nmclose(void *handle);
-void *nmsym(void *handle, char *symbol);
+void *netl_nmopen(char *name);
+int netl_nmclose(void *handle);
+void *netl_nmsym(void *handle, char *symbol);
 
-int ahextoi(char *s);
+int netl_ahextoi(char *s);
+
+#define log netl_log
+#define err netl_err
+#define die netl_die
+#define allocate(fred) netl_allocate(fred)
+#define nmopen(derf) netl_nmopen(derf)
+#define nmclose(derf) netl_nmclose(derf)
+#define nmsym(derf, fred) netl_nmsym(derf, fred);
+#define ahextoi(derf) netl_ahextoi(derf)
 
 #endif

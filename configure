@@ -1,10 +1,10 @@
 #!/bin/sh
 
 SYSTEM=`./system.guess`
-VER="1.07"
+VER="1.08"
 TDR_VER="1.00"
 NETL_VER_MAJOR=1
-NETL_VER_MINOR=7
+NETL_VER_MINOR=8
 
 if test "$CFLAGS" = "" ; then
 	CFLAGS="-O3 -Wall"
@@ -51,6 +51,10 @@ while test "$1" != ""; do
 
 		--conffile=*)
 			CONFFILE=$opt
+		;;
+
+		--with-perl=*)
+			PERL=$opt
 		;;
 
 		--prefix=*)
@@ -157,37 +161,37 @@ echo configuring for $SYSTEM
 # compiler test
 ################################################################################
 
-cat > test_prog.c <<EOF
+cat > ./test_prog.c <<EOF
 #include <stdio.h>
 int main(int arcg, char *argv[]) { printf("hello world\n"); return 0;}
 EOF
 
 rm -f configure.out
-echo "% $CC $CFLAGS $LDFLAGS test_prog.c -o test_prog" >> configure.out
+echo "% $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog" >> configure.out
 
-if $CC $CFLAGS $LDFLAGS test_prog.c -o test_prog >> configure.out 2>&1; then
+if $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog >> configure.out 2>&1; then
 	echo gcc compile test good
 else
 	echo gcc is not right!
-	rm -f test_prog.c test_prog
+	rm -f ./test_prog.c ./test_prog
 	echo "% printenv" >> configure.out
 	printenv >> configure.out
 	exit
 fi
 
-echo "% test_prog" >> configure.out
+echo "% ./test_prog" >> configure.out
 
-if test_prog >> configure.out 2>&1; then
+if ./test_prog >> configure.out 2>&1; then
 	echo gcc run test good
 else
 	echo gcc output failed!
-	rm -f test_prog.c test_prog
+	rm -f ./test_prog.c ./test_prog
 	echo "% printenv" >> configure.out
 	printenv >> configure.out
 	exit
 fi
 
-rm -f test_prog.c test_prog
+rm -f ./test_prog.c ./test_prog
 
 ################################################################################
 # flex test
@@ -240,7 +244,7 @@ fi
 
 echo "% lex_test" >> configure.out
 
-if lex_test >> configure.out 2>&1; then
+if ./lex_test >> configure.out 2>&1; then
 	echo lex run test good
 else
 	echo lex runtime is not right!
@@ -308,7 +312,7 @@ fi
 
 echo "% yacc_test" >> configure.out
 
-if yacc_test >> configure.out 2>&1; then
+if ./yacc_test >> configure.out 2>&1; then
 	echo yacc run test good
 else
 	echo yacc runtime is not right!
@@ -354,7 +358,7 @@ if test "$MISC_LIBS" = "" ; then
 	MISC_LIBS=-ldl
 fi
 if test "$PERL" = "" ; then
-	PERL=perl
+	PERL=`which perl`
 fi
 
 echo generating Makefile.inc
@@ -381,13 +385,13 @@ echo "VER=$VER" >> Makefile.inc
 echo "NETL_VER_MAJOR=$NETL_VER_MAJOR" >> Makefile.inc
 echo "NETL_VER_MINOR=$NETL_VER_MINOR" >> Makefile.inc
 echo "TDR_VER=$TDR_VER" >> Makefile.inc
-echo "PREFIX=$PREFIX" >> Makefile.inc
-echo "SUBINPATH=$SUBINPATH" >> Makefile.inc
-echo "BINPATH=$BINPATH" >> Makefile.inc
-echo "MANPATH=$MANPATH" >> Makefile.inc
-echo "LIBPATH=$LIBPATH" >> Makefile.inc
-echo "DUMPPATH=$DUMPPATH" >> Makefile.inc
-echo "INCLUDEPATH=$INCLUDEPATH" >> Makefile.inc
+echo "PREFIX=\$(INST)$PREFIX" >> Makefile.inc
+echo "SUBINPATH=\$(INST)$SUBINPATH" >> Makefile.inc
+echo "BINPATH=\$(INST)$BINPATH" >> Makefile.inc
+echo "MANPATH=\$(INST)$MANPATH" >> Makefile.inc
+echo "LIBPATH=\$(INST)$LIBPATH" >> Makefile.inc
+echo "DUMPPATH=\$(INST)$DUMPPATH" >> Makefile.inc
+echo "INCLUDEPATH=\$(INST)$INCLUDEPATH" >> Makefile.inc
 echo "NETL_LIBS=" >> Makefile.inc
 echo "MISC_LIBS=$MISC_LIBS" >> Makefile.inc
 echo "PERL=$PERL" >> Makefile.inc
@@ -398,8 +402,11 @@ rm -f include/netl/version.h
 echo "/* do not modify */" > include/netl/version.h
 echo "#define NETL_VER_MAJOR $NETL_VER_MAJOR" >> include/netl/version.h
 echo "#define NETL_VER_MINOR $NETL_VER_MINOR" >> include/netl/version.h
-echo "#define COPYVER \"$VER copyright 1997-1999 Graham THE Ollis <ollisg@wwa.com>\"" >> include/netl/version.h
+echo "#define COPYVER \"$VER copyright 1997-1999 Graham THE Ollis <ollisg@netl.org>\"" >> include/netl/version.h
 echo "#define NETL_LIB_PATH \"$LIBPATH\"" >> include/netl/version.h
 echo "#define NETL_DUMP_PATH \"$DUMPPATH\"" >> include/netl/version.h
 echo "#define NETL_CONFIG \"$CONFFILE\"" >> include/netl/version.h
+echo "#define NETL_CC \"$CC\"" >> include/netl/version.h
+echo "#define NETL_INCLUDEPATH \"$INCLUDEPATH\"" >> include/netl/version.h
+echo "#define NETL_PERLPATH \"$PERL\"" >> include/netl/version.h
 

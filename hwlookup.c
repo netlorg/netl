@@ -1,8 +1,8 @@
 /*==============================================================================
 | hwlookup
-|   optimized (and debugged) by Graham THE Ollis <ollisg@wwa.com>
+|   optimized (and debugged) by Graham THE Ollis <ollisg@netl.org>
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@netl.org>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 |  23 Jul 99  G. Ollis	wrote
 |=============================================================================*/
 
-static char	*id = "@(#)hwlookup by graham the ollis <ollisg@wwa.com>";
+static char	*id = "@(#)hwlookup by graham the ollis <ollisg@netl.org>";
 static void dumb(char *d) { dumb(id); }	/* this avoids an anoying error msg */
 
 #include <stdio.h>

@@ -1,0 +1,398 @@
+#!/usr/bin/perl
+#===============================================================================
+#
+#   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
+#
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#
+#===============================================================================
+
+package Netl::tknetl;
+
+@month_names = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+		'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec');
+
+use lib '.';
+use Netl::Catch;
+use Netl::UI;
+use Netl::Packet;
+use Netl::PacketPopup;
+use Netl::Config::Editor;
+use Tk;
+
+$VERSION = $Netl::VERSION;
+
+@rule_list = ();
+@opt_list = ();
+for(@ARGV) {
+	if(/^-/) {
+		push @opt_list, $_;
+	} else {
+		push @rule_list, $_;
+	}
+}
+Netl::parsecmdline('--file', '/etc/tknetl.conf', @opt_list);
+$configfile = Netl::getConfigFileName();
+if(Netl::displayVersion()) {
+	print "libnetl ", Netl::COPYVER(), "\n";
+	print "tknetl ", $VERSION, " Copyright 1999 Graham THE Ollis <ollisg\@wwa.com>\n";
+}
+Netl::displayVersion();
+
+%error_help = (
+	'cannot open raw socket' =>	"this is typically because\n" .
+					"you have started netl\n" .
+					"without root privliages.",
+);
+
+$mw = MainWindow->new;
+$mw->title('tkNetl');
+
+$mb = $mw->Frame->pack('-side' => 'top', '-fill' => 'x');
+$file_mb = $mb->Menubutton(
+		'-text'		=> 'File',
+		'-underline'	=> 0,
+		'-relief'	=> 'raised',
+		'-borderwidth'	=> 2,
+	)->pack('-side' => 'left');
+$file_mb->command(
+		'-label'	=> 'Open datagram',
+		'-underline'	=> 0,
+		'-command'	=> sub {
+			my $fsref = $mw->FileSelect('-directory' => '.',
+						'-filter' => '*.dg');
+			my $file = $fsref->Show;
+			Netl::PacketPopup->new_from_file($file) unless $file eq '';
+		}
+	);
+
+$file_mb->separator;
+$file_mb->checkbutton(
+		'-label'	=> 'List mode',
+		'-underline'	=> 0,
+		'-variable'	=> \$outlist,
+		'-command'	=> sub { },
+	);
+$outlist = 1;
+$file_mb->checkbutton(
+		'-label'	=> 'Popup mode',
+		'-underline'	=> 0,
+		'-variable'	=> \$outpop,
+		'-command'	=> sub { },
+	);
+$file_mb->checkbutton(
+		'-label'	=> 'Follow',
+		'-underline'	=> 0,
+		'-variable'	=> \$outfollow,
+	);
+$outfollow = 1;
+$file_mb->separator;
+
+$file_mb->command(
+		'-label'	=> 'About tkNetl',
+		'-underline'	=> 0,
+		'-command'	=> \&Netl::tknetl::about_popup,
+	);
+$file_mb->command(
+		'-label'	=> 'Quit',
+		'-underline'	=> 0,
+		'-command'	=> \&Netl::UI::quit,
+	);
+
+$rest = $mw->Frame->pack('-side' => 'left');
+
+$rest2 = $mw->Frame->pack;
+
+$tree = $rest->Photo('-file' => 'tree.gif', '-palette' => 30);
+
+$rest->Label('-text' => 'GTO/CSI', '-image' => $tree)->grid(
+	$cmds_f = $mw->Frame,
+	'-stick' => 'nsew',
+);
+
+$stat_label = $cmds_f->Label('-text' => ' netl running ',
+			     '-background' => 'green',
+			     '-foreground' => 'black',
+	)->grid('-stick' => 'nsew');
+$toggle_button = $cmds_f->Button(
+	'-text'	=> 'Start',
+	'-command'	=> \&toggle,
+	'-width'	=> 15,
+	)->grid('-stick' => 'nsew');
+$popup_mode = 1;
+$cmds_f->Button(
+	'-text'	=> 'Configure',
+	'-command'	=> sub {
+				## FIXME ##
+
+				Netl::UI::toss_error_p($mw,
+					"hrm.  you appear to have selected",
+					"a feature which isn't yet supported.");
+				return;
+
+				my $input = '';
+				my $file = '';
+				if($#rule_list != -1) {
+					$file = 'command line';
+					$input = join "\n", @rule_list;
+				} else {
+					if(open(TMP, $configfile)) {
+						my $save = $/;
+						undef $/;
+						$input = <TMP>;
+						close TMP;
+						$file = $configfile;
+					} else {
+						$file = 'default';
+						$input = 'detect';
+					}
+				}
+				Netl::Config::Editor::new($mw, $file, $input);
+			},
+	'-width'	=> 15,
+	)->grid('-stick' => 'nsew');
+$cmds_f->Button(
+	'-text'	=> 'Quit',
+	'-command'	=> \&Netl::UI::quit,
+	'-width'	=> 15,
+	)->grid('-stick' => 'nsew');
+$cmds_f->Button(
+	'-text'	=> '',
+	'-command'	=> sub {},
+	'-width'	=> 15,
+	)->grid('-stick' => 'nsew');
+
+%packet_list = ();
+$packet_list = $rest2->Scrolled(
+		'Listbox',
+		'-scrollbars'		=> 'e',
+		'-width'		=> 60,
+		'-height'		=> 6,
+		'-selectmode'		=> 'single',
+	)->pack;
+$packet_list->bind('<Double-1>', \&list_examine);
+
+$rest3 = $rest2->Frame->pack;
+$rest3->Button(
+	'-text'		=> 'examine',
+	'-command'	=> \&list_examine,
+	'-width'	=> 10,
+)->pack('-side' => 'left');
+$rest3->Button(
+	'-text'		=> 'save',
+	'-command'	=> \&list_save,
+	'-width'	=> 10,
+)->pack('-side' => 'left');
+$rest3->Button(
+	'-text'		=> 'remove',
+	'-command'	=> \&list_remove,
+	'-width'	=> 10,
+)->pack('-side' => 'left');
+
+sub list_examine {
+	my $item = $packet_list->get('active');
+	if(!defined($item) || ($item eq '')) {
+		none_selected();
+		return;
+	}
+	Netl::PacketPopup->new(@{ $packet_list{$item} })
+}
+
+sub list_save {
+	my $item = $packet_list->get('active');
+	if(!defined($item) || ($item eq '')) {
+		none_selected();
+		return;
+	}
+	my($frame_data, $name) = @{ $packet_list{$item} };
+	my $filename = "$name$index{$name}.dg";
+	Netl::UI::save_as($filename, $frame_data);
+	$index{$name}++;
+}
+
+sub list_remove {
+	my $item = $packet_list->get('active');
+	if(!defined($item) || ($item eq '')) {
+		none_selected();
+		return;
+	}
+	$packet_list->delete('active');
+	delete $packet_list{$item};
+}
+
+sub none_selected {
+	Netl::UI::toss_error_p($mw,
+				"select a packet in the packet selector",
+				"frame to the right before using any of",
+				"the examine, save or remove commands");
+}
+
+
+$id = $mw->repeat(1000, \&check_for_packet);
+
+$SIG{INT} = \&catch_zap;
+$SIG{TERM} = \&catch_zap;
+
+sub catch_zap {
+}
+
+%index =();
+
+$Netl::UI::onexit = \&onexit;
+
+start();
+
+$mw->update;
+
+if(!-e $configfile and $#rule_list == -1) {
+	Netl::UI::toss_error_p($mw,
+				"$configfile is missing.",
+				"tknetl isn't configured yet.",
+				"click on the Configure button",
+				"to select what types of packets",
+				"should be reported, and how.");
+}
+
+Netl::UI::loop();
+
+onexit();
+exit;
+
+sub onexit {
+	kill 15, $pid unless $pid == -1;
+	#print "$pid\n";
+}
+
+sub start {
+	$pid = Netl::Catch::fork_a_netl('netl', 
+		'--pipe',
+		'-z',
+		'--file', '/etc/tknetl.conf',
+		@opt_list,
+		@rule_list,
+		);
+
+	if($pid == -1) {
+		print STDERR "error, Netl::Catch::fork_a_netl() returned -1";
+		exit;
+	}
+	$stat_label->configure( '-text' => ' netl running ',
+		'-foreground' => 'black',
+		'-background' => 'green');
+	$toggle_button->configure( '-text' => 'stop');
+	$id = $mw->repeat(1000, \&check_for_packet);
+}
+
+sub stop {
+	$stat_label->configure( '-text' => ' netl stopped ',
+		'-foreground' => 'black',
+		'-background' => 'red');
+	$id->cancel;
+	$toggle_button->configure( '-text' => 'start');
+	$pid = -1;
+}
+
+sub toggle {
+	if($pid == -1) {
+		start();
+	} else {
+		kill 15, $pid;
+		stop();
+	}
+}
+
+sub check_for_packet {
+	my($name, $frame_data);
+	while(($name, $frame_data) = Netl::Catch::catch()) {
+
+		if($name == -1 and $frame_data eq "died") {
+			stop();
+			return;
+		}
+
+		if($name == -2) {
+			Netl::UI::toss_error($frame_data, split("\n", $error_help{$frame_data}));
+			# $frame_data is really netl_death_message from the impending disaster
+			return;
+		}
+
+		my $packet = Netl::Packet->new($frame_data);
+		my $src = $packet->src;  my $dst = $packet->dst;
+		my($sec, $min, $hour, $mday, $mon, 
+			$year, $wday, $yday, $isdst) =
+			localtime(time);
+		$year += 1900;
+		my $time = sprintf "%02d:%02d:%02d", $hour, $min, $sec;
+
+		if($outpop) {
+			my $packet_win = MainWindow->new;
+			$packet_win->title("$name");
+			my $f = $packet_win->Frame->grid;
+			$f->Label('-text' => "$name $src => $dst")->grid;
+			$f->Label('-text' => "$mday $month_names[$mon] $year $time ")->grid;
+			$f = $packet_win->Frame->grid;
+			$f->Button('-text' => 'Close',
+				'-command' => sub { $packet_win->destroy },
+			)->grid($f->Button('-text' => 'Examine',
+				'-command' => [ sub {
+						Netl::PacketPopup->new(@_)
+					}, $frame_data, $name ],
+				),
+				$f->Button(
+					'-text' => 'Save',
+					'-command' =>  [ sub { 
+						my $name = $_[0];
+						my $frame_data = $_[1];
+						my $filename = "$name$index{$name}.dg";
+						Netl::UI::save_as($filename, $frame_data);
+						$index{$name}++;
+					}, $name, $frame_data ]
+				),
+				'-stick' => 'nsew',
+			);
+		}
+		if($outlist) {	
+			my $str = "$mday $month_names[$mon] $year $time : $name $src => $dst";
+			if(defined $packet_list{$str}) {
+				my $n = 1;
+				while(defined $packet_list{"$str ($n)"}) {
+					$n++;
+				}
+				$str = "$str ($n)";
+			}
+			$packet_list->insert('end', $str);
+			$packet_list->see('end') if $outfollow;
+			$packet_list{$str} = [ $frame_data, $name ];
+		}
+	}
+}
+
+sub about_popup {
+	my $mw = MainWindow->new;
+	my $f;
+	$mw->title('about tkNetl');
+	my $tree = $mw->Photo('-file' => 'tree.gif', '-palette' => 30);
+	$mw->Label('-text' => 'GTO/CSI', '-image' => $tree)->grid(
+		$f = $mw->Frame,
+		'-stick' => 'nsew',
+	);
+	$f->Label('-text'  => 'tkNetl')->grid;
+	$f->Label('-text'  => 'copyright 1999')->grid;
+	$f->Label('-text'  => 'CORE software international')->grid;
+	$f->Label('-text'  => "version $VERSION")->grid;
+	$f->Button('-text' => 'Ok',
+		'-command' => sub { $mw->destroy },
+		)->grid;
+}

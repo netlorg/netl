@@ -45,7 +45,7 @@ DIST=netl
 
 MOD=in.nmod filt.nmod out.nmod
 
-all : include/netl/version.h $(EXEC) $(MOD) libnetl.so
+all : include/netl/version.h $(EXEC) $(MOD) libnetl.so netlcc.sh dcp.pl
 
 hwpassive:
 	echo "#!/bin/sh" > hwpassive
@@ -60,19 +60,10 @@ gnr:all web dist
 test:all
 	cd t;$(TDR) -n *.t
 
-dist:README INSTALL MANIFEST.BIN doc.nmod Makefile.dep $(DIST)-$(VER).tar.gz tdr-$(TDR_VER).tar.gz
+dist:README INSTALL doc.nmod Makefile.dep \
+	$(DIST)-$(VER).tar.gz tdr-$(TDR_VER).tar.gz
 
-sigs:$(DIST)-$(VER).tar.gz.sig \
-     $(DIST)-$(VER)-bin.tar.gz $(DIST)-$(VER)-bin.tar.gz.sig \
-     $(DIST)-$(VER).zip $(DIST)-$(VER).zip.sig 
-
-MANIFEST.BIN:MANIFEST
-	$(CP) MANIFEST MANIFEST.BIN
-	echo 'MANIFEST.BIN' >> MANIFEST.BIN
-	echo 'netl' >> MANIFEST.BIN
-	echo 'neta' >> MANIFEST.BIN
-	echo 'xd' >> MANIFEST.BIN
-	find -name \*.so -print >> MANIFEST.BIN
+sigs:$(DIST)-$(VER).tar.gz.sig
 
 README INSTALL:
 	cd doc;$(MAKE)
@@ -85,7 +76,10 @@ README INSTALL:
 %.sig:%
 	$(PGP) -sb $<
 
-$(DIST)-$(VER).zip:$(DIST)-$(VER).tar
+zip:$(DIST)-$(VER).zip
+
+.PHONY: $(DIST)-$(VER).zip
+$(DIST)-$(VER).zip:
 	zip -r $(DIST)-$(VER).zip $(DIST)-$(VER)
 
 tdr-$(TDR_VER).tar:
@@ -93,41 +87,36 @@ tdr-$(TDR_VER).tar:
 	cp tdr.pl doc/tdr.1 tdr-$(TDR_VER)
 	tar cf tdr-$(TDR_VER).tar tdr-$(TDR_VER)
 
+.PHONY: $(DIST)-$(VER).tar
 $(DIST)-$(VER).tar:
 	install -d $(DIST)-$(VER)
 	cp -aP `cat MANIFEST` $(DIST)-$(VER)
 	tar cf $(DIST)-$(VER).tar $(DIST)-$(VER)
 
-$(DIST)-$(VER)-bin.tar:$(EXEC) $(MOD)
-	install -d $(DIST)-$(VER)-bin
-	cp -P `cat MANIFEST.BIN` $(DIST)-$(VER)-bin
-	cd $(DIST)-$(VER)-bin; rm default.so; ln -s linux-ether.so default.so
-	tar cf $(DIST)-$(VER)-bin.tar $(DIST)-$(VER)-bin
-
 #===============================================================================
 # executables:
 #===============================================================================
 
-NETLOBJ=netl.o sighandle.o config.tab.o lex.yy.o lookup.o options.o check.o \
-filter.o action.o resolve.o dump.o io.o compiler.o ipv6.o main.o
+NETLOBJ=netl.o sighandle.o config.tab.o lex.yy.o lookup.o options_netl.o check.o \
+filter.o action.o resolve.o dump.o io.o compiler.o ipv6.o die_trickle.o main.o
 netl:$(NETLOBJ)
 	$(CC) $(LDFLAGS) $(CFLAGS) -o netl $(NETLOBJ) $(NET_LIBS) $(MISC_LIBS) $(LEX_LIBS) $(YACC_LIBS)
 
-HWLOOKUPOBJ=hwlookup.o options.o resolve.o io.o
+HWLOOKUPOBJ=hwlookup.o options_hwlookup.o resolve.o io.o die_blank.o
 hwlookup:$(HWLOOKUPOBJ)
 	$(CC) $(LDFLAGS) $(CFLAGS) -o hwlookup $(HWLOOKUPOBJ) $(MISC_LIBS)
 
-NETAOBJ=neta.o lookup.o options.o resolve.o dump.o io.o
+NETAOBJ=neta.o lookup.o options_neta.o resolve.o dump.o io.o die_blank.o
 neta:$(NETAOBJ)
 	$(CC) $(LDFLAGS) $(CFLAGS) -o neta $(NETAOBJ) $(MISC_LIBS)
 
-XDOBJ=xd.o resolve.o dump.o io.o
+XDOBJ=xd.o resolve.o dump.o io.o die_blank.o
 xd:$(XDOBJ)
 	$(CC) $(LDFLAGS) $(CFLAGS) -o xd $(XDOBJ) $(MISC_LIBS)
 
 LIBOBJ=action.o check.o compiler.o dump.o filter.o \
-io.o ipv6.o lookup.o options.o resolve.o \
-sighandle.o lex.yy.o config.tab.o netl.o catch.o
+io.o ipv6.o lookup.o options_netl.o resolve.o \
+sighandle.o lex.yy.o config.tab.o netl.o catch.o die_trickle.o
 libnetl.a:$(LIBOBJ)
 	$(AR) rc libnetl.a $(LIBOBJ)
 	$(RANLIB) libnetl.a
@@ -139,8 +128,34 @@ libnetl.so:$(LIBOBJ)
 # object files:
 #===============================================================================
 
+options_netl.o:options.c
+	$(CC) $(CFLAGS) -DOPTIONS_NETL -c options.c -o options_netl.o
+
+options_neta.o:options.c
+	$(CC) $(CFLAGS) -DOPTIONS_NETA -c options.c -o options_neta.o
+
+options_hwlookup.o:options.c
+	$(CC) $(CFLAGS) -DOPTIONS_HWLOOKUP -c options.c -o options_hwlookup.o
+
+die_trickle.o:die.c
+	$(CC) $(CFLAGS) -DDIE_TRICKLE -c die.c -o die_trickle.o
+
+die_blank.o:
+	$(CC) $(CFLAGS) -c die.c -o die_blank.o
+
 %.o:%.c
 	$(CC) $(CFLAGS) -c $< -o $@
+
+%:%.exe
+	./$<
+	chmod +x $@
+
+netlcc.sh:netlcc.sh.exe
+	./netlcc.sh.exe
+	chmod +x netlcc.sh
+
+%.exe:%.exe.o
+	$(CC) $(LDFLAGS) $(CFLAGS) -o $@ $<
 
 #
 # scanner
@@ -155,51 +170,118 @@ lex.yy.c:config.l config.tab.h
 # parser
 #
 
+pp:face/perltk/face/Netl/Config/Parser.pm
+
+# this here is a haxor of supreme dimensions.
+#
+# config.y contains the parser for libnetl and the netl executable, in
+# addition to the perl version of the parser used by tknetl.  right now there
+# are macros NETL_CONFIG_Y_C and NETL_CONFIG_Y_PERL to indicate the language
+# as appropriate.  however, the C version uses bison and the perl version uses
+# a specially modified version of byacc.  joe random shouldn't have to run 
+# byacc when downloading the netl dist, as it is some what rare.  this is the
+# rule for updateing the perl version of the parser.  it doesn't get run by
+# default because of the above reasons.  unless you modify the the parser in
+# an extremely anoying way, it shouldn't need updating anyway.
+#
+# the special byacc is available on CPAN somewhere under the /src directory,
+# i believe.
+
+face/perltk/face/Netl/Config/Parser.pm:config.y
+	@echo warning: you need a specially patched version of byacc for this!
+	$(CC) -C -DNETL_CONFIG_Y_PERL -E - < config.y > config.i 
+	byacc -P - < config.i
+	perl -e '<STDIN>;					\
+		while(<STDIN>) {				\
+			next if /^\;\# \d+ \"\"/;		\
+			next if /^\*$$/;			\
+			next if m!^/\*$$!;			\
+			next if m!^\*/$$!;			\
+			s/^\;\#//;				\
+			print;					\
+		}' < y.tab.pl > Parser.pm
+	mv Parser.pm face/perltk/Netl/Config/Parser.pm
+	$(RM) Parser.pm y.tab.pl config.i
+
+parser:config.tab.o lex.yy.o
+
 config.tab.o:config.tab.h config.tab.c
+	$(CC) $(CFLAGS) -DNETL_CONFIG_Y_C -c config.tab.c -o config.tab.o
 
 config.tab.h config.tab.c:config.y
 	$(YACC) $(YACCFLAGS) config.y
 
 #===============================================================================
+# rpm stuff
+#===============================================================================
+
+rpm:dist
+	cd face/perltk && perl Makefile.PL && make dist
+	su -c  'cp -f $(DIST)-$(VER).tar.gz /usr/src/redhat/SOURCES &&	       \
+		mv -f face/perltk/tknetl-$(VER).tar.gz /usr/src/redhat/SOURCES && \
+		rpm -ba netl.spec &&					       \
+		rpm -i /usr/src/redhat/RPMS/*/$(DIST)-$(VER)*.rpm &&	       \
+		cd face/perltk &&					       \
+		rpm -ba tknetl.spec &&					       \
+		rpm -e netl'
+	sh -c 'cp /usr/src/redhat/RPMS/*/{tk,}$(DIST)-$(VER)*.rpm .'
+	sh -c 'cp /usr/src/redhat/SRPMS/{tk,}$(DIST)-$(VER)*.rpm .'
+
+#===============================================================================
 # install:
 #===============================================================================
+
+OWN=-g 0 -o 0
 
 .PHONY: install
 install:
 	install -d $(LIBPATH)
 	install -d $(LIBPATH)/sbin
-	install -g 0 -o 0 -m 511 netl $(LIBPATH)/sbin
-	install -g 0 -o 0 -m 555 hwpassive $(LIBPATH)/sbin
+	install $(OWN) -m 544 netl $(LIBPATH)/sbin
+	install $(OWN) -m 555 hwpassive $(LIBPATH)/sbin
 	install -d $(SUBINPATH)
 	cd $(SUBINPATH);$(RM) netl hwpassive
 	cd $(SUBINPATH);ln $(LIBPATH)/sbin/* . || cp $(LIBPATH)/sbin/* .
 	install -d $(LIBPATH)/bin
-	install -g 0 -o 0 -m 511 neta xd $(LIBPATH)/bin
-	install -g 0 -o 0 -m 555 dcp.pl $(LIBPATH)/bin/dcp
-	install -g 0 -o 0 -m 555 tdr.pl $(LIBPATH)/bin/tdr
-	install -g 0 -o 0 -m 555 hwlookup $(LIBPATH)/bin
-	install -g 0 -o 0 -m 555 netlcc.pl $(LIBPATH)/bin/netlcc
+	install $(OWN) -m 544 neta xd $(LIBPATH)/bin
+	install $(OWN) -m 555 dcp.pl $(LIBPATH)/bin/dcp
+	install $(OWN) -m 555 tdr.pl $(LIBPATH)/bin/tdr
+	install $(OWN) -m 555 hwlookup $(LIBPATH)/bin
+	install $(OWN) -m 555 netlcc.sh $(LIBPATH)/bin/netlcc
 	install -d $(BINPATH)
 	cd $(BINPATH);$(RM) neta xd dcp tdr hwlookup netlcc
 	cd $(BINPATH);ln $(LIBPATH)/bin/* . || cp $(LIBPATH)/bin/* .
 	install -d $(LIBPATH)/man/man1 $(LIBPATH)/man/man5 $(LIBPATH)/man/man8
-	install -g 0 -o 0 -m 644 doc/*.1 $(LIBPATH)/man/man1
-	install -g 0 -o 0 -m 644 doc/*.5 $(LIBPATH)/man/man5
-	install -g 0 -o 0 -m 644 doc/*.8 $(LIBPATH)/man/man8
+	install $(OWN) -m 644 doc/*.1 $(LIBPATH)/man/man1
+	install $(OWN) -m 644 doc/*.5 $(LIBPATH)/man/man5
+	install $(OWN) -m 644 doc/*.8 $(LIBPATH)/man/man8
 	install -d $(MANPATH) $(MANPATH)/man1 $(MANPATH)/man5 $(MANPATH)/man8
 	cd $(MANPATH)/man1; ln -f $(LIBPATH)/man/man1/* . || cp $(LIBPATH)/man/man1 .
 	cd $(MANPATH)/man5; ln -f $(LIBPATH)/man/man5/* . || cp $(LIBPATH)/man/man5 .
 	cd $(MANPATH)/man8; ln -f $(LIBPATH)/man/man8/* . || cp $(LIBPATH)/man/man8 .
 	$(RM) -r $(PREFIX)/lib/netl
-	ln -s $(LIBPATH) $(PREFIX)/lib/netl
+	cd $(LIBPATH)/..; ln -s $(DIST)-$(VER) netl
 	install -d $(LIBPATH)/dump
 	install -d $(INCLUDEPATH)/netl
-	install -g 0 -o 0 -m 644 include/netl/*.h $(INCLUDEPATH)/netl
-	install -g 0 -o 0 -m 755 libnetl.so $(LIBPATH)
-	install -g 0 -o 0 -m 644 hwcode $(LIBPATH)
+	install $(OWN) -m 644 include/netl/*.h $(INCLUDEPATH)/netl
+	install $(OWN) -m 755 libnetl.so $(LIBPATH)
+	install $(OWN) -m 644 hwcode $(LIBPATH)
 	cd in; $(MAKE) install
 	cd out; $(MAKE) install
 	cd filt; $(MAKE) install
+
+install.conf:
+	install -d $(INST)/etc
+	install $(OWN) -m 644 conf/netl.conf $(INST)/etc/netl.conf
+
+web:dist
+	mkdir ../public_html || true
+	cd doc;$(MAKE)
+	cp doc/*.html doc/*.gif HISTORY ../public_html
+	cp $(DIST)-$(VER).tar.gz ../public_html
+	cp ../dist/*.rpm ../public_html
+	cp ../dist/netl-1.0*.tar.gz ../public_html
+	cp -r ../dist/rh* ../public_html
 
 #===============================================================================
 # clean:
@@ -211,13 +293,16 @@ clean:
 	$(RM) dcp dcp.exe
 	$(RM) tmp.dat core a.out 
 	$(RM) *.o *.html *.tar *.tmp
-	$(RM) -r $(DIST)-$(VER) $(DIST)-$(VER)-bin tdr-$(TDR_VER)
+	$(RM) -r $(DIST)-$(VER) tdr-$(TDR_VER)
 	$(RM) t/*.diff t/*.diffERR t/*.diffRET t/*.ao t/*.aERR t/*.aRET
 	$(RM) t/tdr.log t/core
 	$(RM) lib*.so* lib*.a tdr.log
 	$(RM) lex.yy.c config.tab.h config.tab.c config.output config_test
+	$(RM) lex.yy.c config2.tab.h config2.tab.c config2.output config_test
 	$(RM) userfilter.c *.so README INSTALL conf/*.c conf/*.so conf/*.o
-	$(RM) *.a *.so hwpassive hwpassive.exe configure.out
+	$(RM) *.a *.so hwpassive hwpassive.exe configure.out *.exe
+	$(RM) netlcc.sh dcp.pl
+	$(RM) config2.y
 	cd in; $(MAKE) clean
 	cd filt; $(MAKE) clean
 	cd out; $(MAKE) clean
@@ -225,8 +310,10 @@ clean:
 distclean:clean
 
 realclean:clean
-	$(RM) *.tar.gz *.zip *.sig MANIFEST.BIN
+	$(RM) *.tar.gz *.zip *.sig *.rpm
 	$(RM) Makefile.dep */Makefile.dep include/netl/version.h
+	$(RM) -r ../public_html
+	cd face/perltk && perl Makefile.PL && $(MAKE) distclean
 	cd doc; $(MAKE) clean
 
 wc:

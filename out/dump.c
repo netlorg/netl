@@ -1,8 +1,8 @@
 /*==============================================================================
 | dump output module for netl
-|   by Graham THE Ollis <ollisg@wwa.com>
+|   by Graham THE Ollis <ollisg@netl.org>
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@netl.org>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ action(u8 *dg, struct configitem *cf, size_t len)
 
 	action_done = TRUE;
 
-	if(cf->logname == NULL) {
+	if(cf->logname != NULL) {
 		snprintf(fn, 1024, "%s/%s-%d-%d-%d.dg", 
 			dump_dir,
 			cf->logname, 
@@ -61,6 +61,7 @@ action(u8 *dg, struct configitem *cf, size_t len)
 			(unsigned) time(NULL), 
 			sequence++);
 	} else {
+		err("rule has no logname!");
 		snprintf(fn, 1024, "%s/%d-%d-%d.dg", 
 			dump_dir,
 			getpid(), 
@@ -77,4 +78,3 @@ action(u8 *dg, struct configitem *cf, size_t len)
 
 	return fn;
 }
-

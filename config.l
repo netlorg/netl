@@ -2,9 +2,9 @@
 
 /*==============================================================================
 | config.l
-|   coded by Graham THE Ollis <ollisg@wwa.com>
+|   coded by Graham THE Ollis <ollisg@netl.org>
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@netl.org>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -103,13 +103,15 @@ hd			[A-Fa-f0-9]
 <INITIAL>"detect"	cpy3();	return RULE_DETECT;
 <INITIAL>"alias"	cpy3();	return RULE_ALIAS;
 <INITIAL>"listen"	cpy3();	return RULE_LISTEN;
+<INITIAL>"dir lib"	cpy3(); return RULE_DIR_LIB;
+<INITIAL>"dir dump"	cpy3(); return RULE_DIR_DUMP;
 
 <INITIAL>"ignore"	cpy2("RULE_T", ACTION_IGNORE);	return RULE_T;
 <INITIAL>"log"		cpy2("RULE_T", ACTION_LOG);	return RULE_T;
 <INITIAL>"dump"		cpy2("RULE_T", ACTION_DUMP);	return RULE_T;
 <INITIAL>"dl"		cpy2("RULE_T", ACTION_DL);	return RULE_T;
 <INITIAL>"null"		cpy2("RULE_T", ACTION_NULL);	return RULE_T;
-<INITIAL>"pipe"		cpy2("RULE_T", ACTION_NULL);	return RULE_T;
+<INITIAL>"pipe"		cpy2("RULE_T", ACTION_PIPE);	return RULE_T;
 <INITIAL>"@"{alphanum}+	cpy2("RULE_T", ACTION_USER);	return RULE_T;
 
 

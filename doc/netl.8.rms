@@ -14,7 +14,7 @@ i<netl> [options] ['config rule'] [...]
 
 #H DESCRIPTION
 
-i<netl> intended to be a customizable low level network logger.
+i<netl> is a customizable low level network logger.
 
 i<netl> can be configured to look for particular TCP, UDP or ICMP
 packets, or can be setup to look for generic IP packets or even raw
@@ -166,7 +166,7 @@ it.  when i got deeper in to the problem i discovered that his
 `synlogger' (as it was called) was highly specialized and didn't have to
 be.  netl was thus born.
 
-graham the ollis <ollisg@wwa.com>
+graham the ollis <ollisg@netl.org>
 
 my name is graham the ollis, i'm a computer science/math major at the
 university of arizona.  or private contractor working as CORE software.  

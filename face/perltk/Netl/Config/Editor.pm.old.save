@@ -1,0 +1,189 @@
+package Netl::Config::Editor;
+
+use Tk;
+use Netl::Config::Parser;
+use Netl::UI;
+
+sub collect_errors {
+	my $str = shift;
+	push @error_list, "$str on line $Netl::Config::Parser::line_number";
+}
+
+sub new {
+	my $mw = shift;
+	my $filename = shift;
+	my $input = shift;
+	$input .= "\n";
+
+	my $main = $mw->Toplevel;
+	$main->title('Configuration Editor');
+	#$main->Label('-text' => 'Hello World')->pack;
+	$main->raise($mw);
+
+	@Netl::Config::Parser::rules = ();
+	undef $Netl::Config::Parser::libdir;
+	undef $Netl::Config::Parser::dumpdir;
+	undef $Netl::Config::Parser::listenport;
+	undef $Netl::Config::Parser::detect;
+	%Netl::Config::Parser::alias = ();
+	
+	@error_list = ();
+	eval '
+	Netl::Config::Parser::gparse($input, \&collect_errors);
+	';
+	if($#error_list != -1) {
+		Netl::UI::toss_error_p($main, $filename, @error_list);
+	}
+	if($@) {
+		Netl::UI::toss_error_p($main, $filename, "parser barfed",
+					split("\n", $@));
+	}
+
+	my @rules = @Netl::Config::Parser::rules;
+	my $libdir = $Netl::Config::Parser::libdir || '';
+	my $dumpdir = $Netl::Config::Parser::dumpdir || '';
+	my $listenport = $Netl::Config::Parser::listenport;
+	my $detect = $Netl::Config::Parser::detect || 0;
+	my %alias = $Netl::Config::Parser::alias;
+
+	my %rules = ();
+	my $rest = $main->Frame->pack;
+	$rest->Label('-text' => 'rules:')->pack('-side'=>'left');
+	my $rule_list = $rest->Scrolled(
+		'Listbox',
+		'-scrollbars'		=> 'e',
+		'-width'		=> 60,
+		'-height'		=> 10,
+		'-selectmode'		=> 'single',
+	)->pack;
+
+	for(@rules) {
+		my $this = $_;
+		my($line_number, $act, $prot, %flds) = @{$_};
+		my $str = "$line_number: ";
+		my @act = @{$act};
+		if($#act == 0) {
+			$str .= "$act[0] ";
+		} else {
+			$str .= '<';
+			for(@act) {
+				$str .= "$_,";
+			}
+			s/,$//;
+			$str .= '> ';
+		}
+		$str .= "$prot ";
+
+		my $key;
+		foreach $key (keys %flds) {
+			$str .= "$key=";
+			if($key =~ /^(\!|)(dst|src)port$/) {
+				my($from, $to) = @{ $flds{$key} };
+				if($from == $to) {
+					$str .= "$from ";
+				} else {
+					$str .= "$from-$to ";
+				}
+			} elsif($key =~ /^(\!|)(dst|src)ip$/) {
+				my($ip, $mask) = @{ $flds{$key} };
+				if($mask == 0xffffffff) {
+					$str .= "$ip ";
+				} else {
+					$str .= "$ip/$mask ";
+				}
+			# fixme! hw is currently special, but should not be
+			} else {
+				my($val) = @{ $flds{$key} };
+				$str .= "$val ";
+			}
+		}
+
+		if(defined $rules{$str}) {
+			my $i = 1;
+			while(defined $rules{"$str ($i)"}) {
+				$i++;
+			}
+			$str = "$str ($i)";
+		}
+
+		$rules{$str} = $this;
+
+		$rule_list->insert('end', $str);
+	}
+
+	$rest = $main->Frame->pack;
+	$rest->Label('-text'	=> 'rule commands:')->pack('-side'=>'left');
+	$rest->Button(
+		'-text'		=> 'modify',
+		'-command'	=> sub { },
+		'-width'	=> 10,
+	)->pack('-side'		=> 'left');
+	$rest->Button(
+		'-text'		=> 'new',
+		'-command'	=> sub { },
+		'-width'	=> 10,
+	)->pack('-side'		=> 'left');
+	$rest->Button(
+		'-text'		=> 'up',
+		'-command'	=> sub { },
+		'-width'	=> 5,
+	)->pack('-side'		=> 'left');
+	$rest->Button(
+		'-text'		=> 'down',
+		'-command'	=> sub { },
+		'-width'	=> 5,
+	)->pack('-side'		=> 'left');
+	$rest->Button(
+		'-text'		=> 'remove',
+		'-command'	=> sub { },
+		'-width'	=> 10,
+	)->pack('-side'		=> 'left');
+
+	my $rest = $main->Frame->pack;
+
+	$rest->Label('-text' => 'Lib dir')->grid(
+		$rest->Entry('-textvariable' => \$libdir, '-width' => 10),
+		$rest->Label('-text' => 'Dump dir'),
+		$rest->Entry('-textvariable' => \$dumpdir, '-width' => 10)
+	);
+
+	my $listen_on = 0;
+	$listen_on = 1 if defined $listenport;
+	$listenport = 47 unless defined $listenport;
+
+	my $fred;
+	my $dcp = $rest ->Frame->grid(
+		$rest->Entry('-textvariable' => \$listenport, '-width' => 10),
+		$fred = $rest->Frame, $rest->Label('-text' => '---'),
+	);
+
+	$dcp->Label('-text' => 'dcp:')->grid(
+		$dcp->Checkbutton('-variable' => \$listen_on)
+	);
+	$fred->Label('-text' => 'detect:')->grid(
+		$fred->Checkbutton('-variable' => \$detect)
+	);
+
+	$rest->Button(
+		'-text'		=> 'aliases',
+		'-command'	=> sub { },
+		'-width'	=> 10,
+	)->grid(
+		$rest->Button(
+			'-text'		=> 'save as',
+			'-command'	=> sub { },
+			'-width'	=> 10,),
+		$rest->Button(
+			'-text'		=> 'dismiss',
+			'-command'	=> sub { $main->destroy },
+			'-width'	=> 10,),
+		$rest->Button(
+			'-text'		=> '',
+			'-command'	=> sub { },
+			'-width'	=> 10,),
+	);
+
+	return $main;
+}
+
+1;

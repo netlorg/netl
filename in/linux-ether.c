@@ -1,8 +1,8 @@
 /*==============================================================================
 | grab.c
-|   by Graham THE Ollis <ollisg@wwa.com>
+|   by Graham THE Ollis <ollisg@netl.org>
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@netl.org>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -63,8 +63,7 @@ prepare(char *dev)
 
 	if((sock = socket(AF_INET, SOCK_PACKET, htons(ETH_P_ALL))) < 0) {
 		err(strerror(errno));
-		err("cannot open raw socket, die");
-		exit(1);
+		die(1, "cannot open raw socket");
 	}
 
 	/*============================================================================
@@ -78,8 +77,7 @@ prepare(char *dev)
 	|===========================================================================*/
 
 	if(ioctl(sock, SIOCGIFFLAGS, &ifr) < 0) {
-		err("unable to get %s flags, die", dev);
-		exit(1);
+		die(1, "unable to get %s flags, die", dev);
 	}
 
 	memcpy(&oldifr, &ifr, sizeof(struct ifreq));
@@ -95,8 +93,7 @@ prepare(char *dev)
 	|===========================================================================*/
 
 	if(ioctl(sock, SIOCSIFFLAGS, &ifr) < 0) {
-		err("Unable to set %s flags, die", dev);
-		exit(1);
+		die(1, "Unable to set %s flags, die", dev);
 	} 
 
 	/*============================================================================
@@ -110,8 +107,7 @@ prepare(char *dev)
 	length = sizeof(name);
 
 	if(getsockname(sock, (struct sockaddr *) &name, &length) < 0) {
-		err("Error: Can't get socket name, die");
-		exit(1);
+		die(1, "Error: Can't get socket name, die");
 	}
 }
 

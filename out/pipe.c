@@ -1,8 +1,8 @@
 /*==============================================================================
 | pipe output module for netl
-|   by Graham THE Ollis <ollisg@wwa.com>
+|   by Graham THE Ollis <ollisg@netl.org>
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@netl.org>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "netl/global.h"
 
@@ -70,8 +71,7 @@ construct(void)
 		readfd = -1;
 		writefd = atoi(s);
 		if(writefd == -1) {
-			err("pipe.c:\"%s\" is not a valid fd", s);
-			exit(1);
+			netl_die(1, "pipe.c:\"%s\" is not a valid fd", s);
 		}
 		log("pipe.c: using pipefd \"%s\"(%d)", s, writefd);
 		return;
@@ -79,8 +79,7 @@ construct(void)
 
 
 	if(pipe(fd) == -1) {
-		err("pipe module could not open a pipe!  bad.\n");
-		exit(1);
+		netl_die(1, "pipe module could not open a pipe!  bad.\n");
 	}
 	readfd = fd[0];
 	writefd = fd[1];
@@ -93,13 +92,25 @@ construct(void)
 		log("pipe.c: using pipeprog \"%s\"", pipeprog);
 		sprintf(buffer, "%d", readfd);
 		execl(pipeprog, pipeprog, buffer, NULL);
-		err("pipe.c: execl(%s, %s, %s, %s) failed!", pipeprog, pipeprog, buffer, NULL);
-		exit(1);
+		netl_die(1, "pipe.c: execl(%s, %s, %s, %s) failed!", pipeprog, pipeprog, buffer, NULL);
 	}
 
 	if(pid == -1) {
-		err("pipe.c: could not fork()!  bad.\n");
-		exit(1);
+		netl_die(1, "pipe.c: could not fork()!  bad.\n");
+	}
+}
+
+#undef die
+void
+die(int retval, char *message)
+{
+	if(message != NULL) {
+		memcpy(h.id, "NDIE", 4);
+		h.str_len = strlen(message)+1;
+		h.packet_len = 0;
+		write(writefd, &h, sizeof(header));
+		write(writefd, message, h.str_len);
+		//sleep(5);
 	}
 }
 

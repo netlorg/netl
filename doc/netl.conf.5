@@ -74,6 +74,29 @@ options), and is also used to report the hostname to
 when
 a log is triggered.
 .PP
+.B dir lib
+"directory"
+.PP
+enables you to specify the directory where netl will look in order to
+find dynamic netl modules.  see 
+.BR netl_modules (1)
+for more information.
+by placing this strategically, you can draw modules from various
+different directories, though i don't see much point in this.  this is
+equivalent to the --lib-dir command line option.  see 
+.BR netl (8)
+for
+more information on that.
+.PP
+.B dir dump
+"directory"
+.PP
+allows you to specify the directory netl will dump packets to when the
+dump action rule is used.  similar notations as to the 
+.B dir lib
+rule.  
+equivalent to the --dump-dir command line option.
+.PP
 .SH ACTION RULES
 .PP
 rule syntax is as follows:
@@ -319,10 +342,9 @@ and
 .PP
 .SH BUGS
 .PP
-there are almost certainly bugs, please report them to me.  my email
-address is Graham Ollis <ollisg@wwa.com>, and the CORE home page is at
-http://www.wwa.com/~ollisg/netl/index.html, which should contain up to
-date information on 
+there are almost certainly bugs, please report them to me.  send bugs and
+bug fixes to netl@netl.org.  the netl home page is at
+http://www.netl.org, which should contain up to date information on
 .B netl
 .
 .PP
@@ -351,4 +373,4 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 .PP
 .SH AUTHOR
 .PP
-Graham THE Ollis <ollisg@wwa.com>
+Graham THE Ollis <ollisg@netl.org>

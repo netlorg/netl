@@ -1,10 +1,10 @@
-#!/usr/bin/perl
+#!/usr/local/bin/perl
 # @(#)netlcc.pl (c) 1999 Graham THE Ollis
 #===============================================================================
 # front end for the netl c compiler.  this program will generate c code given
 # a netl .conf file, then it will involk gcc to compile it.
 #
-#   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
+#   Copyright (C) 1997 Graham THE Ollis <ollisg@netl.org>
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -22,13 +22,13 @@
 #
 #===============================================================================
 
-$netl = 'netl';
+$netl = '/usr/local/lib/netl-1.08/sbin/netl';
 @netl_opts = ('-v-', '--generate-c');
 
-$gcc = '/usr/bin/gcc';
-@gcc_opts = ('-I/usr/local/lib/netl/include');
+$gcc = 'gcc';
+@gcc_opts = ('-I/usr/local/lib/netl-1.08/include');
 
-$install_dir = '/usr/local/lib/netl/filt';
+$install_dir = '/usr/local/lib/netl-1.08/filt';
 	# note that we only install compiled .conf files.
 
 $tmp_dir = '/tmp/.netl';
@@ -51,7 +51,7 @@ for(@ARGV) {
 		$no_gcc = 1 if /^-generate-c$/;
 		$do_install = 1 if /^-install$/;
 		if(/^--version$/) {
-			print "netlcc version 1.02\n";
+			print "netlcc version 1.08(pl)\n";
 			run($gcc, '--version');
 			exit;
 		}
@@ -97,3 +97,4 @@ sub run {
 	#print "run: @_\n";
 	system(@_);
 }
+	

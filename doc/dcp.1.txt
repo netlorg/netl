@@ -1,0 +1,82 @@
+dcp(1)
+CORE software
+18 June 1999
+
+NAME
+
+dcp - discrete communication protocol client.
+
+
+SYNOPSIS
+
+dcp message [port]
+
+
+DESCRIPTION
+
+dcp is a way of passing messages to netl(8) and related programs.  
+in the case of netl(8) there is currently only two messages you can
+send it.
+
+"netl:readconfig" will order netl(8) (if it's listening, see the man
+page for details on the listen directive) to terminate it's current
+configuration and read the netl.conf file again.  this is handy if you
+make modifications to netl.conf while netl(8) is running.
+
+"hwpassive:write" tells hwpassive(8) to write its database to disk.  
+it is wise to do this occasionally, in case of system crash.
+
+
+EXAMPLE
+
+run netl(8) with the listen directive, then type this, as a ordinary
+user:
+
+% dcp "netl:readconfig"
+
+if it worked, then there should be a note in the netl output (typically,
+this is sent to syslogd) that the configuration was re-read.
+
+
+SEE ALSO
+
+netl(8), netl.conf(5), netlcc(1), netl_install(1),
+netl_module(1), neta(1), hwpassive(8), hwlookup(1),
+dcp(1) and xd(1)
+
+
+BUGS
+
+there are almost certainly bugs, please report them to me.  send bugs and
+bug fixes to netl@netl.org.  the netl home page is at
+http://www.netl.org, which should contain up to date information on
+netl.
+
+i have attempted to write pretty readable documentation, however, i'm not
+really the best technically writer.  if you are, maybe we could
+colaborate?
+
+
+COPYING
+
+Copyright 1996, 1997, 1999 Graham THE Ollis
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+675 Mass Ave, Cambridge, MA 02139, USA.
+
+
+
+AUTHOR
+
+Graham THE Ollis <ollisg@netl.org>

@@ -1,0 +1,52 @@
+package Netl::Config::Editor;
+
+use Tk;
+use Netl::Config::Parser;
+use Netl::UI;
+
+sub collect_errors {
+	my $str = shift;
+	push @error_list, "$str on line $Netl::Config::Parser::line_number";
+}
+
+sub new {
+	my $mw = shift;
+	my $filename = shift;
+	my $input = shift;
+	$input .= "\n";
+
+	my $main = $mw->Toplevel;
+	$main->title('Configuration Editor');
+	$main->raise($mw);
+
+	@Netl::Config::Parser::rules = ();
+	undef $Netl::Config::Parser::libdir;
+	undef $Netl::Config::Parser::dumpdir;
+	undef $Netl::Config::Parser::listenport;
+	undef $Netl::Config::Parser::detect;
+	%Netl::Config::Parser::alias = ();
+	
+	@error_list = ();
+	eval 'Netl::Config::Parser::gparse($input, \&collect_errors)';
+	if($#error_list != -1) {
+		Netl::UI::toss_error_p($main, $filename, @error_list);
+	}
+	if($@) {
+		Netl::UI::toss_error_p($main, $filename, "parser barfed",
+					split("\n", $@));
+	}
+
+	my @rules = @Netl::Config::Parser::rules;
+	my $libdir = $Netl::Config::Parser::libdir || '';
+	my $dumpdir = $Netl::Config::Parser::dumpdir || '';
+	my $listenport = $Netl::Config::Parser::listenport;
+	my $detect = $Netl::Config::Parser::detect || 0;
+	my %alias = $Netl::Config::Parser::alias;
+
+	my $nb = $main->add('NoteBook', 
+			'-ipadx' => 6,
+			'-ipady' => 6);
+	my $tmp = $nb->add("global", '-label' => 'Global', '-underline' => 0);
+}
+
+1;

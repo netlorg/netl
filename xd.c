@@ -1,8 +1,8 @@
 /*==============================================================================
 | xd
-|   code by Graham THE Ollis <ollisg@wwa.com>
+|   code by Graham THE Ollis <ollisg@netl.org>
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@netl.org>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 |  28 Feb 97  G. Ollis	.92 created program
 |=============================================================================*/
 
-static char *id = "@(#)xd (c) 1997 graham the ollis <ollisg@wwa.com>";
+static char *id = "@(#)xd (c) 1997 graham the ollis <ollisg@netl.org>";
 static dumb(char *x) { dumb(id); }
 
 #include <stdio.h>

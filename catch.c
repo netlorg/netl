@@ -1,6 +1,6 @@
 /*==============================================================================
 | catch
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@netl.org>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -72,19 +72,16 @@ void netl_catch_prepare(int fd_val)
 	fd = fd_val;
 
 	if((flags = fcntl(fd, F_GETFL, 0)) == -1) {
-		err("unable to fcntl(fd, F_GETFL, 0)\n");
-		exit(1);
+		die(1, "unable to fcntl(fd, F_GETFL, 0)\n");
 	}
 
 	if(fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
-		err("unable to fcntl(fd, F_SETFL, flags | O_NONBLOCK)\n");
-		exit(1);
+		die(1, "unable to fcntl(fd, F_SETFL, flags | O_NONBLOCK)\n");
 	}
 
 	fp = fdopen(fd, "r");
 	if(fp == NULL) {
-		err("could not fdopen %d\n", fd);
-		exit(1);
+		die(1, "could not fdopen %d\n", fd);
 	}
 }
 
@@ -104,7 +101,7 @@ netl_fork_a_netl(char *p, char *a[])
 	static int fd[2];
 	int readfd, writefd;
 	pid_t pid;
-	char buff[20];  int i;
+	char buff[20]; 
 
 	if(forked_netl_pid != -1) {
 		close(fd[0]);
@@ -125,8 +122,7 @@ netl_fork_a_netl(char *p, char *a[])
 
 	if((forked_netl_pid = pid = fork()) == 0) {
 		execvp(p, a);
-		fprintf(stderr, "%s: error execvp() %s", prog, strerror(errno));
-		exit(1);
+		die(1, "%s: error execvp(%s) %s", prog, p, strerror(errno));
 	}
 
 	if(pid == -1) {
@@ -142,6 +138,7 @@ netl_fork_a_netl(char *p, char *a[])
 | see if it is still running.
 | + returns a pointer to the packet, starting from the header.
 | + returns ->.packet_len = -1 when netl has died for some reason.
+| + returns ->.packet_len = -2 if a die message came threw
 | + returns NULL if there was nothing caught.
 |=============================================================================*/
 
@@ -161,14 +158,19 @@ netl_catch_catch(void)
 
 	for(i=0; i<10; i++) {
 		if(fread(&h, sizeof(header), 1, fp) != 0) {
-			if(memcmp(h.id, "NETL", 4)) {
-				err("sig doesn't match \"%4s\" should be NETL\n", h.id);
-				exit(1);
+			if(memcmp(h.id, "NETL", 4) && memcmp(h.id, "NDIE", 4)) {
+				die(1, "sig doesn't match \"%4s\" should be NETL\n", h.id);
 			}
 			re.name = allocate(h.str_len);
 			re.packet = allocate(re.packet_len = h.packet_len);
 			fread(re.name, h.str_len, 1, fp);
-			fread(re.packet, re.packet_len, 1, fp);
+			if(re.packet_len > 0)
+				fread(re.packet, re.packet_len, 1, fp);
+
+			if(!memcmp(h.id, "NDIE", 4) && re.packet_len == 0) {
+				re.packet_len = -2;
+			}
+
 			return &re;
 		}
 	}

@@ -2,9 +2,7 @@
 | ip
 |   parse a IP datagram. (IP 4/6)
 |
-|   optimized (and debugged) by Graham THE Ollis <ollisg@wwa.com>
-|
-|   Copyright (C) 1999 Graham THE Ollis <ollisg@wwa.com>
+|   Copyright (C) 1999 Graham THE Ollis <ollisg@netl.org>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by

@@ -1,8 +1,8 @@
 /*==============================================================================
 | io.c
-|   optimized (and debugged) by Graham THE Ollis <ollisg@wwa.com>
+|   optimized (and debugged) by Graham THE Ollis <ollisg@netl.org>
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@netl.org>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@ char *prog="[unassigned]";
 |=============================================================================*/
 
 void
-log(char *cp,...)
+netl_log(char *cp,...)
 {
 	char buff[2048];	/* this should be enough memory */
 
@@ -89,7 +89,7 @@ log(char *cp,...)
 |=============================================================================*/
 
 void
-err(char *cp,...)
+netl_err(char *cp,...)
 {
 	char buff[2048];	/* this should be enough memory */
 
@@ -127,15 +127,14 @@ err(char *cp,...)
 |=============================================================================*/
 
 void *
-allocate(size_t size)
+netl_allocate(size_t size)
 {
 	void *tmp;
 
 	/*log("netl_allocate(%d)", size); */
 
 	if((tmp = malloc(size)) == NULL) {
-		err("error: could not malloc(), die");
-		exit(2);
+		die(2, "error: could not malloc(), die");
 	}
 
 	return tmp;
@@ -149,14 +148,14 @@ allocate(size_t size)
 
 #ifndef NO_SYSLOGD
 void
-ope(char *s)
+netl_ope(char *s)
 {
 	if(!noBackground)
 		openlog(s, 0, NETL_LOG_FACILITY);
 }
 
 void
-clo()
+netl_clo()
 {
 	if(!noBackground)
 		closelog();
@@ -169,8 +168,10 @@ clo()
 |   to the new module.
 |=============================================================================*/
 
+int netl_nmopen_pretend = 0;
+
 void *
-nmopen(char *name)
+netl_nmopen(char *name)
 {
 	void *handle;
 	void (*f)(void);
@@ -178,15 +179,26 @@ nmopen(char *name)
 	if(debug_mode)
 		log("loading module: %s", name);
 
-	handle = dlopen(name, RTLD_NOW);
-	if(handle == NULL) {
-		err("could not load %s; reason:%s", name, dlerror());
-		exit(1);
-	}
+	if(netl_nmopen_pretend) {
+		FILE *fp;
+		fp = fopen(name, "r");
+		if(fp == NULL) {
+			die(1, "could not (pretend to) load %s; reason:file does not exist", name);
+		}
+		fclose(fp);
+		handle = allocate(strlen(name)+1);
+		strcpy(handle, name);
+		
+	} else {
+		handle = dlopen(name, RTLD_NOW);
+		if(handle == NULL) {
+			die(1, "could not load %s; reason:%s", name, dlerror());
+		}
 
-	f = dlsym(handle, "construct");
-	if(f != NULL) 
-		f();
+		f = dlsym(handle, "construct");
+		if(f != NULL) 
+			f();
+	}
 
 	return handle;
 }
@@ -198,9 +210,14 @@ nmopen(char *name)
 |=============================================================================*/
 
 int 
-nmclose(void *handle)
+netl_nmclose(void *handle)
 {
 	void (*f)(void);
+
+	if(netl_nmopen_pretend) {
+		free(handle);
+		return 0;
+	}
 
 	if(debug_mode)
 		log("destroying module: ??");
@@ -218,14 +235,16 @@ nmclose(void *handle)
 |=============================================================================*/
 
 void *
-nmsym(void *handle, char *symbol)
+netl_nmsym(void *handle, char *symbol)
 {
 	void *sym;
 
+	if(netl_nmopen_pretend)
+		return NULL;
+
 	sym = dlsym(handle, symbol);
 	if(sym == NULL) {
-		err("could not resolve unknown::%s; reason:%s", symbol, dlerror());
-		exit(1);
+		die(1, "could not resolve unknown::%s; reason:%s", symbol, dlerror());
 	}
 	return sym;
 }
@@ -237,7 +256,7 @@ nmsym(void *handle, char *symbol)
 |=============================================================================*/
 
 int
-ahextoi(char *s)
+netl_ahextoi(char *s)
 {
 	int val;
 

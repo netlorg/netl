@@ -1,11 +1,25 @@
-#!/usr/bin/perl -w
+#include <stdio.h>
+#include "netl/version.h"
+
+int
+main(int argc, char *argv[])
+{
+        FILE *fp;
+
+        fp = fopen("dcp.pl", "w");
+        if(fp == NULL) {
+                fprintf(stderr, "hrm.  i could not open dcp.pl for writing.");
+                return 1;
+        }
+
+	fprintf(fp, "#!%s
 # @(#)dcp.pl (c) 1997 Graham THE Ollis
 #===============================================================================
 # dcp.pl -  send a message to netl or related network listening tool.
 #           for this version you will need netcat.  hopefully this will be
 #           unnecessary in later versions.
 #
-#   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
+#   Copyright (C) 1997 Graham THE Ollis <ollisg@netl.org>
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -37,7 +51,7 @@ while(defined $ARGV[0] and $ARGV[0] =~ m/^-/) {
 }
 
 if($#ARGV == -1) {
-	print STDERR "usage: $0 [-o] message [port]\n";
+	print STDERR \"usage: $0 [-o] message [port]\\n\";
 	exit 2;
 }
 
@@ -47,20 +61,26 @@ $len = length $message;
 
 if(defined $old) {
 	$data = pack 'Nn', $$, $len;
-	$pid = open(NC, "|nc -u localhost $port");
+	$pid = open(NC, \"|nc -u localhost $port\");
 	print NC $data;
 	print NC $message;
 	kill $pid;
 } else {
-	$data = pack "Nna$len", $$, $len, $message;
+	$data = pack \"Nna$len\", $$, $len, $message;
 	$proto = getprotobyname('udp') ||
-		die "getprotobyname(): $!\n";
+		die \"getprotobyname(): $!\\n\";
 	socket(Socket_Handle, PF_INET, SOCK_DGRAM, $proto) ||
-		die "socket(): $!\n";
+		die \"socket(): $!\\n\";
 	$iaddr = gethostbyname('localhost') ||
-		die "gethostbyname(): $!\n";
+		die \"gethostbyname(): $!\\n\";
 	$sin = sockaddr_in($port, $iaddr) ||
-		die "sockaddr_in(): $!\n";
+		die \"sockaddr_in(): $!\\n\";
 	send(Socket_Handle, $data, 0, $sin) ||
-		die "send(): $!\n";
+		die \"send(): $!\\n\";
 }
+	", NETL_PERLPATH);
+
+	fclose(fp);
+	return 0;
+}
+

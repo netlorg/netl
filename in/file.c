@@ -1,8 +1,8 @@
 /*==============================================================================
 | file.c
-|   by Graham THE Ollis <ollisg@wwa.com>
+|   by Graham THE Ollis <ollisg@netl.org>
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@netl.ogr>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ grab(char *buf)
 	while(buffer[0] == 0) {
 		if(feof(stdin)) {
 			log("input file EOF");
-			exit(1);
+			die(1, "");
 		}
 		gets(buffer); len = strlen(buffer);
 	}
@@ -61,8 +61,7 @@ grab(char *buf)
 		buffer[len--]=0;
 	fp = fopen(buffer, "r");
 	if(fp == NULL) {
-		err("could not open \"%s\"!", buffer);
-		exit(1);
+		die(1, "could not open \"%s\"!", buffer);
 	}
 	buffer[0] = 0;
 	fseek(fp, 0, SEEK_END);
@@ -72,13 +71,5 @@ grab(char *buf)
 	if(len != r) {
 		err("warning, read %d/%d bytes", r, len);
 	}
-/*	{
-		int i;
-		iphdr *ip = (iphdr *) &buf[14];
-		printf("ipversion = %d\n", ip->version);
-		for(i=0; i<r; i++) {
-			printf("dg[%d] = %d\t", i, buf[i]);
-		}
-	}*/
 	return len;
 }

@@ -1,0 +1,189 @@
+<html><head><title>CORE software : hwpassive(8)</title></head>
+<body bgcolor=#f1f1f1 text=#000000 link=#0000ff vlink=#9090ff>
+<h2>CORE software : hwpassive(8)</h2>
+<h3>table of content</h3>
+<ul>
+  <li><a href=#sec1>NAME</a>
+  <li><a href=#sec2>SYNOPSIS</a>
+  <li><a href=#sec3>DESCRIPTION</a>
+  <li><a href=#sec4>OPTIONS</a>
+  <li><a href=#sec5>DCP COMMANDS</a>
+  <li><a href=#sec6>HISTORY</a>
+  <li><a href=#sec7>SEE ALSO</a>
+  <li><a href=#sec8>BUGS</a>
+  <li><a href=#sec9>COPYING</a>
+  <li><a href=#sec10>AUTHOR</a>
+
+</ul>
+<p>
+<a name=sec1><h3>NAME</h3>
+
+<p>
+ <i>hwpassive</i> - passively scan for, and keep a database of hardware/ip
+address mappings.
+<p>
+<a name=sec2><h3>SYNOPSIS</h3>
+
+<p>
+ <i>hwpassive</i> [options] ['config rule'] [...]
+<p>
+<a name=sec3><h3>DESCRIPTION</h3>
+
+<p>
+ <i>hwpassive</i> is a program for gathering hardware/ip address mappings.  
+it is implemented as a  <a href=netl.8.html>netl (8)</a> module and  <a href=perl.1.html>perl (1)</a> script front
+end.  when  <i>hwpassive</i> sees a hardware address it has not seen before,
+or if the existing mapping is different, then it will send it to syslogd
+(default) or stdout (with the --background option).
+<p>
+ <i>hwpassive</i> writes its database to /usr/local/lib/netl/hwpassive on
+exit, if it has changed, or if you send it the  <a href=dcp.1.html>dcp (1)</a> message
+"hwpassive:write"
+<p>
+<a name=sec4><h3>OPTIONS</h3>
+
+<p>
+hwpassive accepts all the same options and config rules as  <a href=netl.8.html>netl (8)</a> .
+of special interest would be ignore rules which could be used to filter
+out packets being sent into or out of your local network.  for example,
+if your network were 10.* :
+<p>
+% hwpassive 'ignore ip !srcip=10.0.0.0/8' 'ignore ip !dstip=10.0.0.0/8'
+% ping 10.255.255.255
+<p>
+would be an active method for getting nearly all the hardware/ip address
+mappings for the hosts on your local area network.
+<p>
+(note that you may have to escape the `!' character on some shells)
+<p>
+<a name=sec5><h3>DCP COMMANDS</h3>
+
+<p>
+hwpassive will accept four  <a href=dcp.1.html>dcp (1)</a> commands, each is prefixed be
+`hwpassive:' so that they will be ignored by any other program listening
+for  <a href=dcp.1.html>dcp (1)</a> commands.
+<p>
+ <b>hwpassive:write</b> 
+<p>
+this instructs hwpassive to write the entire database to disk, regardless
+of weather the database has changed since the last save.
+<p>
+ <b>hwpassive:print</b> 
+<p>
+instructs hwpassive to print out the entire ip/hardware address mapping
+database.  each entry is presented as
+<p>
+hw:hw:hw:hw:hw:hw => ip [first] [last]
+<p>
+where  <b>hw</b> is the hardware address,  <b>ip</b> is the ip address (and may
+either be a dotted decimal, or a DNS hostname),  <b>first</b> is the full date
+of the first time the mapping was seen by  <i>hwpassive</i> and  <b>last</b> is
+the last time the mapping was seen by  <i>hwpassive</i> .
+<p>
+ <b>hwpassive:lookhw:xx:xx:xx:xx:xx:xx</b> 
+<p>
+makes a query for the hardware address  <b>xx</b> in the database.  this may
+return multiple results, if the one hardware address is mapped to more
+than one ip address (which may happen, especially in a dhcp network (see
+ <a href=dhcpd.8.html>dhcpd (8)</a> and  <a href=dhcpcd.8.html>dhcpcd (8)</a> , where ip addresses are assigned
+dynamically)).
+<p>
+ <b>hwpassive:lookip:hostname</b> 
+<p>
+makes the reverse query for  <b>hostname</b> .  again, more than one mapping
+will be returned.  if the host is not found in the database, or DNS fails
+to find the host, then the appropriate error message will be logged.
+<p>
+<a name=sec6><h3>HISTORY</h3>
+
+<p>
+the genesis for this program came about when the author and a friend of
+his were tracking quake users on their university LAN.  thanks to the
+networking knowledge of said friend, determined programming of the author,
+and dominos pizza, we were able to track nearly every anonymous quaker to
+an email address, phone number, dorm, and sometimes even their room
+number.
+<p>
+note that neither the author, nor the author's friend play quake anymore,
+and do not condone the senseless violence in many of today's video games.
+<p>
+<a name=sec7><h3>SEE ALSO</h3>
+
+<p>
+ <a href=netl.8.html>netl (8)</a> ,  <a href=netl.conf.5.html>netl.conf (5)</a> ,  <a href=netlcc.1.html>netlcc (1)</a> ,  <a href=netl_install.1.html>netl_install (1)</a> ,
+ <a href=netl_module.1.html>netl_module (1)</a> ,  <a href=neta.1.html>neta (1)</a> ,  <a href=hwpassive.8.html>hwpassive (8)</a> ,  <a href=hwlookup.1.html>hwlookup (1)</a> ,
+ <a href=dcp.1.html>dcp (1)</a> and  <a href=xd.1.html>xd (1)</a> 
+<p>
+<a name=sec8><h3>BUGS</h3>
+
+<p>
+there are almost certainly bugs, please report them to me.  send bugs and
+bug fixes to netl@netl.org.  the netl home page is at
+<a href=http://www.netl.org,>http://www.netl.org,</a>which should contain up to date information on
+ <b>netl</b> .
+<p>
+i have attempted to write pretty readable documentation, however, i'm not
+really the best technically writer.  if you are, maybe we could
+colaborate?
+<p>
+<a name=sec9><h3>COPYING</h3>
+
+<p>
+Copyright 1996, 1997, 1999 Graham THE Ollis
+<p>
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+<p>
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License for more details.
+<p>
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+675 Mass Ave, Cambridge, MA 02139, USA.
+<p>
+<p>
+<a name=sec10><h3>AUTHOR</h3>
+
+<p>
+Graham THE Ollis <ollisg@netl.org>
+
+
+<center><img src=coreLine.gif alt=
+"----------------------------------------------------------------------">
+</center>
+
+
+<a name=contact></a>
+<h3>Contact Information</h3>
+
+<p>You can contact the netl team at <a
+href=mailto:netl@netl.org>netl@netl.org</a>.
+
+<center><img src=coreLine.gif alt=
+"----------------------------------------------------------------------">
+</center>
+
+<center>
+[
+<a href=http://www.whitedactyl.com/ollisg/>Tarquin Hill</a> |
+<a href=http://www.whitedactyl.com/core/>CORE</a> |
+<a href=http://www.netl.org/>netl</a>
+]
+</center>
+<center><img src=coreLine.gif alt=
+"----------------------------------------------------------------------">
+</center>
+
+<address><center>
+<a href=http://www.whitedactyl.com/ollisg/>ollisg</a>
+(<a href=mailto:netl@netl.org>netl@netl.org</a>)
+</center></address>
+<center><h6>
+<img src=copyright.gif alt="(c)"> 1999 CORE software international
+</h6></center>
+</body></html>
+

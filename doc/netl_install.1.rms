@@ -19,40 +19,71 @@ at ftp://sunsite.unc.edu/pub/Linux/system/network/monitor/
  AS NOT ROOT:
 
  1. type 'sh configure'
-    configure takes a few options which may be of interest, try 
-    'sh configure --help' for information.  in general, the defaults are
-    reasonable.
+
+configure takes a few options which may be of interest, try 'sh configure
+--help' for information.  in general, the defaults are reasonable.
 
  2. type `make'
 
- 3. optionally run the regression tests.  you will need perl.
-    type `make test'.  any failed tests will produce `.ao' (actual
-    output) files which you can read, if you speak gibberish.
-    alternatively, you can e-mail me .ao files for any failed test case.
+ 3. optionally run the regression tests.  you will need perl. type `make
+test'.  any failed tests will produce `.ao' (actual output) files which
+you can read, if you speak gibberish. alternatively, you can e-mail me
+.ao files for any failed test case.
 
- 4. take a look at conf/netl.conf.  modify it to your liking.
-    at least, READ IT, as this will save you a lot of trouble.
+ 4. take a look at conf/netl.conf.  modify it to your liking. at least,
+READ IT, as this will save you a lot of trouble.
 
  AS ROOT
 
- 5. type `netl -z -fconf/netl.conf -L.' to try out the configuration.
-    go to another virtual terminal and send yourself a ping (or something
-    else you are logging), come back and see if it shows up on the
-    screen.
+ 5. type `netl -z -fconf/netl.conf -L.' to try out the configuration. go
+to another virtual terminal and send yourself a ping (or something else
+you are logging), come back and see if it shows up on the screen.
 
-    the -z tells i<netl> to run in the foreground, -f indicates the
-    config file and -L is for the module directory.  see i<netl>(8) for
-    more information on b<netl> options.
+the -z tells i<netl> to run in the foreground, -f indicates the config
+file and -L is for the module directory.  see i<netl>(8) for more
+information on b<netl> options.
 
  6. type `make install'
 
  7. copy conf/netl.conf to your /etc directory, and run `netl' with no
-    arguments to have it run in the background.  when it runs in this
-    manner, output is sent to syslogd and will show up in your
-    ~adm/messages file (unless you modify sa<syslog.conf>(5)).  you may
-    want to run b<netl> from one of your startup scripts in /etc/rc.d or
-    thereabouts.
+arguments to have it run in the background.  when it runs in this manner,
+output is sent to syslogd and will show up in your ~adm/messages file
+(unless you modify sa<syslog.conf>(5)).  you may want to run b<netl> from
+one of your startup scripts in /etc/rc.d or thereabouts.
 
  8. read the documentation.  start with the b<netl>(8) man page.
+
+#H TK NETL
+
+there is now a perl/Tk front end for netl, which you can optionally
+install after the netl base has been installed.  you will need perl5 and
+Tk8 or better.  these can be found at
+
+ftp://ftp.cdrom.com/pub/perl/CPAN/src/
+ftp://ftp.cdrom.com/pub/perl/CPAN/by-module/Tk/
+
+once those are installed, you're ready to install tknetl.
+
+ 1. `cd face/perltk' from the netl dist.
+
+ 2. `perl Makefile.PL'
+	this may ask you questions about where the netl library directory
+or header files are located.  unless you did something funny when
+installing the netl base, Makefile.PL should be able to find the library
+unaided.
+
+ 3. `make'
+
+ 4. `make test'
+	optionally.  currently the tests are very basic, essentially
+making sure the Netl perl modules load correctly.  this doesn't even
+check to see if you have perl/Tk.
+
+ 5. `make install'
+	you may have to be root to do this, depending on how perl is
+installed.
+
+ 6. `tknetl'
+	should open up the tk version of the netl GUI interface.
 
 #EXEC tail
