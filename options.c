@@ -37,6 +37,7 @@
 
 int displayVersion = TRUE;
 int resolveHostnames = TRUE;
+int debug_mode = FALSE;
 char netdevice[255] = "eth0";
 
 char *configfile = NETL_CONFIG;
@@ -107,6 +108,10 @@ parsecmdline(int argc, char *argv[])
           printusage();
           exit(1);
 
+	case 'd' :
+	  debug_mode = 1;
+	  break;
+
         default :
           fprintf(stderr, "%s: warning: unknown option %s, use -h for help\n",
                   prog, argv[0]);
@@ -158,6 +163,7 @@ printusage()
   puts("-o   send a copy of output to specified file");
 #endif
   puts("-h   this help message");
+  puts("-d   print out configeration and DON\'T run (debug option)");
   putchar('\n');
   puts("defaults are in the [].  to turn off an option append a -,");
   puts("to turn on append a +.  the default is +, so to turn version");

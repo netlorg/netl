@@ -111,6 +111,7 @@ void readconfig(char *confname, int nbg);
 void preconfig();
 void postconfig();
 void clearconfig();
+void printconfig();
 
 /*==============================================================================
 | exported globals

@@ -62,7 +62,7 @@
 | end configure (hopefully this is far as you need to go)
 ==============================================================================*/
 
-#define COPYVER "0.95 copyright 1997 Graham THE Ollis <ollisg@ns.arizona.edu>"
+#define COPYVER "0.95.2 copyright 1997 Graham THE Ollis <ollisg@ns.arizona.edu>"
 
 #ifndef TRUE
   #define TRUE			1
@@ -88,9 +88,13 @@ extern char *prog;
   typedef __u32 u32;
 
   #if defined __LITTLE_ENDIAN_BITFIELD
-    #define LITTLE_ENDIAN
+    #ifndef LITTLE_ENDIAN
+      #define LITTLE_ENDIAN
+    #endif
   #elif defined __BIG_ENDIAN_BITFIELD
-    #define BIG_ENDIAN
+    #ifndef BIG_ENDIAN
+      #define BIG_ENDIAN
+    #endif
   #else
     #define "please fix <asm/byteorder.h>"
   #endif

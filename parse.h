@@ -1,8 +1,8 @@
 /*==============================================================================
-| options.h - parse command line options
-| 
-| coded and tested under linux 2.0.23, 2.0.26, stealth kernel 2.0.29
-|  by graham the ollis <ollisg@ns.arizona.edu>
+| parse.h
+|   parse a datagram and send the output to the right place.
+|
+|   optimized (and debugged) by Graham THE Ollis <ollisg@ns.arizona.edu>
 |
 |   Copyright (C) 1997 Graham THE Ollis <ollisg@ns.arizona.edu>
 |
@@ -19,20 +19,16 @@
 |   You should have received a copy of the GNU General Public License
 |   along with this program; if not, write to the Free Software
 |   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-==============================================================================*/
+|=============================================================================*/
 
-#ifndef OPTIONS_H
-#define OPTIONS_H
+#ifndef PARSE_H
+#define PRASE_H
 
-extern int displayVersion;
-extern int resolveHostnames;
-extern int debug_mode;
-extern char *configfile;
-extern char netdevice[255];
+char *string(char *s);
+void dgdump(u8 *dg, char *name, size_t len);
+void checkicmp(u8 *dg, iphdr ip, icmphdr *h, size_t len);
+void checktcp(u8 *dg, iphdr ip, tcphdr *h, size_t len);
+void checkudp(u8 *dg, iphdr ip, udphdr *h, size_t len);
+void parsedg(u8 *dg, size_t len);
 
-void parsecmdline(int argc, char *argv[]);
-int booleanValue(char c);
-void printusage();
-void parseconfigline(char *buff);
-
-#endif /* OPTIONS_H */
+#endif

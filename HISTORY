@@ -1,3 +1,14 @@
+version .95.2
+-------------
+
+ . mostly internal stuff.  added parse.c and grab.c modules, which contain
+   code that used to be in the netl.c main module.  this is so that all the 
+   network specific code is in grab.c, the true nightmare for porting is
+   in this file... so if i can port grab.c to win32... then i'm done.
+
+ . the \ character now works in the config file, if you want to have
+   multiple line rules.  very unix-esq.
+
 version .95
 -----------
 

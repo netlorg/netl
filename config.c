@@ -308,18 +308,10 @@ detectf()
 
   addip("localhost", LOCALHOST_IP);
   addr.i = searchbyname("localhost");
-/*  printf("detect: localhost -> %d.%d.%d.%d\n", addr.c[0], addr.c[1], 
-                                               addr.c[2], addr.c[3]);*/
   gethostname(buff, 255);
   if((herhost = gethostbyname(buff)) != NULL) {
     addip("local", *((u32 *) herhost->h_addr_list[0]) );
     addip(buff, *((u32 *) herhost->h_addr_list[0]) );
-/*    addr.i = searchbyname("local");
-    printf("detect: local -> %d.%d.%d.%d\n",    addr.c[0], addr.c[1], 
-                                                addr.c[2], addr.c[3]);
-    addr.i = searchbyname(buff);
-    printf("detect: %s -> %d.%d.%d.%d\n", buff, addr.c[0], addr.c[1], 
-                                                addr.c[2], addr.c[3]);*/
   } else {
     err("warning: could not detect hostname");
   }
@@ -649,6 +641,49 @@ postconfig()
 }
 
 /*==============================================================================
+| getline(char *buff, int max, FILE *fp)
+==============================================================================*/
+
+char *
+getline(char *buff, int max, FILE *fp)
+{
+  int i=0;
+  int doloop=FALSE;
+
+  line++;
+
+  if(feof(fp))
+    return NULL;
+
+  do {
+
+    for(i=0; i<max && !feof(fp) && (buff[i]=fgetc(fp)) != '\n'; i++)
+      ;
+
+    if(i==max-1) {
+      fprintf(stderr, "%s: warning: long config %d line cut.\n", prog, line);
+      while(!feof(fp) && fgetc(fp) != '\n')
+        ;
+      buff[i] = 0;
+      return buff;
+    }
+
+    if(feof(fp)) {
+      buff[--i] = 0;
+      return buff;
+    }
+
+    if(i>=1 && buff[i-1] == '\\') 
+      doloop = TRUE;
+
+  } while(doloop);
+
+  buff[i] = 0;
+
+  return buff;
+}
+
+/*==============================================================================
 | readconfig(char *prog)
 |
 |  this function reads the config file and alters the config structure
@@ -679,8 +714,9 @@ readconfig(char *confname, int nbg)
 
   line = 1;
 
-  while(fgets(buff, NETL_CONFIG_MAXWIDTH, fp) != NULL) {
-    line++;
+  while(getline(buff, NETL_CONFIG_MAXWIDTH, fp) != NULL) {
+
+    printf(":%s:\n", buff);
 
     /* skip comment lines */
     if(buff[0] == '#') 
@@ -704,4 +740,129 @@ readconfig(char *confname, int nbg)
 #endif
 
   endservent();
+}
+
+/*==============================================================================
+| printconfig - print out config options as a debugging option thing.
+==============================================================================*/
+
+void
+printconfig()
+{
+  int i;
+  struct configitem *c;
+
+  for(i=0; i<icmp_req.index; i++) {
+    c = &icmp_req.c[i];
+    switch(c->action) {
+      case ACTION_NONE   : fputs("none\t", stdout); break;
+      case ACTION_LOG    : fputs("log\t",  stdout); break;
+      case ACTION_DUMP   : fputs("dump\t", stdout); break;
+      case ACTION_IGNORE : fputs("ignore\t", stdout); break;
+      default : printf("unknown(%u) ", c->action); break;
+    }
+    fputs("icmp\t", stdout);
+
+    if(c->logname != NULL)
+      printf("name=%s ", c->logname);
+    if(c->check_icmp_type)
+      printf("type=%u ", c->icmp_type);
+    if(c->check_icmp_code)
+      printf("code=%u ", c->icmp_code);
+
+    if(c->check_src_ip)
+      printf("srcip=%s ", ip2string(c->src_ip));
+    if(c->check_dst_ip)
+      printf("dstip=%s ", ip2string(c->dst_ip));
+
+    if(c->check_src_ip_not)
+      printf("!srcip=%s ", ip2string(c->src_ip_not));
+    if(c->check_dst_ip_not)
+      printf("!dstip=%s ", ip2string(c->dst_ip_not));
+
+    putchar('\n');
+  }
+
+  for(i=0; i<tcp_req.index; i++) {
+    c = &tcp_req.c[i];
+    switch(c->action) {
+      case ACTION_NONE   : fputs("none\t", stdout); break;
+      case ACTION_LOG    : fputs("log\t",  stdout); break;
+      case ACTION_DUMP   : fputs("dump\t", stdout); break;
+      case ACTION_IGNORE : fputs("ignore\t", stdout); break;
+      default : printf("unknown(%u) ", c->action); break;
+    }
+    fputs("tcp\t", stdout);
+
+    if(c->logname != NULL)
+      printf("name=%s ", c->logname);
+
+    if(c->check_src_prt)
+      if(c->src_prt1 == c->src_prt2) 
+        printf("srcport=%d ", c->src_prt1);
+      else
+        printf("srcport=%d-%d ", c->src_prt1, c->src_prt2);
+
+    if(c->check_dst_prt)
+      if(c->dst_prt1 == c->dst_prt2) 
+        printf("dstport=%d ", c->dst_prt1);
+      else
+        printf("dstport=%d-%d ", c->dst_prt1, c->dst_prt2);
+
+    if(c->check_tcp_flags_on)
+      printf("flag=%d ", c->tcp_flags_on);
+    if(c->check_tcp_flags_off)
+      printf("!flag=%d ", c->tcp_flags_off);
+
+    if(c->check_src_ip)
+      printf("srcip=%s ", ip2string(c->src_ip));
+    if(c->check_dst_ip)
+      printf("dstip=%s ", ip2string(c->dst_ip));
+
+    if(c->check_src_ip_not)
+      printf("!srcip=%s ", ip2string(c->src_ip_not));
+    if(c->check_dst_ip_not)
+      printf("!dstip=%s ", ip2string(c->dst_ip_not));
+
+    putchar('\n');
+  }
+
+  for(i=0; i<udp_req.index; i++) {
+    c = &udp_req.c[i];
+    switch(c->action) {
+      case ACTION_NONE   : fputs("none\t", stdout); break;
+      case ACTION_LOG    : fputs("log\t",  stdout); break;
+      case ACTION_DUMP   : fputs("dump\t", stdout); break;
+      case ACTION_IGNORE : fputs("ignore\t", stdout); break;
+      default : printf("unknown(%u) ", c->action); break;
+    }
+    fputs("udp\t", stdout);
+
+    if(c->logname != NULL)
+      printf("name=%s ", c->logname);
+
+    if(c->check_src_prt)
+      if(c->src_prt1 == c->src_prt2) 
+        printf("srcport=%d ", c->src_prt1);
+      else
+        printf("srcport=%d-%d ", c->src_prt1, c->src_prt2);
+
+    if(c->check_dst_prt)
+      if(c->dst_prt1 == c->dst_prt2) 
+        printf("dstport=%d ", c->dst_prt1);
+      else
+        printf("dstport=%d-%d ", c->dst_prt1, c->dst_prt2);
+
+    if(c->check_src_ip)
+      printf("srcip=%s ", ip2string(c->src_ip));
+    if(c->check_dst_ip)
+      printf("dstip=%s ", ip2string(c->dst_ip));
+
+    if(c->check_src_ip_not)
+      printf("!srcip=%s ", ip2string(c->src_ip_not));
+    if(c->check_dst_ip_not)
+      printf("!dstip=%s ", ip2string(c->dst_ip_not));
+
+    putchar('\n');
+  }
 }

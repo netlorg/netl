@@ -62,3 +62,7 @@ neta.1
 xd.1
 dcp.1
 dcpclient.c
+grab.h
+grab.c
+parse.h
+parse.c

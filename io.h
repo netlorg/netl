@@ -30,8 +30,9 @@ void err(char *cp,...);		/* syslog()/fprintf(stderr) */
 void *allocate(size_t size);	/* malloc with protection */
 
 #ifdef NO_SYSLOGD
-  #define ope(s)
-  #define clo()
+  #define ope(s)		/* it's the amazing do nothing function */
+  #define clo()			/* actually this is even more amazing,
+				   it does nothing with nothing!	*/
 #else
   void ope(char *s);		/* openlog/noop */
   void clo();			/* closelog/noop */

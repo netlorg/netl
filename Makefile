@@ -54,7 +54,7 @@ MISC_LIBS=
 # don't go below this line unless your in to that sort of thing
 #===============================================================================
 
-VER=0.95
+VER=0.95.2
 RM=rm -f
 CP=cp
 EXEC=netl neta xd hwpassive dcp
@@ -88,15 +88,16 @@ $(DIST)-$(VER).tar:
 # executables:
 #===============================================================================
 
+NETLOBJ=netl.o resolve.o sighandle.o config.o lookup.o options.o io.o dcp.o \
+grab.o parse.o
+netl:$(NETLOBJ)
+	$(CC) $(CFLAGS) -o netl $(NETLOBJ) $(NET_LIBS) $(MISC_LIBS)
+	strip netl || true
+
 HWPOBJ=hwpassive.o io.o options.o sighandle.o
 hwpassive:$(HWPOBJ)
 	$(CC) $(CFLAGS) -o hwpassive $(HWPOBJ) $(NET_LIBS) $(MISC_LIBS)
 	strip hwpassive || true
-
-NETLOBJ=netl.o resolve.o sighandle.o config.o lookup.o options.o io.o dcp.o
-netl:$(NETLOBJ)
-	$(CC) $(CFLAGS) -o netl $(NETLOBJ) $(NET_LIBS) $(MISC_LIBS)
-	strip netl || true
 
 NETAOBJ=neta.o resolve.o lookup.o options.o dump.o io.o
 neta:$(NETAOBJ)
@@ -122,7 +123,7 @@ dcp:$(DCPOBJ)
 
 hwpassive.o:hwpassive.c io.h global.h ether.h options.h config.h sighandle.h
 netl.o:netl.c global.h ether.h netl.h sighandle.h io.h options.h config.h \
-resolve.h ip.h
+resolve.h ip.h parse.h grab.h
 neta.o:neta.c global.h ether.h dump.h lookup.h options.h resolve.h ip.h
 xd.o:xd.c dump.h
 dcp.o:dcp.c dcp.h global.h ether.h io.h config.h options.h resolve.h ip.h
@@ -135,6 +136,8 @@ resolve.o:resolve.c global.h resolve.h io.h
 sighandle.o:sighandle.c sighandle.h io.h global.h
 options.o:options.c global.h config.h options.h io.h
 dcpclient.o:dcpclient.c global.h io.h
+grab.o:grab.c grab.h io.h ether.h
+parse.o:parse.c parse.h global.h ether.h ip.h config.h io.h resolve.h dcp.h
 
 #===============================================================================
 # install:

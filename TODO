@@ -1,9 +1,5 @@
 before we get to a final release on netl:
 
- * add a format string option, e.g. "%name %ip => %ip"
-
- * consider an ipx logger
-
  * figure out why it's dumping core on sparc linux
 
  * store the hostname lookup cache as a binary tree
@@ -13,3 +9,8 @@ before we get to a final release on netl:
 
  * port aliasing
 
+ * implement a dgprintf function and insert
+
+ * add raw protocol
+
+ * add ipx protocol
