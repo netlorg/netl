@@ -2,7 +2,7 @@
 | resolve.c
 |   do host name look ups in something of an efficent manner
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@ns.arizona.edu>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -46,6 +46,8 @@ typedef struct lt {
 static listtype *cache = NULL;
 
 char *search(u32 ip);
+
+int resolveHostnames=TRUE;
 
 /*==============================================================================
 | addip();

@@ -2,7 +2,7 @@
 | sighandle.c
 |   catch some simple signals 
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@ns.arizona.edu>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by

@@ -2,9 +2,9 @@
 | parse.h
 |   parse a datagram and send the output to the right place.
 |
-|   optimized (and debugged) by Graham THE Ollis <ollisg@ns.arizona.edu>
+|   optimized (and debugged) by Graham THE Ollis <ollisg@wwa.com>
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@ns.arizona.edu>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by

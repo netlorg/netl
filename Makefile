@@ -40,14 +40,18 @@
 #===============================================================================
 
 CC=gcc
-CFLAGS=-m486 -O3 -Wall
-#CFLAGS=-m486 -O3 -Wall -b i486-linuxaout
+CFLAGS=-O3 -Wall
 #CFLAGS=-g3 -Wall
-SUBIN=/usr/local/sbin
-BIN=/usr/local/bin
-TDR=tdr
-SYSTEMMAN=/usr/local/man/man8
-USERMAN=/usr/local/man/man1
+LDFLAGS=-L.
+
+PREFIX=/usr/local
+SUBINPATH=$(PREFIX)/sbin
+BINPATH=$(PREFIX)/bin
+SYSTEMMANPATH=$(PREFIX)/man/man8
+USERMANPATH=$(PREFIX)/man/man1
+LIBPATH=$(PREFIX)/lib
+INCLUDEPATH=$(PREFIX)/include
+
 NET_LIBS=
 MISC_LIBS=
 
@@ -59,14 +63,21 @@ COREDIR=tarquin.macro core.head core.line core.tail
 # don't go below this line unless your in to that sort of thing
 #===============================================================================
 
-VER=1.00
+TDR=tdr
+AR=ar
+RANLIB=ranlib
+LIB_NAME=netl
+NETL_LIB=lib$(LIB_NAME).so.1.1
+LIB_NETL=$(NETL_LIB)
+LN=ln
+VER=1.01
 RM=rm -f
 CP=cp
 EXEC=netl neta xd hwpassive dcp
 DIST=netl
 PGP=pgp262
 
-all:$(EXEC) 
+all:$(EXEC) $(LIB_NETL) lib$(LIB_NAME).a
 
 gnr:all web dist
 
@@ -100,31 +111,35 @@ $(DIST)-$(VER)-bin.tar:$(EXEC)
 # executables:
 #===============================================================================
 
-NETLOBJ=netl.o resolve.o sighandle.o config.o lookup.o options.o io.o dcp.o \
-grab.o parse.o dgprintf.o
-netl:$(NETLOBJ)
-	$(CC) $(CFLAGS) -o netl $(NETLOBJ) $(NET_LIBS) $(MISC_LIBS)
-#	strip netl || true
+SOOBJ=resolve.o dump.o io.o
+$(LIB_NETL):$(SOOBJ)
+	$(CC) $(LDFLAGS) $(CFLAGS) -shared -o $(LIB_NETL) $(SOOBJ)
+	$(LN) -fs $(LIB_NETL) lib$(LIB_NAME).so.1
+	$(LN) -fs $(LIB_NETL) lib$(LIB_NAME).so
 
-HWPOBJ=hwpassive.o io.o options.o sighandle.o
+lib$(LIB_NAME).a:$(SOOBJ)
+	$(AR) cru lib$(LIB_NAME).a $(SOOBJ)
+	$(RANLIB) lib$(LIB_NAME).a
+
+NETLOBJ=netl.o sighandle.o config.o lookup.o options.o dcp.o grab.o parse.o dgprintf.o
+netl:$(NETLOBJ) $(LIB_NETL)
+	$(CC) $(LDFLAGS) $(CFLAGS) -o netl $(NETLOBJ) $(NET_LIBS) $(MISC_LIBS) -lnetl
+
+HWPOBJ=hwpassive.o options.o sighandle.o
 hwpassive:$(HWPOBJ)
-	$(CC) $(CFLAGS) -o hwpassive $(HWPOBJ) $(NET_LIBS) $(MISC_LIBS)
-#	strip hwpassive || true
+	$(CC) $(LDFLAGS) $(CFLAGS) -o hwpassive $(HWPOBJ) $(NET_LIBS) $(MISC_LIBS) -lnetl
 
-NETAOBJ=neta.o resolve.o lookup.o options.o dump.o io.o
-neta:$(NETAOBJ)
-	$(CC) $(CFLAGS) -o neta $(NETAOBJ) $(MISC_LIBS)
-#	strip neta || true
+NETAOBJ=neta.o lookup.o options.o
+neta:$(NETAOBJ) $(LIB_NETL)
+	$(CC) $(LDFLAGS) $(CFLAGS) -o neta $(NETAOBJ) $(MISC_LIBS) -lnetl
 
-XDOBJ=xd.o dump.o
-xd:$(XDOBJ)
-	$(CC) $(CFLAGS) -o xd $(XDOBJ) $(MISC_LIBS)
-#	strip xd || true
+XDOBJ=xd.o 
+xd:$(XDOBJ) $(LIB_NETL)
+	$(CC) $(LDFLAGS) $(CFLAGS) -o xd $(XDOBJ) $(MISC_LIBS) -lnetl
 
-DCPOBJ=dcpclient.o io.o
+DCPOBJ=dcpclient.o
 dcp:$(DCPOBJ)
-	$(CC) $(CFLAGS) -o dcp $(DCPOBJ) $(MISC_LIBS) $(NET_LIBS)
-#	strip dcp || true
+	$(CC) $(LDFLAGS) $(CFLAGS) -o dcp $(DCPOBJ) $(MISC_LIBS) $(NET_LIBS) -lnetl
 
 #===============================================================================
 # object files:
@@ -159,17 +174,24 @@ dgprintf.o:dgprintf.c global.h ether.h ip.h io.h
 
 .PHONY: install
 install:
-	strip $(EXEC)
-	install -d $(SUBIN)
-	install -g 0 -o 0 -m 500 netl hwpassive $(SUBIN)
-	install -d $(BIN)
-	install -g 0 -o 0 -m 511 neta xd dcp.pl $(BIN)
+	install -d $(SUBINPATH)
+	install -g 0 -o 0 -m 500 netl hwpassive $(SUBINPATH)
+	install -d $(BINPATH)
+	install -g 0 -o 0 -m 511 neta xd dcp.pl $(BINPATH)
 	install -d -g 0 -o 0 -m 700 /tmp/netl
-	install -g 0 -o 0 -m 644 netl.8 $(SYSTEMMAN)
-	install -g 0 -o 0 -m 644 hwpassive.8 $(SYSTEMMAN)
-	install -g 0 -o 0 -m 644 neta.1 $(USERMAN)
-	install -g 0 -o 0 -m 644 xd.1 $(USERMAN)
-	install -g 0 -o 0 -m 644 dcp.1 $(USERMAN)
+	install -d $(SYSTEMMANPATH) $(USERMANPATH)
+	install -g 0 -o 0 -m 644 netl.8 $(SYSTEMMANPATH)
+	install -g 0 -o 0 -m 644 hwpassive.8 $(SYSTEMMANPATH)
+	install -g 0 -o 0 -m 644 neta.1 $(USERMANPATH)
+	install -g 0 -o 0 -m 644 xd.1 $(USERMANPATH)
+	install -g 0 -o 0 -m 644 dcp.1 $(USERMANPATH)
+	install -d $(LIBPATH)
+	install -g 0 -o 0 -m 755 $(NETL_LIB) $(LIBPATH)
+	cd $(LIBPATH);$(LN) -fs $(NETL_LIB) lib$(LIB_NAME).so
+	cd $(LIBPATH);$(LN) -fs $(NETL_LIB) lib$(LIB_NAME).so.1
+	install -g 0 -o 0 -m 644 lib$(LIB_NAME).a $(LIBPATH)
+	install -d $(INCLUDEPATH)/$(LIB_NAME)
+	install -g 0 -o 0 -m 644 resolve.h dump.h io.h $(INCLUDEPATH)/$(LIB_NAME)
 
 #===============================================================================
 # clean:
@@ -184,6 +206,7 @@ clean:
 	$(RM) -r $(DIST)-$(VER) $(DIST)-$(VER)-bin
 	$(RM) t/*.diff t/*.diffERR t/*.ao t/*.aERR t/*.aRET
 	$(RM) t/tdr.log t/core
+	$(RM) lib*.so* lib*.a
 
 distclean:clean
 	$(RM) *.tar.gz *.zip *.sig

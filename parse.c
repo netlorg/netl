@@ -2,9 +2,9 @@
 | parse
 |   parse a datagram and send the output to the right place.
 |
-|   optimized (and debugged) by Graham THE Ollis <ollisg@ns.arizona.edu>
+|   optimized (and debugged) by Graham THE Ollis <ollisg@wwa.com>
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@ns.arizona.edu>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -70,8 +70,11 @@ char *dgdump(u8 *dg, char *name, size_t len)
   static int	sequence=0;
   FILE		*fp;
 
-  sprintf(fn, "/tmp/netl/%s-%d-%d-%d.dg", 
-              name, getpid(), (unsigned) time(NULL), sequence++);
+  if(name[0] != 0) {
+    sprintf(fn, "/tmp/netl/%s-%d-%d-%d.dg", name, getpid(), (unsigned) time(NULL), sequence++);
+  } else {
+    sprintf(fn, "/tmp/netl/%d-%d-%d.dg", getpid(), (unsigned) time(NULL), sequence++);
+  }
   if((fp=fopen(fn, "w"))==NULL) {
     err("unable to open dump file %s", fn);
     return "error";
@@ -93,10 +96,10 @@ char *dgdump(u8 *dg, char *name, size_t len)
        (c->action == ACTION_DUMP && dumped)			||\
        (c->action == ACTION_DL && dumped && logged)		||\
 \
-       (c->check_src_hw && !memcmp(c->src_hw, dg + 6, 6))	||\
-       (c->check_dst_hw && !memcmp(c->dst_hw, dg, 6))		||\
-       (c->check_src_hw_not && memcmp(c->src_hw_not, dg + 6, 6))||\
-       (c->check_dst_hw_not && memcmp(c->dst_hw_not, dg, 6))
+       (c->check_src_hw && memcmp(c->src_hw, dg +6, 6) != 0 )  ||\
+       (c->check_dst_hw && memcmp(c->dst_hw, dg, 6) != 0 )  ||\
+       (c->check_src_hw_not && memcmp(c->src_hw_not, dg +6, 6) == 0) ||\
+       (c->check_dst_hw_not && memcmp(c->dst_hw_not, dg, 6) == 0)
 
 #define ip_packets \
        (c->check_src_ip && c->src_ip != ip.saddr)		||\
@@ -406,8 +409,8 @@ checkudp(u8 *dg, iphdr ip, udphdr *h, size_t len)
      dest == listenport			&&	/* speedy! */
      ip.saddr == LOCALHOST_IP		&&	/* zap! */
      ip.daddr == LOCALHOST_IP		&&	/* zoom! */
-     !memcmp(dg, localhardware, 6)	&&	/* kind of slow... */
-     !memcmp(dg + 6, localhardware, 6))		/* sigh */
+     memcmp(dg, localhardware, 6)==0	&&	/* kind of slow... */
+     memcmp(dg + 6, localhardware, 6)==0)	/* sigh */
     hear(dg, h, len);
 
   /*============================================================================
@@ -487,8 +490,9 @@ parsedg(u8 *dg, size_t len)
   | check the version number.  should be ip version 4.
   |===========================================================================*/
 
-  if(mac->type != MACTYPE_IPDG || ip->version != IP_VERSION) 
-    return;
+  if(mac->type != MACTYPE_IPDG || ip->version != IP_VERSION)  {
+    checkraw(dg, len);
+  }
 
   /*============================================================================
   | locate the subprotocol header and point correct header pointer in the

@@ -2,9 +2,9 @@
 | global.h - macros everyone needs
 | 
 | coded and tested under linux 2.0.23, 2.0.26, stealth kernel 2.0.29
-|  by graham the ollis <ollisg@ns.arizona.edu>
+|  by graham the ollis <ollisg@wwa.com>
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@ns.arizona.edu>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -62,7 +62,7 @@
 | end configure (hopefully this is far as you need to go)
 ==============================================================================*/
 
-#define COPYVER "1.00 copyright 1997 Graham THE Ollis <ollisg@ns.arizona.edu>"
+#define COPYVER "1.01 copyright 1997 Graham THE Ollis <ollisg@wwa.com>"
 
 #ifndef TRUE
   #define TRUE			1
@@ -79,24 +79,29 @@ extern char *prog;
 
 #ifdef linux
 
-  #include <linux/types.h>
-  #include <linux/if_ether.h>
-  #include <asm/byteorder.h>
+  #include <netinet/in.h>
+/*  #include <linux/types.h> */
+  #include <linux/if_ether.h> 
+/*  #include <asm/byteorder.h> */
+  #include <sys/types.h>
+  #include <endian.h>
 
-  typedef __u8	u8;
-  typedef __u16 u16;
-  typedef __u32 u32;
+  typedef u_int8_t	u8;
+  typedef u_int16_t	u16;
+  typedef u_int32_t	u32;
 
-  #if defined __LITTLE_ENDIAN_BITFIELD
+/*  #if defined __LITTLE_ENDIAN_BITFIELD*/
+  #if __BYTE_ORDER == __LITTLE_ENDIAN
     #ifndef LITTLE_ENDIAN
       #define LITTLE_ENDIAN
     #endif
-  #elif defined __BIG_ENDIAN_BITFIELD
+/*  #elif defined __BIG_ENDIAN_BITFIELD*/
+  #elif __BTE_ORDER == __BIG_ENDIAN
     #ifndef BIG_ENDIAN
       #define BIG_ENDIAN
     #endif
   #else
-    #define "please fix <asm/byteorder.h>"
+    #error "cannot determine byte order!"
   #endif
 
   #define NETL_LOG_FACILITY	LOG_LOCAL4

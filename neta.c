@@ -1,8 +1,8 @@
 /*==============================================================================
 | neta
-|   code by Graham THE Ollis <ollisg@ns.arizona.edu>
+|   code by Graham THE Ollis <ollisg@wwa.com>
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@ns.arizona.edu>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 |			moved read() and dumpdata() to dump.c
 |=============================================================================*/
 
-char	*id = "@(#)neta (c) 1997 graham the ollis <ollisg@ns.arizona.edu>";
+char	*id = "@(#)neta (c) 1997 graham the ollis <ollisg@wwa.com>";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,12 +49,6 @@ void printaddrport(u8 *buff, size_t len);
 void printtcp(u8 *buff, size_t len);
 void printicmp(u8 *buff, size_t len);
 void printaddr(u8 *buff);
-
-/*==============================================================================
-| globals
-|=============================================================================*/
-
-char *prog;
 
 /*==============================================================================
 | main
@@ -147,7 +141,7 @@ printip(u8 *buff)
 
   puts("IP:");
   printf("  version:           %d\n", ip->version);
-  printf("  header length:     %02x\n",len); 
+  printf("  header length:     %02x\n", (int) len); 
   fputs ("  type of service:   ", stdout);
 
   switch(ip->tos) {

@@ -2,7 +2,7 @@
 | config.c
 |   read config file for netl
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@ns.arizona.edu>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -189,10 +189,10 @@ modifyhw(u8 *output, char *input)
       tmp[i++] = *input - '0';
 
     if(*input >= 'a' && *input <= 'f')
-      tmp[i++] = *input - 'a';
+      tmp[i++] = *input - 'a' + 10;
 
     if(*input >= 'A' && *input <= 'F')
-      tmp[i++] = *input - 'A';
+      tmp[i++] = *input - 'A' + 10;
 
     input++;
   }
@@ -207,6 +207,10 @@ modifyhw(u8 *output, char *input)
 
   for(i=0; i<6; i++)
     output[i] = tmp[i*2] << 4 | tmp[i*2+1];
+
+/*  fprintf(stderr, "modifyhw(): %2x:%2x:%2x:%2x:%2x:%2x\n",
+		output[0], output[1], output[2],
+		output[3], output[4], output[5]);*/
 
   return TRUE;
 }
@@ -1043,17 +1047,19 @@ printconfig()
     if(c->format != NULL)
       printf("format=\"%s\" ", c->format);
 
-    if(c->check_src_prt)
-      if(c->src_prt1 == c->src_prt2) 
+    if(c->check_src_prt) {
+      if(c->src_prt1 == c->src_prt2)
         printf("srcport=%d ", c->src_prt1);
       else
         printf("srcport=%d-%d ", c->src_prt1, c->src_prt2);
+    }
 
-    if(c->check_dst_prt)
-      if(c->dst_prt1 == c->dst_prt2) 
+    if(c->check_dst_prt) {
+      if(c->dst_prt1 == c->dst_prt2)
         printf("dstport=%d ", c->dst_prt1);
       else
         printf("dstport=%d-%d ", c->dst_prt1, c->dst_prt2);
+    }
 
     if(c->check_tcp_flags_on)
       printf("flag=%d ", c->tcp_flags_on);
@@ -1111,17 +1117,19 @@ printconfig()
     if(c->format != NULL)
       printf("format=\"%s\" ", c->format);
 
-    if(c->check_src_prt)
+    if(c->check_src_prt) {
       if(c->src_prt1 == c->src_prt2) 
         printf("srcport=%d ", c->src_prt1);
       else
-        printf("srcport=%d-%d ", c->src_prt1, c->src_prt2);
+        printf("srcport=%d-%d ", c->src_prt1, c->src_prt2); 
+    }
 
-    if(c->check_dst_prt)
+    if(c->check_dst_prt) {
       if(c->dst_prt1 == c->dst_prt2) 
         printf("dstport=%d ", c->dst_prt1);
       else
         printf("dstport=%d-%d ", c->dst_prt1, c->dst_prt2);
+    }
 
     if(c->check_src_ip)
       printf("srcip=%s ", ip2string(c->src_ip));

@@ -1,8 +1,8 @@
 /*==============================================================================
 | hwpassive
-|   optimized (and debugged) by Graham THE Ollis <ollisg@ns.arizona.edu>
+|   optimized (and debugged) by Graham THE Ollis <ollisg@wwa.com>
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@ns.arizona.edu>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@
 |  09 Mar 97  G. Ollis	converted to hwpassive.c from netl.c
 |=============================================================================*/
 
-char	*id = "@(#)hwpassive by graham the ollis <ollisg@ns.arizona.edu>";
+char	*id = "@(#)hwpassive by graham the ollis <ollisg@wwa.com>";
 
 #include <string.h>
 #include <unistd.h>
@@ -70,7 +70,6 @@ int		line=0;				/* yet another hack *sigh*/
 void		parsedg(u8 *dg, int len);
 
 struct ifreq	oldifr, ifr;
-char		*prog;
 stack_t		*head=NULL;
 u8		hwignore1[6] = { 0xff, 0xff, 0xff,
 				 0xff, 0xff, 0xff};

@@ -1,8 +1,8 @@
 /*==============================================================================
 | xd
-|   code by Graham THE Ollis <ollisg@ns.arizona.edu>
+|   code by Graham THE Ollis <ollisg@wwa.com>
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@ns.arizona.edu>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 |  28 Feb 97  G. Ollis	.92 created program
 |=============================================================================*/
 
-char *id = "@(#)xd (c) 1997 graham the ollis <ollisg@ns.arizona.edu>";
+char *id = "@(#)xd (c) 1997 graham the ollis <ollisg@wwa.com>";
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -2,7 +2,7 @@
 | options.c
 |   parse the command line options for the netl/neta project
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@ns.arizona.edu>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -36,7 +36,6 @@
 |=============================================================================*/
 
 int displayVersion = TRUE;
-int resolveHostnames = TRUE;
 int debug_mode = FALSE;
 char netdevice[255] = "eth0";
 

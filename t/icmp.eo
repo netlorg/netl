@@ -14,7 +14,7 @@ IP:
   protocol           icmp
   127.0.0.1 => 127.0.0.1
   type:              echo
-  code:              00 frag_needed exc_fragtime 
+  code:              00 frag_needed 
   id:                d007
   sequence:          0000
   gateway:           d0070000

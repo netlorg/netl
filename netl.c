@@ -1,8 +1,8 @@
 /*==============================================================================
 | netl
-|   optimized (and debugged) by Graham THE Ollis <ollisg@ns.arizona.edu>
+|   optimized (and debugged) by Graham THE Ollis <ollisg@wwa.com>
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@ns.arizona.edu>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@
 |			of this module and put it in to grab.c.
 |=============================================================================*/
 
-char	*id = "@(#)netl by graham the ollis <ollisg@ns.arizona.edu>";
+char	*id = "@(#)netl by graham the ollis <ollisg@wwa.com>";
 
 #include <errno.h>
 #include <string.h>
@@ -62,7 +62,6 @@ char	*id = "@(#)netl by graham the ollis <ollisg@ns.arizona.edu>";
 | Globals
 |=============================================================================*/
 
-char *prog;
 u8 localhardware[6] = {0, 0, 0, 0, 0, 0};
 u8 localip[4] = {127, 0, 0, 1};
 

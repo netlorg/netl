@@ -1,8 +1,8 @@
 /*==============================================================================
 | dump.c
-|   code by Graham THE Ollis <ollisg@ns.arizona.edu>
+|   code by Graham THE Ollis <ollisg@wwa.com>
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@ns.arizona.edu>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by
@@ -37,8 +37,8 @@ unsigned char *
 read(char *fn, size_t *size, size_t max, char *prog)
 {
   FILE		*fp;
-  char		*buff;
-  size_t	br;
+  char		*buff, *ptr;
+  size_t	br, left;
 
   if((fp = fopen(fn, "r"))==NULL) {
     fprintf(stderr, "%s: warning: could not open %s, skipping\n", prog, fn);
@@ -56,11 +56,26 @@ read(char *fn, size_t *size, size_t max, char *prog)
   }
 
   buff = (char *) malloc(*size);
+  if(buff == NULL) {
+    fprintf(stderr, "%s: could not allocate %d bytes, die!", prog, (int) *size);
+    exit(47);
+  }
 
-  if((br=fread(buff, 1, *size, fp)) != *size) {
-    fprintf(stderr, "%s: warning: error reading %s, skipping\n", prog, fn);
-    fprintf(stderr, "%d != %d\n", br, *size);
-    return NULL;
+  /* 
+   | this should fix a bug in the cygwin32 port but it doesn't.
+   | that thing just pisses me off.  of well, it is an improvement over
+   | the old code and doesn't break anything -- i'll keep it.
+   */
+
+  ptr = buff; left = *size;
+  while(left > 0 && !feof(fp)) {
+    if((br=fread(ptr, 1, left, fp)) == 0) {
+      fprintf(stderr, "%s: warning: error reading %s, skipping\n", prog, fn);
+      fprintf(stderr, "culd not read %d bytes while not at EOF!\n", (int) left);
+      return NULL;
+    }
+    ptr+=br;
+    left-=br;
   }
 
   fclose(fp);
@@ -79,7 +94,7 @@ void dumpdata(unsigned char *data, size_t size)
 
   puts("data:");
   while(offset < size) {
-    printf("  %04x ", offset);
+    printf("  %04x ", (int) offset);
     for(i=0; i<16 && offset+i < size; i++)
       printf("%02x ", data[offset+i]);
     while(i++<16)

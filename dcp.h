@@ -2,9 +2,9 @@
 | dcp.h - descrete comunication protocol
 | 
 | coded and tested under linux 2.0.23, 2.0.26, stealth kernel 2.0.29
-|  by graham the ollis <ollisg@ns.arizona.edu>
+|  by graham the ollis <ollisg@wwa.com>
 |
-|   Copyright (C) 1997 Graham THE Ollis <ollisg@ns.arizona.edu>
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
 |
 |   This program is free software; you can redistribute it and/or modify
 |   it under the terms of the GNU General Public License as published by

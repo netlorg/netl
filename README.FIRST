@@ -12,6 +12,21 @@ you have any of the following:
 please don't hesitate to send me e-mail.  i'll try to respond with a new version
 of netl (when appropriate) as soon as possible. 
 
-the README file was updated for version 1.00 and is worth looking in to.
+the README file was updated for version 1.00 and is worth looking in to.  
+however if you are lazy and just want to get this thing working, look at
+QUICKSTART.
+
+NOTE: i have switched to glibc2.  if you are using libc5, then you may
+fail one of the regression tests.  take a look at t/resolve.diff, if the
+difference amounts to this:
+
+------------------------------
+15c15
+<   localhost => localhost
+---
+>   LOCALHOST => LOCALHOST
+------------------------------
+
+then it is a minor differnce indeed and will not effect you.
 
 Graham THE OLlis <ollisg@wwa.com>
