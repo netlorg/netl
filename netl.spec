@@ -1,4 +1,4 @@
-%define NETL_VERSION 1.08
+%define NETL_VERSION 1.09
 Summary: Network monitoring tool.
 Name: netl
 Version: %{NETL_VERSION}
@@ -8,7 +8,6 @@ Group: Networking/Monitor
 Source: netl-%{NETL_VERSION}.tar.gz
 Buildroot: /tmp/netl-%{NETL_VERSION}-root
 Url: http://www.netl.org
-Requires: glibc = 2.1.1
 Obsoletes: netl
 Provides: netl
 

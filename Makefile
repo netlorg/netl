@@ -301,7 +301,7 @@ clean:
 	$(RM) lex.yy.c config2.tab.h config2.tab.c config2.output config_test
 	$(RM) userfilter.c *.so README INSTALL conf/*.c conf/*.so conf/*.o
 	$(RM) *.a *.so hwpassive hwpassive.exe configure.out *.exe
-	$(RM) netlcc.sh dcp.pl
+	$(RM) netlcc.sh netlcc dcp.pl
 	$(RM) config2.y
 	cd in; $(MAKE) clean
 	cd filt; $(MAKE) clean

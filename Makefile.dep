@@ -1,0 +1,132 @@
+action.o: \
+	include/netl/global.h \
+	include/netl/action.h \
+	include/netl/filter.h \
+	include/netl/ether.h \
+	include/netl/ip.h \
+	include/netl/config.h \
+	include/netl/io.h 
+catch.o: \
+	include/netl/global.h \
+	include/netl/catch.h \
+	include/netl/io.h 
+check.o: \
+	include/netl/global.h \
+	include/netl/ether.h \
+	include/netl/ip.h \
+	include/netl/action.h \
+	include/netl/filter.h \
+	include/netl/config.h 
+compiler.o: \
+	include/netl/global.h \
+	include/netl/action.h \
+	include/netl/filter.h \
+	include/netl/ether.h \
+	include/netl/ip.h \
+	include/netl/config.h \
+	include/netl/filter.h \
+	include/netl/resolve.h 
+die_trickle.o die_blank.o: \
+	include/netl/global.h \
+	include/netl/ether.h \
+	include/netl/ip.h \
+	include/netl/io.h \
+	include/netl/action.h \
+	include/netl/filter.h \
+	include/netl/config.h \
+	include/netl/filter.h 
+dump.o: \
+	include/netl/dump.h \
+	include/netl/io.h 
+filter.o: \
+	include/netl/global.h \
+	include/netl/io.h \
+	include/netl/filter.h \
+	include/netl/action.h \
+	include/netl/ether.h \
+	include/netl/ip.h \
+	include/netl/config.h \
+	include/netl/options.h 
+hwlookup.o: \
+	include/netl/global.h \
+	include/netl/options.h \
+	include/netl/hwpassive.h \
+	include/netl/resolve.h \
+	include/netl/io.h 
+io.o: \
+	include/netl/global.h \
+	include/netl/io.h \
+	include/netl/options.h 
+ipv6.o: \
+	include/netl/global.h \
+	include/netl/ether.h \
+	include/netl/ip.h 
+lookup.o: \
+	include/netl/global.h \
+	include/netl/ether.h \
+	include/netl/lookup.h 
+main.o: \
+	include/netl/global.h \
+	include/netl/ether.h \
+	include/netl/ip.h \
+	include/netl/netl.h \
+	include/netl/sighandle.h \
+	include/netl/io.h \
+	include/netl/options.h \
+	include/netl/filter.h \
+	include/netl/action.h \
+	include/netl/config.h \
+	include/netl/resolve.h \
+	include/netl/grab.h \
+	include/netl/check.h \
+	include/netl/compiler.h 
+neta.o: \
+	include/netl/global.h \
+	include/netl/ether.h \
+	include/netl/ip.h \
+	include/netl/dump.h \
+	include/netl/lookup.h \
+	include/netl/options.h \
+	include/netl/resolve.h 
+netl.o: \
+	include/netl/global.h \
+	include/netl/ether.h \
+	include/netl/ip.h \
+	include/netl/netl.h \
+	include/netl/sighandle.h \
+	include/netl/io.h \
+	include/netl/options.h \
+	include/netl/filter.h \
+	include/netl/action.h \
+	include/netl/config.h \
+	include/netl/resolve.h \
+	include/netl/grab.h \
+	include/netl/check.h \
+	include/netl/compiler.h 
+options.o: \
+	include/netl/global.h \
+	include/netl/ether.h \
+	include/netl/ip.h \
+	include/netl/netl.h \
+	include/netl/global.h \
+	include/netl/filter.h \
+	include/netl/action.h \
+	include/netl/config.h \
+	include/netl/options.h \
+	include/netl/io.h \
+	include/netl/hwpassive.h 
+resolve.o: \
+	include/netl/global.h \
+	include/netl/resolve.h \
+	include/netl/options.h \
+	include/netl/io.h 
+sighandle.o: \
+	include/netl/global.h \
+	include/netl/sighandle.h \
+	include/netl/io.h 
+xd.o: \
+	include/netl/dump.h 
+netlcc.sh.exe.o: \
+	include/netl/version.h 
+dcp.pl.exe.o: \
+	include/netl/version.h 

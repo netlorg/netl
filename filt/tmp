@@ -1,0 +1,10 @@
+#define act(dg, ci, len) {						\
+		int i;							\
+		for(i=0; i<ci->num_actionmod; i++) {			\
+			if(!*(ci->actionmod[i].action_done)) {		\
+				if(ci->actionmod[i].action_code == ACTION_IGNORE)\
+					return;				\
+				ci->actionmod[i].action(dg, ci, len);	\
+			}						\
+		}							\
+	}

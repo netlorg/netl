@@ -12,7 +12,7 @@ b<netl_install> - i<netl> install instructions.
 
 these are directions for installing the i<netl> package.  you will need
 to download the i<netl> package.  the latest version should be available
-at ftp://sunsite.unc.edu/pub/Linux/system/network/monitor/
+at http://www.netl.org
 
 #H DIRECTIONS
 
@@ -20,8 +20,9 @@ at ftp://sunsite.unc.edu/pub/Linux/system/network/monitor/
 
  1. type 'sh configure'
 
-configure takes a few options which may be of interest, try 'sh configure
---help' for information.  in general, the defaults are reasonable.
+configure takes a few options which may be of interest, try
+'sh configure --help' for information.  in general, the defaults are
+reasonable.
 
  2. type `make'
 

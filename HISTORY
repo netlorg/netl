@@ -1,3 +1,11 @@
+version 1.09
+------------
+
+ . fixed bug in `ignore' module which caused netl to crash.
+ . added test case for `ignore' module in filter mode.
+ . added nmap and httplog filter modules.  nmap is designed for detecting
+   stealth nmap scans, httplog logs HTTP GET requests.
+
 version 1.08
 ------------
 
@@ -40,7 +48,7 @@ version 1.06
 version 1.05
 ------------
 
- . modified hwpassive to use a hash function infront of the linked list.
+ . modified hwpassive to use a hash function in front of the linked list.
    this should make the hardware address lookups faster.  (hash function is 
    xor each of the bytes in the address together, not the best distribution,
    but it is blindingly fast)

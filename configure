@@ -1,7 +1,7 @@
 #!/bin/sh
 
 SYSTEM=`./system.guess`
-VER="1.08"
+VER="1.09"
 TDR_VER="1.00"
 NETL_VER_MAJOR=1
 NETL_VER_MINOR=8

@@ -22,13 +22,13 @@
 #
 #===============================================================================
 
-$netl = '/usr/local/lib/netl-1.08/sbin/netl';
+$netl = '/usr/local/lib/netl-1.09/sbin/netl';
 @netl_opts = ('-v-', '--generate-c');
 
 $gcc = 'gcc';
-@gcc_opts = ('-I/usr/local/lib/netl-1.08/include');
+@gcc_opts = ('-I/usr/local/lib/netl-1.09/include');
 
-$install_dir = '/usr/local/lib/netl-1.08/filt';
+$install_dir = '/usr/local/lib/netl-1.09/filt';
 	# note that we only install compiled .conf files.
 
 $tmp_dir = '/tmp/.netl';
@@ -51,7 +51,7 @@ for(@ARGV) {
 		$no_gcc = 1 if /^-generate-c$/;
 		$do_install = 1 if /^-install$/;
 		if(/^--version$/) {
-			print "netlcc version 1.08(pl)\n";
+			print "netlcc version 1.09(pl)\n";
 			run($gcc, '--version');
 			exit;
 		}

@@ -48,6 +48,8 @@
 
 #define act(dg, ci, len) {						\
 		int i;							\
+		if(ci->actionmod == NULL)				\
+			return;						\
 		for(i=0; i<ci->num_actionmod; i++) {			\
 			if(!*(ci->actionmod[i].action_done)) {		\
 				ci->actionmod[i].action(dg, ci, len);	\

@@ -1,4 +1,4 @@
-%define NETL_VERSION 1.08
+%define NETL_VERSION 1.09
 %define PERL_VERSION 5.00503
 Summary: GUI front end to Network monitoring tool netl.
 Name: tknetl
@@ -11,7 +11,7 @@ Buildroot: /tmp/tknetl-%{NETL_VERSION}-root
 Url: http://www.wwa.com/~ollisg/core.html
 Requires: perl = %{PERL_VERSION}
 Requires: perl-Tk
-Requires: netl = 1.08
+Requires: netl = 1.09
 Obsoletes: tknetl
 Provides: tknetl
 

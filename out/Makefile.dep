@@ -1,0 +1,45 @@
+dump.o: \
+	../include/netl/global.h \
+	../include/netl/action.h \
+	../include/netl/filter.h \
+	../include/netl/ether.h \
+	../include/netl/ip.h \
+	../include/netl/config.h \
+	../include/netl/io.h \
+	../include/netl/options.h 
+auth.o: \
+	../include/netl/global.h \
+	../include/netl/action.h \
+	../include/netl/filter.h \
+	../include/netl/config.h 
+stub.o: \
+	../include/netl/global.h \
+	../include/netl/action.h \
+	../include/netl/filter.h \
+	../include/netl/config.h 
+log.o: \
+	../include/netl/global.h \
+	../include/netl/ether.h \
+	../include/netl/ip.h \
+	../include/netl/action.h \
+	../include/netl/filter.h \
+	../include/netl/config.h \
+	../include/netl/io.h \
+	../include/netl/resolve.h 
+dl.o: \
+	../include/netl/global.h \
+	../include/netl/ether.h \
+	../include/netl/ip.h \
+	../include/netl/action.h \
+	../include/netl/filter.h \
+	../include/netl/config.h \
+	../include/netl/io.h 
+null.o: 
+pipe.o: \
+	../include/netl/global.h \
+	../include/netl/action.h \
+	../include/netl/filter.h \
+	../include/netl/ether.h \
+	../include/netl/ip.h \
+	../include/netl/config.h \
+	../include/netl/io.h 

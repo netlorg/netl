@@ -1,0 +1,3 @@
+% gcc -O3 -Wall -L. -rdynamic ./test_prog.c -o ./test_prog
+% ./test_prog
+hello world

@@ -79,14 +79,14 @@ href=HISTORY>HISTORY</a> file.
 
 <tr><th>RPM <th>netl version <th>CPU <th>OS <th>os version
 
-<tr><td><a href=http://www.netl.org/rh61/netl-1.08-1.i386.rpm>netl-1.08-1.i386.rpm</a>
-    <td align=center>1.08 <td>i386 <td>Red Hat Linux <td align=center>6.1
+<tr><td><a href=http://www.netl.org/rh61/netl-1.09-1.i386.rpm>netl-1.09-1.i386.rpm</a>
+    <td align=center>1.09 <td>i386 <td>Red Hat Linux <td align=center>6.1
 
-<tr><td><a href=http://www.netl.org/rh60/netl-1.08-1.i386.rpm>netl-1.08-1.i386.rpm</a>
-    <td align=center>1.08 <td>i386 <td>Red Hat Linux <td align=center>6.0
+<tr><td><a href=http://www.netl.org/rh60/netl-1.09-1.i386.rpm>netl-1.09-1.i386.rpm</a>
+    <td align=center>1.09 <td>i386 <td>Red Hat Linux <td align=center>6.0
 
-<tr><td><a href=http://www.nerl.org/rh60/netl-1.08-1.alpha.rpm>netl-1.08-1.alpha.rpm</a>
-    <td align=center>1.08 <td>alpha <td>Red Hat Linux <td align=center>6.0
+<tr><td><a href=http://www.nerl.org/rh61/netl-1.09-1.alpha.rpm>netl-1.09-1.alpha.rpm</a>
+    <td align=center>1.09 <td>alpha <td>Red Hat Linux <td align=center>6.1
 
 </table>
 
@@ -102,14 +102,14 @@ sounds like a hassle, considering grabbing one of the binaries:</p>
 <table>
 <tr><th>RPM <th>netl version <th>CPU <th>OS <th>os version
 
-<tr><td><a href=http://www.nerl.org/rh61/tknetl-1.08-1.i386.rpm>tknetl-1.08-1.i386.rpm</a>
-    <td align=center>1.08 <td>i386 <td>Red Hat Linux <td align=center>6.1
+<tr><td><a href=http://www.nerl.org/rh61/tknetl-1.09-1.i386.rpm>tknetl-1.09-1.i386.rpm</a>
+    <td align=center>1.09 <td>i386 <td>Red Hat Linux <td align=center>6.1
 
-<tr><td><a href=http://www.nerl.org/rh60/tknetl-1.08-1.i386.rpm>tknetl-1.08-1.i386.rpm</a>
-    <td align=center>1.08 <td>i386 <td>Red Hat Linux <td align=center>6.0
+<tr><td><a href=http://www.nerl.org/rh60/tknetl-1.09-1.i386.rpm>tknetl-1.09-1.i386.rpm</a>
+    <td align=center>1.09 <td>i386 <td>Red Hat Linux <td align=center>6.0
 
-<tr><td><a href=http://www.nerl.org/rh60/tknetl-1.08-1.alpha.rpm>tknetl-1.08-1.alpha.rpm</a>
-    <td align=center>1.08 <td>alpha <td>Red Hat Linux <td align=center>6.0
+<tr><td><a href=http://www.nerl.org/rh61/tknetl-1.09-1.alpha.rpm>tknetl-1.09-1.alpha.rpm</a>
+    <td align=center>1.09 <td>alpha <td>Red Hat Linux <td align=center>6.1
 
 </table>
 
@@ -120,13 +120,13 @@ that, I have also provided that in binary form:</p>
 <tr><th>RPM <th>netl version <th>CPU <th>OS <th>os version
 
 <tr><td><a href=http://www.nerl.org/rh61/perl-Tk-800.014.i386.rpm>perl-Tk-800.014.i386.rpm</a>
-    <td align=center>1.08 <td>i386 <td>Red Hat Linux <td align=center>6.1
+    <td align=center>1.09 <td>i386 <td>Red Hat Linux <td align=center>6.1
 
 <tr><td><a href=http://www.nerl.org/rh60/perl-Tk-800.014.i386.rpm>perl-Tk-800.014.i386.rpm</a>
-    <td align=center>1.08 <td>i386 <td>Red Hat Linux <td align=center>6.0
+    <td align=center>1.09 <td>i386 <td>Red Hat Linux <td align=center>6.0
 
-<tr><td><a href=http://www.nerl.org/rh60/perl-Tk-800.014.alpha.rpm>perl-Tk-800.014.alpha.rpm</a>
-    <td align=center>1.08 <td>alpha <td>Red Hat Linux <td align=center>6.0
+<tr><td><a href=http://www.nerl.org/rh61/perl-Tk-800.014.alpha.rpm>perl-Tk-800.014.alpha.rpm</a>
+    <td align=center>1.09 <td>alpha <td>Red Hat Linux <td align=center>6.1
 
 </table>
 
@@ -141,6 +141,7 @@ problems).  perl/Tk is available at your local CPAN mirror.  See
 <p>We keep a limited number of older versions of netl available.</p>
 
 <ul>
+	<li><a href=http://www.nerl.org/netl-1.08.tar.gz>netl-1.08.tar.gz</a>
 	<li><a href=http://www.nerl.org/netl-1.07.tar.gz>netl-1.07.tar.gz</a>
 	<li><a href=http://www.nerl.org/netl-1.05.tar.gz>netl-1.05.tar.gz</a>
 	<li><a href=http://www.nerl.org/netl-1.05-1.i386.rpm>netl-1.05-1.i386.rpm</a>
@@ -172,13 +173,6 @@ are module based.  The compiler is experimental, but useable.</p>
 $tail_text = "
 $line
 
-<a name=contact></a>
-<h3>Contact Information</h3>
-
-<p>You can contact the netl team at <a
-href=mailto:netl\@netl.org>netl\@netl.org</a>.
-
-$line
 <center>
 [
 <a href=http://www.whitedactyl.com/ollisg/>Tarquin Hill</a> |
@@ -190,6 +184,7 @@ $line
 <address><center>
 <a href=http://www.whitedactyl.com/ollisg/>ollisg</a>
 (<a href=mailto:netl\@netl.org>netl\@netl.org</a>)
+[<a href=http://www.whitedactyl.com/ollisg/guest.php3?which_tarquin=netl+Network+Monitor>Guest Book</a>]
 </center></address>
 <center><h6>
 <img src=copyright.gif alt=\"(c)\"> 1999 CORE software international
@@ -308,5 +303,16 @@ $tail";
 
 	print HTML "<h3>table of content</h3>\n<ul>\n$html_toc\n</ul>\n$html\n$tail_text";
 }
+
+print INDEX "
+
+$line
+
+<a name=contact></a>
+<h3>Contact Information</h3>
+
+<p>You can contact the netl team at <a
+href=mailto:netl\@netl.org>netl\@netl.org</a>.";
+
 
 print INDEX "</ul>$tail_text";

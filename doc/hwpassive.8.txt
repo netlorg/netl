@@ -104,7 +104,7 @@ BUGS
 
 there are almost certainly bugs, please report them to me.  send bugs and
 bug fixes to netl@netl.org.  the netl home page is at
-http://www.netl.org, which should contain up to date information on
+http://www.netl.org which should contain up to date information on
 netl.
 
 i have attempted to write pretty readable documentation, however, i'm not
