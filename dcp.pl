@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
-# @(#)nets.pl (c) 1997 Graham THE Ollis
+# @(#)dcp.pl (c) 1997 Graham THE Ollis
 #===============================================================================
-# nets.pl - send a message to netl or related network listening tool.
+# dcp.pl -  send a message to netl or related network listening tool.
 #           for this version you will need netcat.  hopefully this will be
 #           unnecessary in later versions.
 #
@@ -27,8 +27,6 @@
 # 07 mar 97  G. Ollis	created script
 #===============================================================================
 
-require 5;
-
 if($#ARGV == -1) {
   print STDERR "usage: $0 message [port]\n";
   exit 2;
@@ -42,5 +40,4 @@ $data = pack 'Nn', $$, length($message);
 $pid = open(NC, "|nc -u localhost $port");
 print NC $data;
 print NC $message;
-#sleep 1;		# hopefully this is not necessary
 kill $pid;

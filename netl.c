@@ -40,8 +40,10 @@ char	*id = "@(#)netl by graham the ollis <ollisg@ns.arizona.edu>";
 #include <time.h>
 #include <stdarg.h>
 #include <netdb.h>
+
 #include "global.h"
 #include "ether.h"
+#include "ip.h"
 
 #include "netl.h"
 #include "sighandle.h"
@@ -76,7 +78,9 @@ void cleanup()
 int
 main(int argc, char *argv[])
 {
+#ifndef NO_SYSLOGD
   pid_t		temp;
+#endif
 
   prog = argv[0];
 
@@ -103,11 +107,19 @@ main(int argc, char *argv[])
     }
 
   if(configfile != NULL)
+#ifdef NO_SYSLOGD
+    readconfig(configfile);
+#endif
+#ifndef NO_SYSLOGD
     readconfig(configfile, TRUE);
+#endif
   postconfig();
 
+#ifndef NO_SYSLOGD
   if(noBackground)
+#endif
     return netl(netdevice);
+#ifndef NO_SYSLOGD
   else {
     if((temp = fork()) == 0) 
       return netl(netdevice);
@@ -117,6 +129,7 @@ main(int argc, char *argv[])
       return 1;
     }
   }
+#endif
 
   return 0;
 }
@@ -220,7 +233,7 @@ netl(char *dev) {
   | Entering the data collection loop
   |===========================================================================*/
 
-  for(;;) {
+  while(1) {
     if((l = recvfrom(sock, buf, 1024, 0, 
 		     (struct sockaddr *) &name, &fromlen)) < 0)
       err("Error receiving RAW packet");
@@ -235,7 +248,7 @@ netl(char *dev) {
 | dump ip datagram to disk
 |=============================================================================*/
 
-void dgdump(u8 *dg, char *name, int len)
+void dgdump(u8 *dg, char *name, size_t len)
 {
   char		fn[1024];
   FILE		*fp;
@@ -255,7 +268,7 @@ void dgdump(u8 *dg, char *name, int len)
 |=============================================================================*/
 
 void
-checkicmp(u8 *dg, struct iphdr ip, struct icmphdr *h, int len)
+checkicmp(u8 *dg, iphdr ip, icmphdr *h, size_t len)
 {
   int i;
   int logged=FALSE,dumped=FALSE;
@@ -320,13 +333,13 @@ checkicmp(u8 *dg, struct iphdr ip, struct icmphdr *h, int len)
 |=============================================================================*/
 
 void
-checktcp(u8 *dg, struct iphdr ip, struct tcphdr *h, int len)
+checktcp(u8 *dg, iphdr ip, tcphdr *h, size_t len)
 {
   int i;
   int logged=FALSE,dumped=FALSE;
   u8 flags=*(((char *) h) + 13);
   struct configitem *c;
-  u16 source=net16(h->source), dest=net16(h->dest);
+  u16 source=ntohs(h->source), dest=ntohs(h->dest);
 
   for(i=0; i<tcp_req.index; i++) {
 
@@ -378,9 +391,9 @@ checktcp(u8 *dg, struct iphdr ip, struct tcphdr *h, int len)
         log(	"%s %s:%d => %s:%d",
                 string(c->logname),
                 ip2string(ip.saddr),
-		net16(h->source),
+		ntohs(h->source),
                 ip2string(ip.daddr),
-                net16(h->dest));
+                ntohs(h->dest));
         logged = TRUE;
         break;
 
@@ -404,12 +417,12 @@ checktcp(u8 *dg, struct iphdr ip, struct tcphdr *h, int len)
 |=============================================================================*/
 
 void
-checkudp(u8 *dg, struct iphdr ip, struct udphdr *h, int len)
+checkudp(u8 *dg, iphdr ip, udphdr *h, size_t len)
 {
   int i;
   int logged=FALSE,dumped=FALSE;
   struct configitem *c;
-  u16 source=net16(h->source), dest=net16(h->dest);
+  u16 source=ntohs(h->source), dest=ntohs(h->dest);
 
   /*============================================================================
   | check to see if this is a comunication request.
@@ -495,10 +508,10 @@ checkudp(u8 *dg, struct iphdr ip, struct udphdr *h, int len)
 |=============================================================================*/
 
 void
-parsedg(u8 *dg, int len)
+parsedg(u8 *dg, size_t len)
 {
-  struct machdr		*mac = (struct machdr*) dg;
-  struct iphdr		*ip = (struct iphdr*) &dg[14];
+  machdr	*mac = (machdr*) dg;
+  iphdr		*ip = (iphdr*) &dg[14];
 
   /*============================================================================
   | check that this is a ip datagram.
@@ -518,21 +531,21 @@ parsedg(u8 *dg, int len)
     case PROTOCOL_ICMP:
       checkicmp(dg, 
           *ip,
-          (struct icmphdr *) &dg[sizeof(struct machdr) + (ip->ihl << 2)],
+          (icmphdr *) &dg[sizeof(machdr) + (ip->ihl << 2)],
           len);
       break;
 
     case PROTOCOL_TCP:
       checktcp(dg,
           *ip,
-          (struct tcphdr *) &dg[sizeof(struct machdr) + (ip->ihl << 2)],
+          (tcphdr *) &dg[sizeof(machdr) + (ip->ihl << 2)],
           len);
       break;
 
     case PROTOCOL_UDP:
       checkudp(dg,
           *ip,
-          (struct udphdr *) &dg[sizeof(struct machdr) + (ip->ihl << 2)],
+          (udphdr *) &dg[sizeof(machdr) + (ip->ihl << 2)],
           len);
       break;
 

@@ -102,7 +102,12 @@ struct configlist {
 | prototypes
 ==============================================================================*/
 
+#ifdef NO_SYSLOGD
+void readconfig(char *confname);
+#endif
+#ifndef NO_SYSLOGD
 void readconfig(char *confname, int nbg);
+#endif
 void preconfig();
 void postconfig();
 void clearconfig();

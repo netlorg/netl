@@ -44,6 +44,7 @@ char	*id = "@(#)hwpassive by graham the ollis <ollisg@ns.arizona.edu>";
 
 #include "global.h"
 #include "ether.h"
+#include "ip.h"
 
 #include "io.h"
 #include "options.h"
@@ -54,11 +55,11 @@ char	*id = "@(#)hwpassive by graham the ollis <ollisg@ns.arizona.edu>";
 | data structures
 |=============================================================================*/
 
-struct stack_t {
+typedef struct st {
   u8			hw[6];
   u32			ip;
-  struct stack_t	*next;
-};
+  struct st		*next;
+} stack_t;
 
 /*==============================================================================
 | Globals
@@ -70,7 +71,7 @@ void		parsedg(u8 *dg, int len);
 
 struct ifreq	oldifr, ifr;
 char		*prog;
-struct stack_t	*head=NULL;
+stack_t		*head=NULL;
 u8		hwignore1[6] = { 0xff, 0xff, 0xff,
 				 0xff, 0xff, 0xff};
 u8		hwignore2[6] = { 0x00, 0x00, 0x00,
@@ -92,7 +93,9 @@ void cleanup()
 int
 main(int argc, char *argv[])
 {
+#ifndef NO_SYSLOGD
   pid_t		temp;
+#endif
 
   prog = argv[0];
 
@@ -116,8 +119,11 @@ main(int argc, char *argv[])
       }
     }
 
+#ifndef NO_SYSLOGD
   if(noBackground)
+#endif
     return hwpassive(netdevice);
+#ifndef NO_SYSLOGD
   else {
     if((temp = fork()) == 0) 
       return hwpassive(netdevice);
@@ -127,6 +133,7 @@ main(int argc, char *argv[])
       return 1;
     }
   }
+#endif
 
   return 0;
 }
@@ -235,7 +242,7 @@ hwpassive(char *dev) {
 void
 addent(u8 *hw, u32 ip)
 {
-  struct stack_t	*tmp;
+  stack_t		*tmp;
   u8			*ptr;
 
   ptr = (u8 *) &ip;
@@ -263,7 +270,7 @@ addent(u8 *hw, u32 ip)
       hw[0], hw[1], hw[2], hw[3], hw[4], hw[5], 
       ptr[0], ptr[1], ptr[2], ptr[3]);*/
 
-  tmp = (struct stack_t *) allocate(sizeof(struct stack_t));
+  tmp = (stack_t *) allocate(sizeof(stack_t));
   tmp->ip = ip;
   memcpy(tmp->hw, hw, 6);
   tmp->next = head;
@@ -277,8 +284,8 @@ addent(u8 *hw, u32 ip)
 void
 parsedg(u8 *dg, int len)
 {
-  struct machdr		*mac = (struct machdr*) dg;
-  struct iphdr		*ip = (struct iphdr*) &dg[14];
+  machdr	*mac = (machdr*) dg;
+  iphdr		*ip = (iphdr*) &dg[14];
 
   /*============================================================================
   | check that this is a ip datagram.

@@ -24,25 +24,22 @@
 #ifndef IO_H
 #define IO_H
 
-#ifndef TRUE
-  #define TRUE			1
-#endif
-#ifndef TRUE
-  #define FALSE			0
-#endif
-
 void log(char *cp,...);		/* syslod()/printf() */
 void err(char *cp,...);		/* syslog()/fprintf(stderr) */
-void ope(char *s);		/* openlog/noop */
-void clo();			/* closelog/noop */
+
 void *allocate(size_t size);	/* malloc with protection */
 
-extern int noBackground;
+#ifdef NO_SYSLOGD
+  #define ope(s)
+  #define clo()
+#else
+  void ope(char *s);		/* openlog/noop */
+  void clo();			/* closelog/noop */
+  extern int noBackground;
+#endif
 
-/*==============================================================================
-| which "facility" should we send the syslog logs to?
-==============================================================================*/
-
-#define NETL_LOG_FACILITY	LOG_LOCAL4
+#ifndef NO_TEEOUT
+  extern FILE *teefile;		/* -o file */
+#endif
 
 #endif

@@ -30,18 +30,20 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "global.h"
+
 #include "resolve.h"
 #include "options.h"
 #include "io.h"
 
-struct listtype {
+typedef struct lt {
   u32 ip;				/* ip number: x.x.x.x		*/
-  struct listtype *next;		/* next node			*/
+  struct lt *next;			/* next node			*/
   char *name;				/* hostname			*/
-};
+} listtype;
 
-static struct listtype *cache = NULL;
+static listtype *cache = NULL;
 
 char *search(u32 ip);
 
@@ -53,10 +55,10 @@ char *search(u32 ip);
 char *
 addip(const char *s, u32 ip)
 {
-  struct listtype	*tmp;
-  int			len;
+  listtype	*tmp;
+  int		len;
 
-  tmp = (struct listtype *) allocate(sizeof(struct listtype));
+  tmp = (listtype *) allocate(sizeof(listtype));
   tmp->name = (char *) allocate((len = strlen(s) + 1));
   memcpy(tmp->name, s, len);
   tmp->ip = ip;
@@ -111,13 +113,13 @@ ip2string(u32 ip)
 char *
 search(u32 ip) 
 {
-  struct listtype *tmp;
+  listtype *tmp;
 
-  for(tmp = cache; tmp != NULL; tmp = tmp->next) {
-    if(ip == tmp->ip) {
+  for(tmp = cache; tmp != NULL; tmp = tmp->next) 
+    if(ip == tmp->ip) 
       return tmp->name;
-    }
-  }
+
+  /* else */
   return NULL;
 }
 
@@ -128,13 +130,13 @@ search(u32 ip)
 u32
 searchbyname(char *name) 
 {
-  struct listtype *tmp;
+  listtype *tmp;
 
-  for(tmp = cache; tmp != NULL; tmp = tmp->next) {
-    if(!strcmp(name, tmp->name)) {
+  for(tmp = cache; tmp != NULL; tmp = tmp->next) 
+    if(!strcmp(name, tmp->name)) 
       return tmp->ip;
-    }
-  }
+
+  /* else */
   return 0;
 }
 
@@ -146,11 +148,15 @@ searchbyname(char *name)
 void
 clearipcache()
 {
-  struct listtype *tmp;
+  listtype *tmp1, *tmp2;
 
-  for(tmp=cache; tmp!=NULL; tmp=tmp->next) {
-    free(tmp->name);
-    free(tmp);
+  tmp1 = cache;
+  while(tmp1 != NULL) {
+    tmp2 = tmp1->next;
+    free(tmp1->name);
+    free(tmp1);
+    tmp1 = tmp2;
   }
+
   cache = NULL;
 }

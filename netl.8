@@ -1,0 +1,243 @@
+.\" @(#)man page for netl network logger/sniffer
+.\" copyright 1997 graham the ollis
+.ad b
+.TH netl 8 "3 june 1997" "CORE software" "CORE software"
+.AT 3
+.de sh
+.br
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.SH NAME
+netl \- network logger/sniffer
+.SH SYNOPSIS
+.B netl
+[
+.B -v-
+] [
+.B -r-
+] [
+.BR \-f filename
+] [
+.B -z
+] [
+.BR \-o filename
+] [
+.B -h
+] ['config line/rule'] [...]
+.SH DESCRIPTION
+.I netl
+is a network logger and sniffing tool to aid a network administrator in
+monitoring and analyzing incoming network packets.
+.I netl
+reads a config file (usually /etc/netl.conf see below) which defines the
+type of packets that should be logged/sniffed, forks and runs as a
+background process.  output is sent to syslogd, usually this  in turn sends the
+data right to /var/adm/messages.  the other option is to have the packet
+dumped to a file so that you can analize it with 
+.BR neta (1)
+which knows what fields are in an IP packet and will display
+them for you.
+.PP
+.I netl
+also listens to
+.BR dcp (1)
+packets if so specified in the config file.  so far the only 
+.BR dcp (1)
+packet
+.I netl
+will respond to is 
+.I netl:readconfig
+which will cause netl to dump the current configeration (and IP resolution
+cache) so that the config file can be re-read.  this is handy if you make
+modifictions to the config file while
+.I netl
+is running.
+.PP
+if you include config lines on the command line, then no config files
+will be read.  this is a handy way to test netl config lines.  DO NOT use
+regular hostnames on the command line.  use the dotted decimal, as no 
+hostname resolution is done here (or in the config file either, use
+.I alias
+instead).
+.SH OPTIONS
+all boolean options can be postpended with a \+ or \- in order turn them
+on or off.  the default invokation is always +, but the default value may
+vary.
+.PP
+.TP 8
+.BR \-f filename
+use an alternative config file.
+.PP
+.TP
+.BR \-o filename
+send output to filename in addition to syslogd/stdout.  this option is usually 
+available on non unix systems only.
+.PP
+.TP
+.BR \-h
+help.  print out usage information.
+.PP
+.TP
+.BR \-r [+|-]
+resolve IP numbers to their hostname (default is on).
+.PP
+.TP
+.BR \-v [+|-]
+display version number and copyright information (default is on).
+.PP
+.TP
+.BR \-z [+|-]
+run netl in the foreground, and send output to standard output
+(default is off).
+.SH CONFIG FILE
+the 
+.I netl 
+distribution comes with a sample netl.conf file.  you should
+use this as a template and then use the -z -f options in order to test it.
+you can add comments to the config file by prepending the hash (#) charater
+to the begining of the comment.  in general there are two parts of the config
+file, although the borders aren't patrolled or anything, you can pretty much
+put config lines anywhere in the file you like.  note that only one pass
+is done to the config file, so 
+.I device 
+and 
+.I alias
+lines should probably go first.
+.PP
+.TP
+\fBdevice\fR device type
+this line specifies the type of device.  at the moment, only ethernet is
+supported, so 
+.I type
+should be ethernet and 
+.I device 
+should be eth0, eth1, etc.
+.PP
+.TP
+\fBdetect\fR
+this directive tells netl to detect the hostname of the machine it is running
+on and aliases it to the IP address.  also, local is aliased to this, though
+lookups on the IP address will return the hostname so your log files will
+be reasonable.
+.PP
+.TP
+\fBalias\fR name ipnumber
+this defines a alias for an ip numbers resolution.  this alias is used
+for the config file, and for logging output.
+.PP
+action protocol [requirement]
+.br
+action is one of:
+.TP
+.I log
+log the datagram in syslog
+.TP
+.I dump
+save the entire datagram to a file in /tmp/netl
+(make sure the directory /tmp/netl exists)
+.TP
+.I ignore
+ignore all other requirement lines with the given values 
+on this line.
+.PP
+protocol is one of:
+.TP
+.I tcp, udp, icmp
+.PP
+here are the rule fields. with the exception of name= you can put an !
+before the field to negate it.  (e.g. \fB!flags=\fRfin) 
+.PP
+.I note:
+you can only use each rule once on each line.  if you want to exclude more
+than one IP (or other attribute multiple times)  you must use \fBignore\fR. if
+you want to include more than on IP (or other attribute multiple times)
+you will need to duplicate the line with a different IP number, and
+everything else being the same. 
+negation counts as a seperate
+rule class so you can have (for example) both 
+\fBsrcip=\fR and \fB!srcip=\fR 
+on the same line.
+.PP
+.I another note: 
+\fBflags=\fR is an exception.  you can use that multiple times
+for each line.  that's sort of a hack though, don't use it unless you
+have to as it may not be supported in later versions
+.PP
+.TP
+\fBname=\fR
+name isn't a real requirement.  it is simply a string which will be 
+used to identify the datagram.  with log, this will show up as the 
+first part of the log (i.e. when name=syn your output will be like
+"netl: syn fred.com:77 => derf.org:88") or as part of the file name
+of the dump.
+.PP
+.TP
+\fBflags=\fR [TCP ONLY]
+allows you to require certain tcp flags to be set.  you can specify
+multiple flags by seperating them with commas (,).  here are the
+flags you can specify: syn fin rst psh ack urg
+.PP
+.TP
+\fBdstport=\fR [TCP and UDP ONLY]
+specify the destination port to be used.  this can be either a
+numerical port specification or a named service like telnet or ftp
+as defined in /etc/services
+.PP
+.TP
+\fBsrcport=\fR [TCP and UDP ONLY]
+same as dstport except this is for the source port.
+.PP
+.TP
+\fBdstip=\fR
+specify the destination IP address.  this must either be a ip dotted 
+decimal, or a host you have defined as an alias in this file.
+note that netl WILL NOT do a hostname resolution for hosts in this config
+file so make sure that any hostnames you use are defined before using
+this rule.
+.PP
+.TP
+\fBsrcip=\fR
+same as dstip except this is for the source address.
+.PP
+.TP
+\fBtype=\fR [ICMP ONLY]
+type for icmp packets.  most useful thing here is "echo" (numerical
+types can also be used.  there are all sorts of different icmp types
+so if you are really interested, take a look at the source code:
+lookup.c contains the lookup table.  the linux kernel also has some
+data structures which may be helpful (usually you can find this in 
+/usr/include/linux/icmp.h ).
+.PP
+.TP
+\fBcode=\fR [ICMP ONLY]
+this is sort of a sub type for icmp.  see the source code to this or the
+kernel for all the answers you desire.
+.SH SEE ALSO
+.BR dcp (1),
+.BR xd (1),
+.BR neta (1),
+.BR hwpassive (8)
+.SH BUGS
+almost certainly.  please send bug reports/fixes to me 
+Graham THE Ollis <ollisg@ns.arizona.edu>
+.SH COPYING
+Copyright 1996, 1997 Graham THE Ollis
+.PP
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+.PP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+.PP
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+.SH AUTHOR
+Graham THE Ollis <ollisg@ns.arizona.edu>

@@ -29,8 +29,11 @@ char	*id = "@(#)neta (c) 1997 graham the ollis <ollisg@ns.arizona.edu>";
 
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "global.h"
 #include "ether.h"
+#include "ip.h"
+
 #include "dump.h"
 #include "lookup.h"
 #include "options.h"
@@ -100,10 +103,10 @@ main(int argc, char *argv[])
 void
 print(u8 *buff, size_t size)
 {
-  struct machdr *mac;
+  machdr	*mac;
   size_t	offset = 14;
 
-  mac = (struct machdr *) buff;
+  mac = (machdr *) buff;
 
   puts("ethernet:");
   fputs("  type: ", stdout);
@@ -138,9 +141,9 @@ print(u8 *buff, size_t size)
 size_t
 printip(u8 *buff)
 {
-  struct iphdr		*ip = (struct iphdr *) buff;
-  size_t		len = ip->ihl << 2;
-  size_t		doff = len;
+  iphdr		*ip = (iphdr *) buff;
+  size_t	len = ip->ihl << 2;
+  size_t	doff = len;
 
   puts("IP:");
   printf("  version:           %d\n", ip->version);
@@ -158,9 +161,9 @@ printip(u8 *buff)
 	break;
   }
 
-  printf("  total length       %04x\n", net16(ip->tot_len));
-  printf("  frag id            %04x\n", net16(ip->id));
-  printf("  frag offset        %04x\n", net16(ip->frag_off));
+  printf("  total length       %04x\n", ntohs(ip->tot_len));
+  printf("  frag id            %04x\n", ntohs(ip->id));
+  printf("  frag offset        %04x\n", ntohs(ip->frag_off));
   printf("  time to live       %02x\n", ip->ttl);
   fputs ("  protocol           ", stdout);
 
@@ -168,21 +171,21 @@ printip(u8 *buff)
     case PROTOCOL_TCP: 
       puts("tcp"); 
       printtcp(buff, len);
-      doff += sizeof(struct tcphdr);
+      doff += sizeof(tcphdr);
       printaddrport(buff, len);
       break;
 
     case PROTOCOL_UDP:
       puts("udp");
       printaddrport(buff, len);
-      doff += sizeof(struct udphdr);
+      doff += sizeof(udphdr);
       break;
 
     case PROTOCOL_ICMP:
       puts("icmp");
       printaddr(buff);
       printicmp(buff, len);
-      doff += sizeof(struct icmphdr);
+      doff += sizeof(icmphdr);
       break;
 
     default:
@@ -201,12 +204,12 @@ printip(u8 *buff)
 void
 printaddrport(u8 *buff, size_t len)
 {
-  struct iphdr	*ip = (struct iphdr *) buff;
-  struct udphdr	*udp = (struct udphdr *) &buff[len];
+  iphdr	*ip = (iphdr *) buff;
+  udphdr *udp = (udphdr *) &buff[len];
 
   printf("  %s:%d => %s:%d\n",
-	ip2string(ip->saddr), net16(udp->source),
-	ip2string(ip->daddr), net16(udp->dest));
+	ip2string(ip->saddr), ntohs(udp->source),
+	ip2string(ip->daddr), ntohs(udp->dest));
 }
 
 /*==============================================================================
@@ -216,10 +219,10 @@ printaddrport(u8 *buff, size_t len)
 void
 printtcp(u8 *buff, size_t len)
 {
-  struct tcphdr	*tcp = (struct tcphdr *) &buff[len];
+  tcphdr *tcp = (tcphdr *) &buff[len];
 
-  printf("  sequence number    %08x\n", net32(tcp->seq));
-  printf("  ack number         %08x\n", net32(tcp->ack_seq));
+  printf("  sequence number    %08x\n", (u32) ntohl(tcp->seq));
+  printf("  ack number         %08x\n", (u32) ntohl(tcp->ack_seq));
   printf("  doff               %x\n", tcp->doff << 2);
   fputs ("  flags              ", stdout);
   if(tcp->fin) 
@@ -235,8 +238,8 @@ printtcp(u8 *buff, size_t len)
   if(tcp->urg) 
     fputs("urg", stdout);
   putchar('\n');
-  printf("  window size        %04x\n", net16(tcp->window));
-  printf("  urg pointer        %04x\n", net16(tcp->urg_ptr));
+  printf("  window size        %04x\n", ntohs(tcp->window));
+  printf("  urg pointer        %04x\n", ntohs(tcp->urg_ptr));
 }
 
 /*==============================================================================
@@ -246,7 +249,7 @@ printtcp(u8 *buff, size_t len)
 void
 printaddr(u8 *buff)
 {
-  struct iphdr	*ip = (struct iphdr *) buff;
+  iphdr	*ip = (iphdr *) buff;
 
   printf("  %s => %s\n", ip2string(ip->saddr), ip2string(ip->daddr));
 }
@@ -258,8 +261,8 @@ printaddr(u8 *buff)
 void
 printicmp(u8 *buff, size_t len)
 {
-  struct icmphdr	*icmp = (struct icmphdr *) &buff[len];
-  int			i,n=0;
+  icmphdr	*icmp = (icmphdr *) &buff[len];
+  int		i,n=0;
 
   fputs ("  type:              ", stdout);
   for(i=0; i<MAXICMPTYPE; i++) {
@@ -281,8 +284,8 @@ printicmp(u8 *buff, size_t len)
     }
   }
 
-  printf("\n  id:                %04x\n", net16(icmp->un.echo.id));
-  printf("  sequence:          %04x\n", net16(icmp->un.echo.sequence));
-  printf("  gateway:           %08x\n", net32(icmp->un.gateway));
+  printf("\n  id:                %04x\n", ntohs(icmp->un.echo.id));
+  printf("  sequence:          %04x\n", ntohs(icmp->un.echo.sequence));
+  printf("  gateway:           %08x\n", (u32) ntohl(icmp->un.gateway));
 }  
 

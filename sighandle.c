@@ -30,6 +30,10 @@
 |=============================================================================*/
 
 #include <signal.h>
+#include <stdio.h>
+
+#include "global.h"
+
 #include "sighandle.h"
 #include "io.h"
 

@@ -25,15 +25,19 @@
 |  05 Mar 97  G. Ollis	.93 added listen option for run time comunication.
 |  09 Mar 97  G. Ollis	default value for .logname is now NULL
 |			(note changes in netl.c also)
+|  03 Jun 97  G. Ollis	added `detect' config line to make configeration
+|			just a little less necessary.
 |=============================================================================*/
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <netdb.h>
+#include <unistd.h>
 
 #include "global.h"
 #include "ether.h"
+#include "ip.h"
 
 #include "config.h"
 #include "resolve.h"
@@ -118,7 +122,7 @@ getportnum(char *s, u8 prot)
   if(service == NULL)
     return 0;
   else
-    return net16(service->s_port);
+    return ntohs(service->s_port);
 }
 
 /*==============================================================================
@@ -222,7 +226,7 @@ modifyicmp(u8 *item, char *name, struct lookupitem *l, int size)
 ==============================================================================*/
 
 static int
-modifyflags(struct flagbyte *fb, u8 other, char *name)
+modifyflags(flagbyte *fb, u8 other, char *name)
 {
   char	*tmp;
   u8	*tmp2 = (u8 *) fb;
@@ -292,6 +296,36 @@ resizelist(struct configlist *l, int size)
 }
 
 /*==============================================================================
+| detect hostname/IP number
+==============================================================================*/
+
+void
+detectf()
+{
+  char			buff[255];
+  struct hostent *	herhost;
+  union			{ u32 i; u8 c[4]; } addr;
+
+  addip("localhost", LOCALHOST_IP);
+  addr.i = searchbyname("localhost");
+/*  printf("detect: localhost -> %d.%d.%d.%d\n", addr.c[0], addr.c[1], 
+                                               addr.c[2], addr.c[3]);*/
+  gethostname(buff, 255);
+  if((herhost = gethostbyname(buff)) != NULL) {
+    addip("local", *((u32 *) herhost->h_addr_list[0]) );
+    addip(buff, *((u32 *) herhost->h_addr_list[0]) );
+/*    addr.i = searchbyname("local");
+    printf("detect: local -> %d.%d.%d.%d\n",    addr.c[0], addr.c[1], 
+                                                addr.c[2], addr.c[3]);
+    addr.i = searchbyname(buff);
+    printf("detect: %s -> %d.%d.%d.%d\n", buff, addr.c[0], addr.c[1], 
+                                                addr.c[2], addr.c[3]);*/
+  } else {
+    err("warning: could not detect hostname");
+  }
+}
+
+/*==============================================================================
 | add an item
 ==============================================================================*/
 
@@ -317,7 +351,6 @@ parseconfigline(char *buff)
   struct configitem
 		citem;
 
-
     /*==========================================================================
     | tokenize the config line 
     ==========================================================================*/
@@ -333,6 +366,16 @@ parseconfigline(char *buff)
 
     if(tokens[0] == NULL)
       return;
+
+    /*==========================================================================
+    | detect instructs netl to try and figure out the local host name itself.
+    | no arguments for this config line.
+    ==========================================================================*/
+
+    if(!strcmp(tokens[0], "detect")) {
+      detectf();
+      return;
+    }
 
     /*==========================================================================
     | device allows you to specify an alternate device.  for the moment, only
@@ -359,7 +402,7 @@ parseconfigline(char *buff)
       } else {
         listenport = atoi(tokens[1]);
         if(listenport == 0) {
-          err("warning: %s is not a valuid port, comunication off.");
+          err("warning: %s is not a valid port, comunication off.", tokens[1]);
           listenport = -1;	/* probably unnecessary */
           return;
         }
@@ -370,6 +413,10 @@ parseconfigline(char *buff)
 
     if(i < 3) {
       err("warning: bad config line (line %d)", line);
+      return;
+    }
+
+    if(!strcmp(tokens[0], "port")) {
       return;
     }
 
@@ -538,13 +585,13 @@ parseconfigline(char *buff)
 
       else if(!strncmp(tokens[n], "flag=", 5)) {
         citem.check_tcp_flags_on = modifyflags(
-		(struct flagbyte *) &citem.tcp_flags_on, 
+		(flagbyte *) &citem.tcp_flags_on, 
 		citem.tcp_flags_off,
 		tokens[n] + 5);
       } 
       else if(!strncmp(tokens[n], "!flag=", 6)) {
         citem.check_tcp_flags_off = modifyflags(
-		(struct flagbyte *) &citem.tcp_flags_off, 
+		(flagbyte *) &citem.tcp_flags_off, 
 		citem.tcp_flags_on,
 		tokens[n] + 6);
       } 
@@ -608,14 +655,22 @@ postconfig()
 |  apropriately
 ==============================================================================*/
 
+#ifdef NO_SYSLOGD
+void
+readconfig(char *confname)
+#endif
+#ifndef NO_SYSLOGD
 void
 readconfig(char *confname, int nbg)
+#endif
 {
   FILE		*fp;
   char		buff[NETL_CONFIG_MAXWIDTH];
   int		i;
 
+#ifndef NO_SYSLOGD
   swap(nbg, noBackground);
+#endif
 
   if((fp=fopen(confname, "r")) == NULL) {
     err("error: opening %s for read, die", confname);
@@ -644,7 +699,9 @@ readconfig(char *confname, int nbg)
 
   line = 0;
 
+#ifndef NO_SYSLOGD
   swap(nbg, noBackground);
+#endif
 
   endservent();
 }

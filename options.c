@@ -42,6 +42,24 @@ char netdevice[255] = "eth0";
 char *configfile = NETL_CONFIG;
 
 /*==============================================================================
+| open another output file
+| only for the -o option
+|=============================================================================*/
+
+#ifndef NO_TEEOUT
+void
+openteefile(char *s)
+{
+  teefile = fopen(s, "a");
+  if(teefile == NULL) {
+    fprintf(stderr, "%s: error opening %s for append\n", prog, s);
+    exit(1);
+  }
+}
+#endif
+
+
+/*==============================================================================
 | parse the command line
 |=============================================================================*/
 
@@ -57,8 +75,18 @@ parsecmdline(int argc, char *argv[])
       |=======================================================================*/
 
       switch(argv[0][1]) {
+
+#ifndef NO_SYSLOGD
         case 'z' :
           noBackground = booleanValue(argv[0][2]);
+	  break;
+#endif
+
+#ifndef NO_TEEOUT
+	case 'o' :
+          openteefile(&argv[0][2]);
+	  break;
+#endif
 
         case 'v' :
           displayVersion = booleanValue(argv[0][2]);
@@ -123,7 +151,12 @@ printusage()
   puts("-v   display version number copyright information [on]");
   puts("-r   resolve IP numbers to hostname [on]");
   puts("-f   set config file [/etc/netl.conf]");
+#ifndef NO_SYSLOGD
   puts("-z   do not run in background, send all output to STDOUT and STDERR");
+#endif
+#ifndef NO_TEEOUT
+  puts("-o   send a copy of output to specified file");
+#endif
   puts("-h   this help message");
   putchar('\n');
   puts("defaults are in the [].  to turn off an option append a -,");

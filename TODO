@@ -10,3 +10,9 @@ before we get to a final release on netl:
    (sorted by native version of the IP)
 
  * hwpassive program to passivly get hardware => IP mappings
+
+ * port aliasing
+
+ * perl path
+
+ * localname?

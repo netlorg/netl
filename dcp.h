@@ -26,6 +26,6 @@
 
 #define MAX_COM_LEN 255
 
-void hear(u8 *dg, struct udphdr *h, int len);
+void hear(u8 *dg, udphdr *h, int len);
 
 #endif /* DCP_H */

@@ -25,20 +25,14 @@
 #define NETL_H
 
 /*==============================================================================
-| which "facility" should we send the syslog logs to?
-==============================================================================*/
-
-#define NETL_LOG_FACILITY	LOG_LOCAL4
-
-/*==============================================================================
 | prototypes
 ==============================================================================*/
 
 int	netl(char *dev);
-void	dgdump(u8 *dg, char *name, int len);
-void	checkicmp(u8 *dg, struct iphdr ip, struct icmphdr *h, int len);
-void	checktcp(u8 *dg, struct iphdr ip, struct tcphdr *h, int len);
-void	checkudp(u8 *dg, struct iphdr ip, struct udphdr *h, int len);
-void	parsedg(u8 *dg, int len);
+void	dgdump(u8 *dg, char *name, size_t len);
+void	checkicmp(u8 *dg, iphdr ip, icmphdr *h, size_t len);
+void	checktcp(u8 *dg, iphdr ip, tcphdr *h, size_t len);
+void	checkudp(u8 *dg, iphdr ip, udphdr *h, size_t len);
+void	parsedg(u8 *dg, size_t len);
 
 #endif /* NETL_H */

@@ -1,4 +1,7 @@
-netl/neta are (c) 1996, 1997 Graham THE Ollis
+netl, neta, hwpassive, xd and dcp.pl are Copyright 1996, 1997 Graham THE Ollis
+
+tdr.pl is Copyright 1996 Regents of the University of California 
+       and Copyright 1997 Graham THE Ollis
 
 legal
 -----
@@ -37,39 +40,42 @@ netl probably won't work on any other unix platform with out a lot of
 work.  if you are successful in porting netl to other platforms, please
 let me know what you did and i can add the appropriate code to my netl
 source. most of what you are going to want to change should be in the
-header files netl.h and ether.h.  if your platform doesn't provide a
-neatly packaged ip, udp, tcp and icmp header structures, you may have to
-implement them yourself (linux is nice that way). 
+header files global.h, ip.h and ether.h.
 
 how do i install it?
 --------------------
 
  AS NOT ROOT:
 
- 1. type `make'
+ 1. edit `Makefile' and `global.h' with your favorite text editor.  if your
+    platform is supported, you shouldn't have to do anything but change
+    CFLAGS or one of the global config items at the top of global.h.
 
- 2. if you have tdr you can run the test cases to perform some simple
+ 2. type `make'
+
+ 3. if you have tdr you can run the test cases to perform some simple
     diagnostics on neta/netl/xd.  if you don't have tdr, i suggest that
     you get it, there should be a copy of the latest version available at: 
 
 http://www.u.arizona.edu/~ollisg/core.html#swfw
 
-   if tdr is installed, simple type `make test' and if everything works
-   out, you should see a few .t files followed by OK.  if any of the tests
-   fail, please send me the .ao .aERR .aRET files by internet mail so that
-   i can try and trck down the problem and correct in future versions.
+    if tdr is installed, simple type `make test' and if everything works
+    out, you should see a few .t files followed by OK.  if any of the tests
+    fail, please send me the .ao .aERR .aRET files by internet mail so that
+    i can try and trck down the problem and correct in future versions.
 
- 3. take a look at netl.conf.  modify it to your liking.
+ 4. take a look at netl.conf.  modify it to your liking.
+    in the very least, READ IT, as this will save you a lot of trouble.
 
  AS ROOT
 
- 4. type `netl -z -fnetl.conf' to try out the configeration.  go to
+ 5. type `netl -z -fnetl.conf' to try out the configeration.  go to
     another virtual terminal and send yourself a ping (or something else
     you are logging), come back and see if it shows up on the screen.
 
- 5. type `make install'
+ 6. type `make install'
 
- 6. copy netl.conf to your /etc directory, and run `netl' with no
+ 7. copy netl.conf to your /etc directory, and run `netl' with no
     arguments to have it run in the background.  when it runs in this
     manner, output is sent to syslog and will show up in your
     ~adm/messages file (unless you modify /etc/syslog.conf).  you may want
@@ -87,10 +93,14 @@ special header files which aren't attached to any particular module but
 are important to many (but not all) of the modules. 
 
   global.h - this defines unsigned 8bit, 16bit and 32bit integers.
-	if you are doing a port, this is the first thing to look at.
+	if you are doing an os port, this is the first thing to look at.
 
   ether.h - this has all the heder datatype definitions (or at least
-	pointers to such data structures in the kernel source).
+	pointers to such data structures in zthe kernel source).  if you
+	want to add a new device type, copy this file and use it as a 
+	template.
+
+  ip.h - this defines the IP header formats.
 
   config.c - reads the default or specified config file, or single line
 	config parsing
@@ -101,7 +111,7 @@ are important to many (but not all) of the modules.
 	as a daemon or in the forground using stdout and stderr. 
 
   lookup.c - some icmp codes are stored here for the TYPE and CODE fields
-	in the icmp header. 
+	in the icmp header.  there is no code in this module, just data.
 
   neta.c - datagram analysis software.
 
@@ -109,11 +119,19 @@ are important to many (but not all) of the modules.
 
   options.c - parse command line options.
 
-  resolve.c - resolve hostnames from IP numbers.
+  resolve.c - resolve hostnames from IP numbers.  (and caches)
 
-  sighandle.c - catch some fatal errors for clean exit.
+  sighandle.c - catch some fatal signals for clean exit.
 
   xd.c - dump raw files to screen in hex format.
+
+  dcp.c - send messages to netl while it's running using this protocol.  right
+	now, you'll need the dcp.pl script to work.  one day i'd like to make
+	dcp.pl a regular c program. 
+
+  hwpassive.c - right now this is completely unfinished.  when complete, it
+	will passively keep a database of hardware <=> IP addresses as IP 
+	datagrams fly by the network.
 
 credits
 -------
@@ -124,6 +142,10 @@ i couldn't have done this program or started work on the stealth kernel
 without the networking knowledge of tyler parsons.  even after that, his
 alpha/beta testing has been extremely useful in making netl what it is
 today. 
+
+gordon lyon-
+
+fellow computer science student, and handy dandy beta tester.
 
 jeff thompson-
 

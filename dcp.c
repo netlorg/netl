@@ -24,9 +24,11 @@
 |=============================================================================*/
 
 #include <string.h>
+#include <stdio.h>
 
 #include "global.h"
 #include "ether.h"
+#include "ip.h"
 
 #include "io.h"
 #include "config.h"
@@ -45,7 +47,7 @@ u32 lasthearid = 0;
 |=============================================================================*/
 
 void
-hear(u8 *dg, struct udphdr *h, int len)
+hear(u8 *dg, udphdr *h, int len)
 {
   char		message[MAX_COM_LEN];
   int		size, offset;
@@ -59,13 +61,13 @@ hear(u8 *dg, struct udphdr *h, int len)
   | life playing silly games while graham takes over the world" c strings.
   |===========================================================================*/
 
-  offset = sizeof(struct machdr) + sizeof(struct iphdr) + sizeof(struct udphdr);
+  offset = sizeof(machdr) + sizeof(iphdr) + sizeof(udphdr);
 
-  id = net32(*((u32 *) &dg[offset]));		offset += 4;
+  id = ntohl(*((u32 *) &dg[offset]));		offset += 4;
   if(id == lasthearid)
     return;
   lasthearid = id;
-  nsize = net16(*((u16 *) &dg[offset]));	offset += 2;
+  nsize = ntohs(*((u16 *) &dg[offset]));	offset += 2;
 
   size = len - offset;
   if(nsize < size)
@@ -85,15 +87,18 @@ hear(u8 *dg, struct udphdr *h, int len)
   if(!strncmp("netl:", message, 5)) {
     if(!strncmp("readconfig", &message[5], 10)) {
 
-/*	clearipcache() is broken, it dumps core
       clearipcache();
-      log("old ip cache cleared");*/
+      log("old ip cache cleared");
      
       clearconfig();
       log("old configuration cleared");
 
       preconfig();
+#ifdef NO_SYSLOGD
+      readconfig(configfile);
+#else
       readconfig(configfile, noBackground);
+#endif
       postconfig();
       log("re-read configfile %s", configfile);
 

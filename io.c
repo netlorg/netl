@@ -35,7 +35,13 @@
 #include "global.h"
 #include "io.h"
 
+#ifndef NO_SYSLOGD
 int noBackground = FALSE;
+#endif
+
+#ifndef NO_TEEOUT
+FILE *teefile = NULL;
+#endif
 
 /*==============================================================================
 | log
@@ -53,10 +59,22 @@ log(char *cp,...)
     va_end(vararg);
   }
 
-  if(noBackground)
+#ifndef NO_SYSLOGD
+  if(noBackground) {
+#endif
     puts(buff);
-  else
+#ifndef NO_TEEOUT
+    if(teefile != NULL) {
+      fputs(buff, teefile);
+      fputc('\n', teefile);
+      fflush(teefile);
+    }
+#endif
+#ifndef NO_SYSLOGD
+  } else {
     syslog(LOG_INFO, buff);
+  }
+#endif
 }
 
 void
@@ -71,13 +89,25 @@ err(char *cp,...)
     va_end(vararg);
   }
 
+#ifndef NO_SYSLOGD
   if(noBackground) {
+#endif
     fputs(prog, stderr);
     putc(':', stderr);
     fputs(buff, stderr);
     putc('\n', stderr);
+#ifndef NO_TEEOUT
+    if(teefile != NULL) {
+      fputs("error:", teefile);
+      fputs(buff, teefile);
+      fputc('\n', teefile);
+      fflush(teefile);
+    }
+#endif
+#ifndef NO_SYSLOGD
   } else
     syslog(LOG_ERR, buff);
+#endif
 }
 
 /*==============================================================================
@@ -103,6 +133,7 @@ allocate(size_t size)
 | netl.
 |=============================================================================*/
 
+#ifndef NO_SYSLOGD
 void
 ope(char *s)
 {
@@ -116,3 +147,4 @@ clo()
   if(!noBackground)
     closelog();
 }
+#endif

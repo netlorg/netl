@@ -8,8 +8,9 @@ config.c
 config.h
 dump.c
 dump.h
-ether.h
 global.h
+ether.h
+ip.h
 io.c
 io.h
 lookup.c
@@ -29,6 +30,7 @@ dcp.h
 hwpassive.c
 hwpassive.h
 dcp.pl
+t/tdr
 t/icmp.datagram
 t/icmp.eERR
 t/icmp.eRET
@@ -53,3 +55,8 @@ t/xd.eRET
 t/xd.eo
 t/xd.t
 xd.c
+hwpassive.8
+netl.8
+neta.1
+xd.1
+dcp.1
