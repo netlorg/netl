@@ -37,6 +37,7 @@
 #define ACTION_LOG		1
 #define ACTION_DUMP		2
 #define ACTION_IGNORE		3
+#define ACTION_DL		4
 
 /*==============================================================================
 | storage structure for each requirement line while netl is running
@@ -45,10 +46,10 @@
 struct configitem {
   /* 0x00 */
   u8		action;
-  u8		protocol;
+  u16		protocol;
 
   /* check flags */
-  u16		check_src_ip:1,
+  u32		check_src_ip:1,
 		check_dst_ip:1,
 
 		check_src_prt:1,	/* no ports for ICMP */
@@ -64,10 +65,16 @@ struct configitem {
 		check_icmp_code:1,
 
 		check_tcp_flags_on:1,	/* tcp only */
-		check_tcp_flags_off:1;
+		check_tcp_flags_off:1,
+
+		check_src_hw:1,
+		check_dst_hw:1,
+		check_src_hw_not:1,
+		check_dst_hw_not:1;
 
   u32		src_ip,
 		dst_ip;
+
   u16		src_prt1,		/* udp and tcp only */
 		src_prt2,
 		dst_prt1,
@@ -83,7 +90,13 @@ struct configitem {
   u8		tcp_flags_on,		/* tcp only */
 		tcp_flags_off;
 
+  u8		src_hw[6],		/* hardware (mac) addresses */
+		dst_hw[6],
+		src_hw_not[6],
+		dst_hw_not[6];
+
   char		*logname;		/* what to give syslog */
+  char		*format;
 };
 
 /*==============================================================================
@@ -112,13 +125,14 @@ void preconfig();
 void postconfig();
 void clearconfig();
 void printconfig();
+int tokenize(char **, char *);
 
 /*==============================================================================
 | exported globals
 ==============================================================================*/
 
 extern int configmax;
-extern struct configlist icmp_req, tcp_req, udp_req;
+extern struct configlist icmp_req, tcp_req, udp_req, raw_req, ip_req;
 extern signed int listenport;
 
 #endif /* CONFIG_H */

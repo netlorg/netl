@@ -149,26 +149,26 @@ booleanValue(char c)
 void
 printusage()
 {
-  puts("usage: netl [options] [requirements]");
-  puts("usage: neta [options] [datagram-file]");
-  putchar('\n');
-  puts("where options can be any of the following:");
-  puts("-v   display version number copyright information [on]");
-  puts("-r   resolve IP numbers to hostname [on]");
-  puts("-f   set config file [/etc/netl.conf]");
+  puts("usage: netl [options] [requirements]
+usage: neta [options] [datagram-file]
+
+where options can be any of the following:
+-v   display version number copyright information [on]
+-r   resolve IP numbers to hostname [on]
+-f   set config file [/etc/netl.conf]
+-d   print out configeration and DON\'T run (debug option)
+-h   this help message");
 #ifndef NO_SYSLOGD
   puts("-z   do not run in background, send all output to STDOUT and STDERR");
 #endif
 #ifndef NO_TEEOUT
   puts("-o   send a copy of output to specified file");
 #endif
-  puts("-h   this help message");
-  puts("-d   print out configeration and DON\'T run (debug option)");
-  putchar('\n');
-  puts("defaults are in the [].  to turn off an option append a -,");
-  puts("to turn on append a +.  the default is +, so to turn version");
-  puts("display off, pass \"-v-\" as a command line argument.");
-  putchar('\n');
-  puts("for -f:  use -ffilename to set config file to filename, or");
-  puts("-f by itself to force netl not to read a config file");
+  puts("
+defaults are in the [].  to turn off an option append a -,
+to turn on append a +.  the default is +, so to turn version
+display off, pass \"-v-\" as a command line argument.
+
+for -f:  use -ffilename to set config file to filename, or
+-f by itself to force netl not to read a config file");
 }

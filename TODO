@@ -1,16 +1,4 @@
-before we get to a final release on netl:
-
- * figure out why it's dumping core on sparc linux
-
- * store the hostname lookup cache as a binary tree
-   (sorted by native version of the IP)
-
  * hwpassive program to passivly get hardware => IP mappings
-
- * port aliasing
-
- * implement a dgprintf function and insert
-
- * add raw protocol
-
+ * implement a dgprintf function 
  * add ipx protocol
+ * win32 port

@@ -34,6 +34,8 @@
 
 char	*id = "@(#)netl by graham the ollis <ollisg@ns.arizona.edu>";
 
+#include <errno.h>
+#include <string.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <netdb.h>
@@ -67,8 +69,8 @@ u8 localip[4] = {127, 0, 0, 1};
 /*==============================================================================
 | it's the clean up function!  it really doesn't need to do much so...
 | (btw- clo is the name of the planet the decepticons invaded shortly after 
-| the battle with unicron.  the autobots initially sustained
-| incredable losses, optimus prime turns the tide with the help of the 
+| the battle with unicron.  the autobots initially sustained incredable 
+| losses, optimus prime returns and turns the tide with the help of the 
 | "last autobot".  however, this has nothing to do with the clean up function)
 |=============================================================================*/
 
@@ -165,10 +167,11 @@ netl(char *dev)
   | Entering the data collection loop
   |===========================================================================*/
 
-  while(1) {
-    if((l = grab(buf)) < 0)
+  while(47) {
+    if((l = grab(buf)) < 0) {
+      log(strerror(errno));
       err("Error receiving RAW packet");
-    else 
+    } else 
       parsedg(buf, l);
   }
 

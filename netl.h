@@ -29,7 +29,7 @@
 ==============================================================================*/
 
 int	netl(char *dev);
-void	dgdump(u8 *dg, char *name, size_t len);
+char	*dgdump(u8 *dg, char *name, size_t len);
 void	checkicmp(u8 *dg, iphdr ip, icmphdr *h, size_t len);
 void	checktcp(u8 *dg, iphdr ip, tcphdr *h, size_t len);
 void	checkudp(u8 *dg, iphdr ip, udphdr *h, size_t len);

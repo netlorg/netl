@@ -42,9 +42,8 @@ if($#ARGV == -1) {
 }
 
 $message = shift @ARGV;
-$port = shift @ARGV;
-$port = 47 unless defined $port;
-$len = length($message); 
+$port = shift @ARGV || 47;
+$len = length $message; 
 
 if(defined $old) {
   $data = pack 'Nn', $$, $len;

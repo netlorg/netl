@@ -28,12 +28,18 @@
 
 /*==============================================================================
 | these are for the protocol byte in the IP header
+|
+| the 16 bit protocol numbers are for extending netl to non ip networking.
 ==============================================================================*/
 
 #define PROTOCOL_ICMP	0x01
 #define PROTOCOL_IGNP	0x02
 #define PROTOCOL_TCP	0x06
 #define PROTOCOL_UDP	0x11
+
+#define PROTOCOL_RAW	0x0100
+#define PROTOCOL_IPX	0x0200
+#define PROTOCOL_IP	0x0300
 
 /*==============================================================================
 | ENDIAN dependant items:
@@ -166,5 +172,20 @@ typedef struct {
   u16	len;
   u16	check;
 } udphdr;
+
+/*==============================================================================
+| overlaping generic packet type thingie
+| this is for the dgprintf function... wheeeee!
+==============================================================================*/
+
+typedef struct {
+  machdr mac;
+  iphdr ip;
+  union sub {		/* as in subclass */
+    tcphdr t;
+    icmphdr i;
+    udphdr u;
+  };
+} genericpacket;
 
 #endif /* IP_H */

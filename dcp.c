@@ -25,6 +25,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <netinet/in.h>
 
 #include "global.h"
 #include "ether.h"
@@ -43,6 +44,7 @@
 u32 lasthearid = 0;
 
 /*==============================================================================
+| soundwave: jam that transmission!
 | process a comunication request
 |=============================================================================*/
 
@@ -82,7 +84,7 @@ hear(u8 *dg, udphdr *h, int len)
   | all comunication requests are logged, even if we ignore them
   |===========================================================================*/
 
-  log("nets[%d]: \"%s\"", id, message);
+  log("dcp[%d]: \"%s\"", id, message);
 
   if(!strncmp("netl:", message, 5)) {
     if(!strncmp("readconfig", &message[5], 10)) {

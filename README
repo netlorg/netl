@@ -3,13 +3,23 @@ netl, neta, hwpassive, xd and dcp.pl are Copyright 1996, 1997 Graham THE Ollis
 tdr.pl is Copyright 1996 Regents of the University of California 
        and Copyright 1997 Graham THE Ollis
 
+toc
+---
+  . legal
+  . what is netl?
+  . portability
+  . how do i install it?
+  . internals
+  . credits
+  . contact information
+
 legal
 -----
 
-this software is copyright me.  but you are free to use and modify it
-under the GNU General Public License.  There is no written or implied
-warranty of any kind, so compile and run this software at your own risk. 
-see COPYING for official legal information. 
+this software is copyright me.  you are free to use and modify it under
+the terms of the GNU General Public License.  There is no written or
+implied warranty of any kind, so compile and run this software at your
+own risk.  see COPYING for official legal information.
 
 what is netl?
 -------------
@@ -27,20 +37,26 @@ a sniffer.  (behave yourself now)
 portability
 -----------
 
-i had a friend test netl on the sparc linux stations they have at school
-and it dumped core.  i have no idea why.  i am working on it. 
+an older version of netl reportadly dumps core on sparc linux.  i do not
+have access to this platform so i have no idea why.  if someone could
+help me out in this area i would appreciate it.
 
 netl *should* work on any linux platform.  however i've only been able to
-test it on my personal intel linux station.  i have made consideration of
-the fact that the platform it is compiled on may not in fact be little
-endian.  the big endian code is actually simpler and leads me to think big
-endian hardware is better for networking.
+test it on several intel linux station.  i have made consideration of the
+possibility that the platform it is compiled on may not in fact be little
+endian.  the big endian code is actually simpler and leads me to think
+big endian hardware is better for networking--but i have no bid endian
+hardware to test this on.
 
-netl probably won't work on any other unix platform with out a lot of
+netl probably will not work on any other unix platform with out a lot of
 work.  if you are successful in porting netl to other platforms, please
 let me know what you did and i can add the appropriate code to my netl
-source. most of what you are going to want to change should be in the
+source.  most of what you are going to want to change should be in the
 header files global.h, ip.h and ether.h.
+
+i have attempted porting netl to Windows 32, but have failed miserably.  
+i have never in my life encountered an operating system which was more
+programmer hostile in my life.  i have experience with VMS mind you.
 
 how do i install it?
 --------------------
@@ -81,6 +97,15 @@ http://www.u.arizona.edu/~ollisg/core.html#swfw
     ~adm/messages file (unless you modify /etc/syslog.conf).  you may want
     to run netl from one of your startup scripts in /etc/rc.d or
     thereabouts. 
+
+ 8. read the documentation.  that is, the rest of this file and the man
+    pages.  there is decent man page style documents for:
+	. dcp(1)	: discrete communication protocol
+        . hwpassive(1)	: passive hardware database
+        . neta(1)	: network packet analizer, handy for analizing frames
+			  dumped by netl
+        . netl(8)	: base documentation VERY IMPORTANT
+        . xd(1)		: hex dump not so important
 
 internals
 ---------
@@ -151,23 +176,24 @@ jeff thompson-
 
 early versions of netl were heavily derived from a program by jeff
 thompson which didn't even quite work right.  i had to debug and correct
-it.  when i got deeper in to the problem i discovered that his `synlogger'
-(as it was called) was highly specialized and didn't have to be. 
+it.  when i got deeper in to the problem i discovered that his
+`synlogger' (as it was called) was highly specialized and didn't have to
+be.  netl was thus born.
 
 graham the ollis-
 
 my name is graham the ollis, i'm a computer science/math major at the
-university of arizona.  or undergraduate student at los alamos national
-labratories in los alamos new mexico.  or some even call me grand master
-of all in existance, but for the most part i am apt to reply to the name
-`graham' (no mr. ollises thanks much).  if you have anything relevant or
-non-relevant to say about netl then i would certainly like to hear from
-you.  especially if you have improvements for netl.  you can get my public
-pgp key by fingering my university account: 
+university of arizona.  or private contractor working as CORE software.  
+or some even call me grand master of all in existance, but for the most
+part i am apt to reply to the name `graham' (no mr. ollises thanks much).  
+if you have anything relevant or non-relevant to say about netl then i
+would certainly like to hear from you.  especially if you have
+improvements for netl.  you can get my public pgp key by fingering my
+university account:
 
 contact information
 -------------------
 
-finger:ollisg@u.arizona.edu
-mailto:ollisg@ns.arizona.edu
+finger:ollisg@u.arizona.edu or ollisg@wwa.com
+mailto:ollisg@wwa.com
 http://www.u.arizona.edu/~ollisg/

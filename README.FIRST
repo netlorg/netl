@@ -1,16 +1,17 @@
 generic release notes for netl
 ------------------------------
 
-i really meant to spend more time on netl before releasing this version. 
-however work on the project has been slowed (but not halted) due to other
-projects.  if you have any of the following:
+this is netl version 1.00.  this is production release which is virtually
+the same as version 0.97.3.  i believe it to be pretty dependable.  if
+you have any of the following:
 
  1. bug reports
  2. suggested features
  3. improvements to netl in the form of a .diff
 
 please don't hesitate to send me e-mail.  i'll try to respond with a new version
-of netl (when apropriate) as soon as possible. 
+of netl (when appropriate) as soon as possible. 
 
-The README file included is more or less accurate if a little on the old
-side. 
+the README file was updated for version 1.00 and is worth looking in to.
+
+Graham THE OLlis <ollisg@wwa.com>

@@ -25,6 +25,7 @@
 |			go figure.)  all the networking code goes here.
 |=============================================================================*/
 
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
@@ -48,20 +49,22 @@
 | promiscuious mode.
 |=============================================================================*/
 
-static int sock, length;
+static int sock;
 static struct sockaddr_in name;
 static unsigned int fromlen;
-static struct ifreq oldifr, ifr;
 
 void
 prepare(char *dev)
 {
+  int length; 
+  struct ifreq oldifr, ifr;
 
   /*============================================================================
   | Get a socket which will collect all packets
   |===========================================================================*/
 
   if((sock = socket(AF_INET, SOCK_PACKET, htons(ETH_P_ALL))) < 0) {
+    err(strerror(errno));
     err("cannot open raw socket, die");
     exit(1);
   }

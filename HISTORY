@@ -1,3 +1,21 @@
+version .95.3
+-------------
+
+ . added dl action type.  this is a combination of the log and dump action
+   codes.
+
+ . made the dump file names truly unique.  we now use the pid, time and
+   *sequence* to make sure that all netl dump files are (theoretically)
+   unique.  sequence is the new one.  the form is now
+   /tmp/netl/name-pid-time-sequence.dg
+   where name is the name you specify in configeration, pid is the 
+   process id, time is seconds since 00:00:00 GMT, 1 January 1970, and 
+   sequence is the number of datagrams which have been dumped by this 
+   particular netl process.
+   if this file happens to exist, then it will be overwritten.
+
+ . added raw and ip (generic) protocols.
+
 version .95.2
 -------------
 

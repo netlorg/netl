@@ -1,8 +1,8 @@
 /*==============================================================================
-| parse.h
-|   parse a datagram and send the output to the right place.
-|
-|   optimized (and debugged) by Graham THE Ollis <ollisg@ns.arizona.edu>
+| dgprintf.h - formated datagram print function
+| 
+| coded and tested under linux 2.0.23, 2.0.26, stealth kernel 2.0.29
+|  by graham the ollis <ollisg@ns.arizona.edu>
 |
 |   Copyright (C) 1997 Graham THE Ollis <ollisg@ns.arizona.edu>
 |
@@ -19,16 +19,12 @@
 |   You should have received a copy of the GNU General Public License
 |   along with this program; if not, write to the Free Software
 |   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-|=============================================================================*/
+==============================================================================*/
 
-#ifndef PARSE_H
-#define PRASE_H
+#ifndef DGPRINTF_H
+#define DGPRINTF_H
 
-char *string(char *s);
-char *dgdump(u8 *dg, char *name, size_t len);
-void checkicmp(u8 *dg, iphdr ip, icmphdr *h, size_t len);
-void checktcp(u8 *dg, iphdr ip, tcphdr *h, size_t len);
-void checkudp(u8 *dg, iphdr ip, udphdr *h, size_t len);
-void parsedg(u8 *dg, size_t len);
+void
+dgprintf(char *format, u8 *dg);
 
 #endif
