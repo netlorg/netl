@@ -1,5 +1,5 @@
 /*==============================================================================
-| io.h - io module for deamon/forground class programs
+| dcp.h - descrete comunication protocol
 | 
 | coded and tested under linux 2.0.23, 2.0.26, stealth kernel 2.0.29
 |  by graham the ollis <ollisg@ns.arizona.edu>
@@ -21,28 +21,11 @@
 |   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 ==============================================================================*/
 
-#ifndef IO_H
-#define IO_H
+#ifndef DCP_H
+#define DCP_H
 
-#ifndef TRUE
-  #define TRUE			1
-#endif
-#ifndef TRUE
-  #define FALSE			0
-#endif
+#define MAX_COM_LEN 255
 
-void log(char *cp,...);		/* syslod()/printf() */
-void err(char *cp,...);		/* syslog()/fprintf(stderr) */
-void ope(char *s);		/* openlog/noop */
-void clo();			/* closelog/noop */
-void *allocate(size_t size);	/* malloc with protection */
+void hear(u8 *dg, struct udphdr *h, int len);
 
-extern int noBackground;
-
-/*==============================================================================
-| which "facility" should we send the syslog logs to?
-==============================================================================*/
-
-#define NETL_LOG_FACILITY	LOG_LOCAL4
-
-#endif
+#endif /* DCP_H */

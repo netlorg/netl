@@ -1,0 +1,58 @@
+generic release notes for netl
+------------------------------
+
+i really meant to spend more time on netl before releasing this version. 
+however work on the project has been slowed (but not halted) due to other
+projects.  if you have any of the following:
+
+ 1. bug reports
+ 2. suggested features
+ 3. improvements to netl in the form of a .diff
+
+please don't hesitate to send me e-mail.  i'll try to respond with a new version
+of netl (when apropriate) as soon as possible. 
+
+0.93 (and 0.92)
+---------------
+
+ a. -z option allows you to run netl in the foreground.  output is sent to
+    stdout instead of syslogd.
+
+ b. you can include configeration lines in the command line.  when you do
+    this, the config file /etc/netl.conf will NOT be read.  note that (a)
+    and (b) are meant to be used in concert with each other for testing
+    and quick monitoring. 
+
+ c. dcp is partially implemented.  netl will listen to port 47 udp
+    (silently) if you `listen 47' in your config file.  when you send the
+    message `netl:readconfig' netl is suppose to re read your config file. 
+    dcp.pl is a perl script (you'll need net cat for this to work) which
+    sends this message.  what is left to do for dcp?
+	1. generic server side dcp interface libdcp.a file or somesuch.
+	2. more solid C version of dcp client.
+
+ d. netl is now officially under the GPL, see COPYING for more information.
+
+ e. icmp codes are now included in some .h file somewhere rather than
+    depending on your linux being overly up to date.
+
+ f. neta no longer swaps source/destination ip/ethernet addresses
+    inapropriately. 
+
+ g. started work on hwpassive, which is no where near complete.
+
+ h. tdr.pl is no included with netl distribution for convenience.  get
+    your own version at: 
+
+http://www.u.arizona.edu/~ollisg/core.html
+	[ CORE ]
+
+netl 0.91
+---------
+
+ minor updates
+
+netl 0.90
+---------
+
+ initial release

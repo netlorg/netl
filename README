@@ -6,6 +6,7 @@ legal
 this software is copyright me.  but you are free to use and modify it
 under the GNU General Public License.  There is no written or implied
 warranty of any kind, so compile and run this software at your own risk. 
+see COPYING for official legal information. 
 
 what is netl?
 -------------
@@ -30,15 +31,15 @@ netl *should* work on any linux platform.  however i've only been able to
 test it on my personal intel linux station.  i have made consideration of
 the fact that the platform it is compiled on may not in fact be little
 endian.  the big endian code is actually simpler and leads me to think big
-endian hardware is better for networking. 
+endian hardware is better for networking.
 
 netl probably won't work on any other unix platform with out a lot of
-work.  if you are successful in porting netl to other platforms, please let
-me know what you did and i can add the appropriate code to my netl source. 
-most of what you are going to want to change should be in the header file
-netl.h.  if your platform doesn't provide a neatly packaged ip, udp, tcp
-and icmp header structures, you may have to implement them yourself (linux
-is nice that way).
+work.  if you are successful in porting netl to other platforms, please
+let me know what you did and i can add the appropriate code to my netl
+source. most of what you are going to want to change should be in the
+header files netl.h and ether.h.  if your platform doesn't provide a
+neatly packaged ip, udp, tcp and icmp header structures, you may have to
+implement them yourself (linux is nice that way). 
 
 how do i install it?
 --------------------

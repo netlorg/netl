@@ -2,16 +2,29 @@
 | config.c
 |   read config file for netl
 |
-| this code is (c) 1997 Graham THE Ollis
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@ns.arizona.edu>
 |
-|   your free to modify and distribute this program as long as this header is
-|   retained, source code is made *freely* available and you document your 
-|   changes in some readable manner.
+|   This program is free software; you can redistribute it and/or modify
+|   it under the terms of the GNU General Public License as published by
+|   the Free Software Foundation; either version 2 of the License, or
+|   (at your option) any later version.
+|
+|   This program is distributed in the hope that it will be useful,
+|   but WITHOUT ANY WARRANTY; without even the implied warranty of
+|   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+|   GNU General Public License for more details.
+|
+|   You should have received a copy of the GNU General Public License
+|   along with this program; if not, write to the Free Software
+|   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 |
 |  Date       Name	Revision
 |  ---------  --------  --------
 |  23 Feb 97  G. Ollis	created module
 |  25 Feb 97  G. Ollis	.91 added port range support
+|  05 Mar 97  G. Ollis	.93 added listen option for run time comunication.
+|  09 Mar 97  G. Ollis	default value for .logname is now NULL
+|			(note changes in netl.c also)
 |=============================================================================*/
 
 #include <stdio.h>
@@ -25,16 +38,50 @@
 #include "config.h"
 #include "resolve.h"
 #include "lookup.h"
+#include "io.h"
+#include "options.h"
+
+/*==============================================================================
+| this swap is a bit of a haxor as we say in the old school
+| if the compiler is smart, this will be really fast, and require
+| no temp variable.  this works only for integers of any native size.
+==============================================================================*/
+
+#define swap(x, y)	x ^= y;\
+			y ^= x;\
+			x ^= y;
 
 /*==============================================================================
 | globals
 ==============================================================================*/
 
-static int line=0;
+int line=0;
 struct configlist icmp_req, tcp_req, udp_req;
+signed int listenport = -1;	/* oh my gosh, i'm waisting 15 BITS!!!! */
 int configmax = 0;
-char *emptystring = "";
-char netdevice[255] = "eth0";
+
+/*==============================================================================
+| clean up all the config data and make it ready for a new config file read.
+==============================================================================*/
+
+static void
+freelist(struct configlist *cl)
+{
+  int i;
+  for(i=0; i<cl->index; i++)
+    if(cl->c[i].logname != NULL)
+      free(cl->c[i].logname);
+  free(cl->c);
+  cl->c = NULL;
+}
+
+void
+clearconfig()
+{
+  freelist(&icmp_req);
+  freelist(&tcp_req);
+  freelist(&udp_req);
+}
 
 /*==============================================================================
 | copyname
@@ -43,7 +90,7 @@ char netdevice[255] = "eth0";
 static char *
 copyname(char *s) 
 {
-  char *tmp = (char *) malloc(strlen(s) + 1);
+  char *tmp = (char *) allocate(strlen(s) + 1);
   return strcpy(tmp, s);
 }
 
@@ -90,20 +137,13 @@ modifyport(u16 *num1, u16 *num2, char *name1, u8 prot)
       if((*num1 = getportnum(name1, prot)) && 
          (*num2 = getportnum(name2, prot))) {
 
-        /*======================================================================
-        | this swap is a bit of a haxor as we say in the old school
-	| if the compiler is smart, this will be really fast.
-        ======================================================================*/
+        if(*num2 < *num1) 
+          swap(*num1, *num2);
 
-        if(*num2 < *num1) { 
-          *num2 ^= *num1;
-	  *num1 ^= *num2;
-	  *num2 ^= *num1;
-        }
         return TRUE;
       }
-      fprintf(stderr, "%s: warning unknown port range %s-%s (line %d)\n",
-              prog, name1, name2, line);
+      err("warning: unknown port range %s-%s (line %d)",
+		name1, name2, line);
       return FALSE;
     }
   }
@@ -114,8 +154,7 @@ modifyport(u16 *num1, u16 *num2, char *name1, u8 prot)
     return TRUE;
   }
 
-  fprintf(stderr, "%s: warning: unknown port %s (line %d)\n",
-          prog, name1, line);
+  err("warning: unknown port %s (line %d)", name1, line);
   return FALSE;
 }
 
@@ -134,17 +173,14 @@ modifyip(u32 *num, char *name)
     return TRUE;
   }
 
-  if((buff = malloc(strlen(name) + 1))==NULL) {
-    fprintf(stderr, "%s: could not malloc()\n", prog);
-    exit(2);
-  }
+  buff = allocate(strlen(name) + 1);
   strcpy(buff, name);
 
   element = strtok(buff, ".");
   while(i < 4) {
     if(element == NULL) {
-      fprintf(stderr, "%s: warning: could not parse ip %s (line %d)\n",
-              prog, name, line);
+      err("warning: could not parse ip address %s (line %d)",
+		name, line);
       return FALSE;
     }
     tmp[i++] = atoi(element);
@@ -176,8 +212,7 @@ modifyicmp(u8 *item, char *name, struct lookupitem *l, int size)
     }
   }
 
-  fprintf(stderr, "%s: warning: unknown icmp %s (line %d)\n",
-          prog, name, line);
+  err("warning: unknown icmp %s (line %d)", name, line);
 
   return FALSE;
 }
@@ -211,9 +246,8 @@ modifyflags(struct flagbyte *fb, u8 other, char *name)
       *tmp2 = ~other;
     else if(!strcmp(tmp, "none"))
       *tmp2 = 0;
-    else 
-      fprintf(stderr, "%s: warning: unknown tcp flag %s (line %d)\n",
-		prog, tmp, line);
+    else
+      err("warning: unknown tcp flag %s (line %d)", tmp, line);
 
     tmp = strtok(NULL, ",");
   }
@@ -229,10 +263,7 @@ modifyflags(struct flagbyte *fb, u8 other, char *name)
 static void
 setlist(struct configlist *l)
 {
-  if( (l->c=(struct configitem *) malloc(sizeof(struct configitem)*100))==NULL) {
-    fprintf(stderr, "%s: error, unable to malloc\n", prog);
-    exit(2);
-  }
+  l->c=(struct configitem *) allocate(sizeof(struct configitem)*100);
   l->size = 100;
   l->index = 0;
 }
@@ -252,11 +283,7 @@ resizelist(struct configlist *l, int size)
 
   memorysize = sizeof(struct configitem) * size;
 
-  tmp=(struct configitem *) malloc(memorysize);
-  if(tmp==NULL) {
-    fprintf(stderr, "%s: error, unable to malloc\n", prog);
-    exit(2);
-  }
+  tmp=(struct configitem *) allocate(memorysize);
 
   memcpy(tmp, l->c, memorysize);
   free(l->c);
@@ -291,15 +318,27 @@ parseconfigline(char *buff)
 		citem;
 
 
-    /* tokenize the config line */
+    /*==========================================================================
+    | tokenize the config line 
+    ==========================================================================*/
+
     tokens[0] = strtok(buff, "\t\n ");
     i = 0;
     while(tokens[i] != NULL) 
       tokens[++i] = strtok(NULL, "\t\n ");
 
-    /* blank line, go to the next one */
+    /*==========================================================================
+    | blank line, go to the next one
+    ==========================================================================*/
+
     if(tokens[0] == NULL)
       return;
+
+    /*==========================================================================
+    | device allows you to specify an alternate device.  for the moment, only
+    | ethernet is supported so don't bother using anything other than eth0,
+    | eth1... etc.
+    ==========================================================================*/
 
     if(!strcmp(tokens[0], "device")) {
       if(tokens[1] == NULL) 
@@ -308,8 +347,29 @@ parseconfigline(char *buff)
       return;
     }
 
+    /*==========================================================================
+    | listen allows a sysadmin to have netl listen to comunication from the
+    | local machine.  this is potentially dangerous, but also helpful if you
+    | want to have netl reread the config file which it is already running.
+    ==========================================================================*/
+
+    if(!strcmp(tokens[0], "listen")) {
+      if(i < 2) {
+        listenport = 47;	/* my favorite default value */
+      } else {
+        listenport = atoi(tokens[1]);
+        if(listenport == 0) {
+          err("warning: %s is not a valuid port, comunication off.");
+          listenport = -1;	/* probably unnecessary */
+          return;
+        }
+      }
+      log("listening to port %d", listenport);
+      return;
+    }
+
     if(i < 3) {
-      fprintf(stderr, "%s: warning: bad config line %d\n", prog, line);
+      err("warning: bad config line (line %d)", line);
       return;
     }
 
@@ -334,8 +394,7 @@ parseconfigline(char *buff)
     else if(!strcmp(tokens[0], "ignore"))
       citem.action = ACTION_IGNORE;
     else {
-      fprintf(stderr, "%s: warning: unknown action %s (line %d)\n", 
-              prog, tokens[0], line);
+      err("warning: unknown action %s (line %d)", tokens[0], line);
       return;
     }
 
@@ -353,8 +412,7 @@ parseconfigline(char *buff)
     else if(!strcmp(tokens[1], "udp")) 
       citem.protocol = PROTOCOL_UDP;
     else {
-      fprintf(stderr, "%s: warning: unknown protocol %s (line %d)\n", 
-              prog, tokens[1], line);
+      err("warning: unknown protocol %s (line %d)", tokens[1], line);
       return;
     }
 
@@ -382,7 +440,7 @@ parseconfigline(char *buff)
     | code=		icmp code
     ==========================================================================*/
 
-    citem.logname = emptystring;
+    citem.logname = NULL;
 
     for(n=2; n<i; n++) {
 
@@ -391,6 +449,8 @@ parseconfigline(char *buff)
       ========================================================================*/
 
       if(!strncmp(tokens[n], "name=", 5)) {
+        if(citem.logname != NULL)
+          free(citem.logname);
         citem.logname = copyname(tokens[n] + 5);
       }
 
@@ -494,8 +554,7 @@ parseconfigline(char *buff)
       ========================================================================*/
 
       else {
-        fprintf(stderr, "%s: warning: unknown requirement %s (line %d)\n",
-                prog, tokens[n], line);        
+        err("warning: unknown requirement %s (line %d)", tokens[n], line);
       }
     }
 
@@ -550,18 +609,20 @@ postconfig()
 ==============================================================================*/
 
 void
-readconfig(char *confname)
+readconfig(char *confname, int nbg)
 {
   FILE		*fp;
   char		buff[NETL_CONFIG_MAXWIDTH];
   int		i;
 
+  swap(nbg, noBackground);
+
   if((fp=fopen(confname, "r")) == NULL) {
-    fprintf(stderr, "%s: error opening %s for read\n", prog, confname);
+    err("error: opening %s for read, die", confname);
     exit(2);
   }
 
-  setservent(TRUE);
+  line = 1;
 
   while(fgets(buff, NETL_CONFIG_MAXWIDTH, fp) != NULL) {
     line++;
@@ -580,6 +641,10 @@ readconfig(char *confname)
     parseconfigline(buff);
 
   }
+
+  line = 0;
+
+  swap(nbg, noBackground);
 
   endservent();
 }

@@ -2,12 +2,21 @@
 | netl
 |   optimized (and debugged) by Graham THE Ollis <ollisg@ns.arizona.edu>
 |
-| this code is (c) 1997 Graham THE Ollis
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@ns.arizona.edu>
 |
-|   this program is now written like it should be.
-|   your free to modify and distribute this program as long as this header is
-|   retained, source code is made *freely* available and you document your 
-|   changes in some readable manner.
+|   This program is free software; you can redistribute it and/or modify
+|   it under the terms of the GNU General Public License as published by
+|   the Free Software Foundation; either version 2 of the License, or
+|   (at your option) any later version.
+|
+|   This program is distributed in the hope that it will be useful,
+|   but WITHOUT ANY WARRANTY; without even the implied warranty of
+|   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+|   GNU General Public License for more details.
+|
+|   You should have received a copy of the GNU General Public License
+|   along with this program; if not, write to the Free Software
+|   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 |
 |  Date       Name	Revision
 |  ---------  --------  --------
@@ -16,18 +25,21 @@
 |  23 Feb 97  G. Ollis	combined all network monitoring in to single program
 |  28 Feb 97  G. Ollis	.92 added the -z option [ and the log() function to
 |			replace syslog()]
+|  05 Mar 97  G. Ollis	.93 added run time comunication.
+|			took all direct syslog stuff out of this module.
+|  07 Mar 97  G. Ollis	changed dump name to /tmp/netl/name-pid-time.dg.
 |=============================================================================*/
 
 char	*id = "@(#)netl by graham the ollis <ollisg@ns.arizona.edu>";
 
+#include <string.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <time.h>
 #include <stdarg.h>
-#include <syslog.h>
-
+#include <netdb.h>
 #include "global.h"
 #include "ether.h"
 
@@ -37,14 +49,25 @@ char	*id = "@(#)netl by graham the ollis <ollisg@ns.arizona.edu>";
 #include "options.h"
 #include "config.h"
 #include "resolve.h"
+#include "dcp.h"
 
 /*==============================================================================
 | Globals
 |=============================================================================*/
 
 struct ifreq oldifr, ifr;
-u32 dumpindex = 0;
 char *prog;
+u8 localhardware[6] = {0, 0, 0, 0, 0, 0};
+u8 localip[4] = {127, 0, 0, 1};
+
+/*==============================================================================
+| it's the clean up function!  it really doesn't need to do much so...
+|=============================================================================*/
+
+void cleanup()
+{
+  clo();
+}
 
 /*==============================================================================
 | int main(int, char **)
@@ -57,6 +80,7 @@ main(int argc, char *argv[])
 
   prog = argv[0];
 
+  setservent(TRUE);
   parsecmdline(argc, argv); 
   if(displayVersion) {
     fputs("netl ", stdout);
@@ -79,7 +103,7 @@ main(int argc, char *argv[])
     }
 
   if(configfile != NULL)
-    readconfig(configfile);
+    readconfig(configfile, TRUE);
   postconfig();
 
   if(noBackground)
@@ -98,6 +122,19 @@ main(int argc, char *argv[])
 }
 
 /*==============================================================================
+| return the string or "" if it points to null
+|=============================================================================*/
+
+char *
+string(char *s)
+{
+  if(s == NULL)
+    return "";
+  else
+    return s;
+}
+
+/*==============================================================================
 | void netl(char *)
 |=============================================================================*/
 
@@ -109,16 +146,15 @@ netl(char *dev) {
   unsigned char buf[4096];
   unsigned int	fromlen;
 
-  openlog("netl", 0, NETL_LOG_FACILITY);
+  ope("netl");
   log("starting netl, logging %s", dev);
   handle();
 
   /*============================================================================
   | Get a socket which will collect all packets
   |===========================================================================*/
-  sock = socket(AF_INET, SOCK_PACKET, htons(ETH_P_ALL));
 
-  if (sock < 0) {
+  if((sock = socket(AF_INET, SOCK_PACKET, htons(ETH_P_ALL))) < 0) {
     err("cannot open raw socket, die");
     return 1;
   }
@@ -175,7 +211,7 @@ netl(char *dev) {
 
   length = sizeof(name);
 
-  if (getsockname(sock, (struct sockaddr *) &name, &length) < 0) {
+  if(getsockname(sock, (struct sockaddr *) &name, &length) < 0) {
     err("Error: Can't get socket name, die");
     return 1;
   }
@@ -186,7 +222,7 @@ netl(char *dev) {
 
   for(;;) {
     if((l = recvfrom(sock, buf, 1024, 0, 
-                     (struct sockaddr *)&name, &fromlen)) < 0)
+		     (struct sockaddr *) &name, &fromlen)) < 0)
       err("Error receiving RAW packet");
     else 
       parsedg(buf, l);
@@ -196,7 +232,7 @@ netl(char *dev) {
 }
 
 /*==============================================================================
-| dump ip datagram
+| dump ip datagram to disk
 |=============================================================================*/
 
 void dgdump(u8 *dg, char *name, int len)
@@ -204,7 +240,7 @@ void dgdump(u8 *dg, char *name, int len)
   char		fn[1024];
   FILE		*fp;
 
-  sprintf(fn, "/tmp/netl/%s-%d-%d", name, getpid(), dumpindex++);
+  sprintf(fn, "/tmp/netl/%s-%d-%d.dg", name, getpid(), (unsigned) time(NULL));
   if((fp=fopen(fn, "w"))==NULL) {
     err("unable to open dump file %s", fn);
     return;
@@ -230,18 +266,28 @@ checkicmp(u8 *dg, struct iphdr ip, struct icmphdr *h, int len)
     c = &icmp_req.c[i];
 
     if(
-       /* if we already logged or dumped it, we may not have to check it */
-       (c->action == ACTION_LOG && logged) ||
-       (c->action == ACTION_DUMP && dumped) ||
 
-       /* must be the correct type */
-       (c->check_icmp_type && c->icmp_type != h->type) ||
-       (c->check_icmp_code && c->icmp_code != h->code) ||
+       /*=======================================================================
+       | if we already logged or dumped it, we may not have to check it
+       |======================================================================*/
 
-       /* addresses must be correct */
-       (c->check_src_ip && c->src_ip != ip.saddr) ||
-       (c->check_dst_ip && c->dst_ip != ip.daddr) ||
-       (c->check_src_ip_not && c->src_ip_not == ip.saddr) ||
+       (c->action == ACTION_LOG && logged)			||
+       (c->action == ACTION_DUMP && dumped)			||
+
+       /*=======================================================================
+       | must be the correct type
+       |======================================================================*/
+
+       (c->check_icmp_type && c->icmp_type != h->type)		||
+       (c->check_icmp_code && c->icmp_code != h->code)		||
+
+       /*=======================================================================
+       | addresses must be correct
+       |======================================================================*/
+
+       (c->check_src_ip && c->src_ip != ip.saddr)		||
+       (c->check_dst_ip && c->dst_ip != ip.daddr)		||
+       (c->check_src_ip_not && c->src_ip_not == ip.saddr)	||
        (c->check_dst_ip_not && c->dst_ip_not == ip.daddr) 
       )
       continue;
@@ -249,14 +295,14 @@ checkicmp(u8 *dg, struct iphdr ip, struct icmphdr *h, int len)
     switch(c->action) {
       case ACTION_LOG:
         log(	"%s %s => %s",
-                c->logname,
+                string(c->logname),
                 ip2string(ip.saddr),
                 ip2string(ip.daddr));
         logged = TRUE;
         break;
 
       case ACTION_DUMP:
-        dgdump(dg, c->logname, len);
+        dgdump(dg, string(c->logname), len);
         dumped = TRUE;
         break;
 
@@ -266,7 +312,6 @@ checkicmp(u8 *dg, struct iphdr ip, struct icmphdr *h, int len)
       default:
 	break;
     }
-
   }
 }
 
@@ -288,29 +333,42 @@ checktcp(u8 *dg, struct iphdr ip, struct tcphdr *h, int len)
     c = &tcp_req.c[i];
 
     if(
-       /* if we already logged or dumped it, we may not have to check it */
-       (c->action == ACTION_LOG && logged) ||
-       (c->action == ACTION_DUMP && dumped) ||
 
-       /* port must be correct */
-       (c->check_src_prt_not && c->src_prt_not == source) ||
-       (c->check_src_prt_not && c->dst_prt_not == dest) ||
+       /*=======================================================================
+       | if we already logged or dumped it, we may not have to check it
+       |======================================================================*/
+
+       (c->action == ACTION_LOG && logged)			||
+       (c->action == ACTION_DUMP && dumped)			||
+
+       /*=======================================================================
+       | port must be correct
+       |======================================================================*/
+
+       (c->check_src_prt_not && c->src_prt_not == source)	||
+       (c->check_src_prt_not && c->dst_prt_not == dest)		||
 
        (c->check_src_prt && (source < c->src_prt1 ||
-                              source > c->src_prt2)) ||
+                              source > c->src_prt2))		||
        (c->check_dst_prt && (dest < c->dst_prt1 ||
-                              dest > c->dst_prt2)) ||
+                              dest > c->dst_prt2))		||
 
-       /* flags must be correct */
+       /*=======================================================================
+       | flags must be correct
+       |======================================================================*/
+
        (c->check_tcp_flags_on && 
-          (flags & c->tcp_flags_on) != c->tcp_flags_on) ||
+          (flags & c->tcp_flags_on) != c->tcp_flags_on)		||
        (c->check_tcp_flags_off && 
-          (~flags & c->tcp_flags_off) != c->tcp_flags_off) ||
+          (~flags & c->tcp_flags_off) != c->tcp_flags_off)	||
 
-       /* addresses must be correct */
-       (c->check_src_ip && c->src_ip != ip.saddr) ||
-       (c->check_dst_ip && c->dst_ip != ip.daddr) ||
-       (c->check_src_ip_not && c->src_ip_not == ip.saddr) ||
+       /*=======================================================================
+       | addresses must be correct
+       |======================================================================*/
+
+       (c->check_src_ip && c->src_ip != ip.saddr)		||
+       (c->check_dst_ip && c->dst_ip != ip.daddr)		||
+       (c->check_src_ip_not && c->src_ip_not == ip.saddr)	||
        (c->check_dst_ip_not && c->dst_ip_not == ip.daddr) 
       )
       continue;
@@ -318,7 +376,7 @@ checktcp(u8 *dg, struct iphdr ip, struct tcphdr *h, int len)
     switch(c->action) {
       case ACTION_LOG:
         log(	"%s %s:%d => %s:%d",
-                c->logname,
+                string(c->logname),
                 ip2string(ip.saddr),
 		net16(h->source),
                 ip2string(ip.daddr),
@@ -327,7 +385,7 @@ checktcp(u8 *dg, struct iphdr ip, struct tcphdr *h, int len)
         break;
 
       case ACTION_DUMP:
-        dgdump(dg, c->logname, len);
+        dgdump(dg, string(c->logname), len);
         dumped = TRUE;
         break;
 
@@ -353,28 +411,55 @@ checkudp(u8 *dg, struct iphdr ip, struct udphdr *h, int len)
   struct configitem *c;
   u16 source=net16(h->source), dest=net16(h->dest);
 
+  /*============================================================================
+  | check to see if this is a comunication request.
+  | but first, check to see if we are even listening.
+  |===========================================================================*/
+
+  if(listenport != -1			&&	/* fast! */
+     dest == listenport			&&	/* speedy! */
+     ip.saddr == LOCALHOST_IP		&&	/* zap! */
+     ip.daddr == LOCALHOST_IP		&&	/* zoom! */
+     !memcmp(dg, localhardware, 6)	&&	/* kind of slow... */
+     !memcmp(dg + 6, localhardware, 6))		/* sigh */
+    hear(dg, h, len);
+
+  /*============================================================================
+  | process the datagram, even if it is a valid comunication request.
+  |===========================================================================*/
+
   for(i=0; i<udp_req.index; i++) {
 
     c = &udp_req.c[i];
 
     if(
-       /* if we already logged or dumped it, we may not have to check it */
-       (c->action == ACTION_LOG && logged) ||
-       (c->action == ACTION_DUMP && dumped) ||
 
-       /* port must be correct */
-       (c->check_src_prt_not && c->src_prt_not == source) ||
-       (c->check_src_prt_not && c->dst_prt_not == dest) ||
+       /*=======================================================================
+       | if we already logged or dumped it, we may not have to check it
+       |======================================================================*/
+
+       (c->action == ACTION_LOG && logged)			||
+       (c->action == ACTION_DUMP && dumped)			||
+
+       /*=======================================================================
+       | port must be correct
+       |======================================================================*/
+
+       (c->check_src_prt_not && c->src_prt_not == source)	||
+       (c->check_src_prt_not && c->dst_prt_not == dest)		||
 
        (c->check_src_prt && (source < c->src_prt1 ||
-                              source > c->src_prt2)) ||
+                              source > c->src_prt2))		||
        (c->check_dst_prt && (dest < c->dst_prt1 ||
-                              dest > c->dst_prt2)) ||
+                              dest > c->dst_prt2))		||
 
-       /* addresses must be correct */
-       (c->check_src_ip && c->src_ip != ip.saddr) ||
-       (c->check_dst_ip && c->dst_ip != ip.daddr) ||
-       (c->check_src_ip_not && c->src_ip_not == ip.saddr) ||
+       /*=======================================================================
+       | addresses must be correct
+       |======================================================================*/
+
+       (c->check_src_ip && c->src_ip != ip.saddr)		||
+       (c->check_dst_ip && c->dst_ip != ip.daddr)		||
+       (c->check_src_ip_not && c->src_ip_not == ip.saddr)	||
        (c->check_dst_ip_not && c->dst_ip_not == ip.daddr) 
       )
       continue;
@@ -382,7 +467,7 @@ checkudp(u8 *dg, struct iphdr ip, struct udphdr *h, int len)
     switch(c->action) {
       case ACTION_LOG:
         log(	"%s %s:%d => %s:%d",
-                c->logname,
+                string(c->logname),
                 ip2string(ip.saddr),
 		source,
                 ip2string(ip.daddr),
@@ -391,7 +476,7 @@ checkudp(u8 *dg, struct iphdr ip, struct udphdr *h, int len)
         break;
 
       case ACTION_DUMP:
-        dgdump(dg, c->logname, len);
+        dgdump(dg, string(c->logname), len);
         dumped = TRUE;
         break;
 

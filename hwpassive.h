@@ -1,5 +1,5 @@
 /*==============================================================================
-| io.h - io module for deamon/forground class programs
+| hwpassive - passively listen to IP packets to keep track of hardware addresses
 | 
 | coded and tested under linux 2.0.23, 2.0.26, stealth kernel 2.0.29
 |  by graham the ollis <ollisg@ns.arizona.edu>
@@ -21,23 +21,10 @@
 |   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 ==============================================================================*/
 
-#ifndef IO_H
-#define IO_H
+#ifndef HWPASSIVE_H
+#define HWPASSIVE_H
 
-#ifndef TRUE
-  #define TRUE			1
-#endif
-#ifndef TRUE
-  #define FALSE			0
-#endif
-
-void log(char *cp,...);		/* syslod()/printf() */
-void err(char *cp,...);		/* syslog()/fprintf(stderr) */
-void ope(char *s);		/* openlog/noop */
-void clo();			/* closelog/noop */
-void *allocate(size_t size);	/* malloc with protection */
-
-extern int noBackground;
+#define MAX_COM_LEN 255
 
 /*==============================================================================
 | which "facility" should we send the syslog logs to?
@@ -45,4 +32,15 @@ extern int noBackground;
 
 #define NETL_LOG_FACILITY	LOG_LOCAL4
 
-#endif
+/*==============================================================================
+| prototypes
+==============================================================================*/
+
+int	netl(char *dev);
+void	dgdump(u8 *dg, char *name, int len);
+void	checkicmp(u8 *dg, struct iphdr ip, struct icmphdr *h, int len);
+void	checktcp(u8 *dg, struct iphdr ip, struct tcphdr *h, int len);
+void	checkudp(u8 *dg, struct iphdr ip, struct udphdr *h, int len);
+void	parsedg(u8 *dg, int len);
+
+#endif /* NETL_H */

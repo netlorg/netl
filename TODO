@@ -4,8 +4,6 @@ before we get to a final release on netl:
 
  * better documentation, maybe a man page
 
- * add running comunication using udp or something.
-
  * figure out why it's dumping core on sparc linux
 
  * store the hostname lookup cache as a binary tree

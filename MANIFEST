@@ -1,6 +1,8 @@
+COPYING
 MANIFEST
 Makefile
 README
+README.FIRST
 TODO
 config.c
 config.h
@@ -22,6 +24,11 @@ resolve.c
 resolve.h
 sighandle.c
 sighandle.h
+dcp.c
+dcp.h
+hwpassive.c
+hwpassive.h
+dcp.pl
 t/icmp.datagram
 t/icmp.eERR
 t/icmp.eRET

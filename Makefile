@@ -19,6 +19,9 @@
 #   a network datagram analizer handy for inspecting those files which you
 #   have made using the dump action
 #
+# hwpassive
+#   passively sniff IP packets for hardware addresses
+#
 # xd
 #   simple diagnostic tool for dumping file in hex format to stdout
 #===============================================================================
@@ -27,6 +30,7 @@
 #  01 Feb 97  G. Ollis	created Makefile (from old ones)
 #  23 Feb 97  G. Ollis	modified for the new netl super log
 #  28 Feb 97  G. Ollis	updated stuff for .92 release
+#  10 Mar 97  G. Ollis	updated stuff for .93 release
 #===============================================================================
 
 #===============================================================================
@@ -35,21 +39,23 @@
 
 CC=gcc
 CFLAGS=-m486 -O3 -Wall
+#CFLAGS=-g -static
 SUBIN=/usr/local/sbin
 BIN=/usr/local/bin
+TDR=../tdr.pl
 
 #===============================================================================
 # don't go below this line unless your in to that sort of thing
 #===============================================================================
 
-VER=0.92
+VER=0.93
 RM=rm -f
 CP=cp
 
-all:netl neta xd
+all:netl neta xd hwpassive
 
 test:all
-	cd t;tdr tcp.t udp.t icmp.t resolve.t xd.t
+	cd t;$(TDR) tcp.t udp.t icmp.t resolve.t xd.t
 
 dist:netl-$(VER).tar.gz netl-$(VER).tar.gz.sig
 
@@ -64,47 +70,69 @@ netl-$(VER).tar:
 	cp -P `cat MANIFEST` netl-$(VER)
 	tar cf netl-$(VER).tar netl-$(VER)
 
+#===============================================================================
 # executables:
-netl:netl.o resolve.o sighandle.o config.o lookup.o options.o io.o
-	$(CC) $(CFLAGS) -o netl netl.o resolve.o sighandle.o config.o lookup.o \
-options.o io.o
+#===============================================================================
 
-neta:neta.o resolve.o lookup.o options.o dump.o
-	$(CC) $(CFLAGS) -o neta neta.o resolve.o lookup.o options.o dump.o
+HWPOBJ=hwpassive.o io.o options.o sighandle.o
+hwpassive:$(HWPOBJ)
+	$(CC) $(CFLAGS) -o hwpassive $(HWPOBJ)
 
-xd:xd.o dump.o
-	$(CC) $(CFLAGS) -o xd xd.o dump.o
+NETLOBJ=netl.o resolve.o sighandle.o config.o lookup.o options.o io.o dcp.o
+netl:$(NETLOBJ)
+	$(CC) $(CFLAGS) -o netl $(NETLOBJ)
 
+NETAOBJ=neta.o resolve.o lookup.o options.o dump.o io.o
+neta:$(NETAOBJ)
+	$(CC) $(CFLAGS) -o neta $(NETAOBJ)
+
+XDOBJ=xd.o dump.o
+xd:$(XDOBJ)
+	$(CC) $(CFLAGS) -o xd $(XDOBJ)
+
+#===============================================================================
 # object files:
+#===============================================================================
+
 %.o:%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-netl.o:netl.c global.h ether.h netl.h sighandle.h io.h options.h config.h resolve.h
+hwpassive.o:hwpassive.c io.h global.h ether.h options.h config.h sighandle.h
+
+netl.o:netl.c global.h ether.h netl.h sighandle.h io.h options.h config.h \
+resolve.h
+
 neta.o:neta.c global.h ether.h dump.h lookup.h options.h resolve.h
+
 xd.o:xd.c dump.h
 
-io.o:io.c io.h
+dcp.o:dcp.c dcp.h global.h ether.h io.h config.h options.h resolve.h
+io.o:io.c global.h io.h
 dump.o:dump.c dump.h
 lookup.o:lookup.c lookup.h global.h ether.h
-config.o:config.c global.h ether.h config.h resolve.h lookup.h 
-resolve.o:resolve.c global.h resolve.h
+config.o:config.c global.h ether.h config.h resolve.h lookup.h io.h options.h
+resolve.o:resolve.c global.h resolve.h io.h
 sighandle.o:sighandle.c sighandle.h io.h
 options.o:options.c global.h config.h options.h io.h
 
+#===============================================================================
 # install:
+#===============================================================================
+
 .PHONY: install
 install:
 	install -d $(SUBIN)
-	install -g 0 -o 0 -m 500 netl $(SUBIN)
+	install -g 0 -o 0 -m 500 netl hwpassive $(SUBIN)
 	install -d $(BIN)
 	install -g 0 -o 0 -m 511 neta xd $(BIN)
 	install -d -g 0 -o 0 -m 700 /tmp/netl
 
+#===============================================================================
 # clean:
+#===============================================================================
+
 .PHONY: clean
 clean:
 	$(RM) *.o synl pingl netl neta core tmp.dat core a.out *.tar
 	$(RM) -r netl-$(VER) t/*.diff t/*.diffERR t/*.ao t/*.aERR t/*.aRET
-	$(RM) t/tdr.log t/core xd
-
-
+	$(RM) t/tdr.log t/core xd hwpassive
