@@ -12,6 +12,7 @@
 |  Date       Name	Revision
 |  ---------  --------  --------
 |  23 Feb 97  G. Ollis	created module
+|  25 Feb 97  G. Ollis	.91 added port range support
 |=============================================================================*/
 
 #include <stdio.h>
@@ -26,7 +27,7 @@
 
 static int line=0;
 static char *prog = NULL;
-struct configitem *config = NULL;
+struct configlist icmp_req, tcp_req, udp_req;
 int configmax = 0;
 char *emptystring = "";
 char netdevice[255] = "eth0";
@@ -80,7 +81,7 @@ static struct lookupitem icmpcode[MAXICMPCODE] =
 				{ICMP_REDIR_NETTOS,	"redir_nettos"},
 				{ICMP_REDIR_HOSTTOS,	"redir_hosttos"},
 				{ICMP_EXC_TTL,		"exc_ttl"},
-				{ICMP_EXC_FRAGTIME,	"_exc_fragtime"}
+				{ICMP_EXC_FRAGTIME,	"exc_fragtime"}
 			      };
 
 /*==============================================================================
@@ -101,12 +102,12 @@ copyname(char *s)
 static u16
 getportnum(char *s, u8 prot)
 {
-  int		i;
+  int			i;
   struct servent	*service;
 
   i=atoi(s);
   if(i != 0)
-    return native16(i);
+    return i;
 
   if(prot == PROTOCOL_TCP) 
     service = getservbyname(s, "tcp");
@@ -118,7 +119,7 @@ getportnum(char *s, u8 prot)
   if(service == NULL)
     return 0;
   else
-    return service->s_port;
+    return net16(service->s_port);
 }
 
 /*==============================================================================
@@ -126,13 +127,43 @@ getportnum(char *s, u8 prot)
 ==============================================================================*/
 
 static int
-modifyport(u16 *num, char *name, u8 prot)
+modifyport(u16 *num1, u16 *num2, char *name1, u8 prot)
 {
-  if((*num = getportnum(name, prot)) !=0)
+  char *name2 = strchr(name1, '-');
+
+  if(num2 != NULL) {
+
+    if(name2 != NULL) {
+      *(name2++) = 0;
+      if((*num1 = getportnum(name1, prot)) && 
+         (*num2 = getportnum(name2, prot))) {
+
+        /*======================================================================
+        | this swap is a bit of a haxor as we say in the old school
+	| if the compiler is smart, this will be really fast.
+        ======================================================================*/
+
+        if(*num2 < *num1) { 
+          *num2 ^= *num1;
+	  *num1 ^= *num2;
+	  *num2 ^= *num1;
+        }
+        return TRUE;
+      }
+      fprintf(stderr, "%s: warning unknown port range %s-%s (line %d)\n",
+              prog, name1, name2, line);
+      return FALSE;
+    }
+  }
+
+  if((*num1 = getportnum(name1, prot)) !=0) {
+    if(num2 != NULL)
+      *num2 = *num1;
     return TRUE;
+  }
 
   fprintf(stderr, "%s: warning: unknown port %s (line %d)\n",
-          prog, name, line);
+          prog, name1, line);
   return FALSE;
 }
 
@@ -240,6 +271,61 @@ modifyflags(struct flagbyte *fb, u8 other, char *name)
 }
 
 /*==============================================================================
+| set initial list size
+==============================================================================*/
+
+static void
+setlist(struct configlist *l)
+{
+  if( (l->c=(struct configitem *) malloc(sizeof(struct configitem)*100))==NULL) {
+    fprintf(stderr, "%s: error, unable to malloc\n", prog);
+    exit(2);
+  }
+  l->size = 100;
+  l->index = 0;
+}
+
+/*==============================================================================
+| resize config list
+==============================================================================*/
+
+static void
+resizelist(struct configlist *l, int size)
+{
+  struct configitem *tmp;
+  size_t memorysize;
+
+  if(l->size == size)	/* you want me to do what? */
+    return;
+
+  memorysize = sizeof(struct configitem) * size;
+
+  tmp=(struct configitem *) malloc(memorysize);
+  if(tmp==NULL) {
+    fprintf(stderr, "%s: error, unable to malloc\n", prog);
+    exit(2);
+  }
+
+  memcpy(tmp, l->c, memorysize);
+  free(l->c);
+  l->c = tmp;
+  l->size = size;
+}
+
+/*==============================================================================
+| add an item
+==============================================================================*/
+
+static void
+additem(struct configlist *l, struct configitem *c)
+{
+  if(l->index == l->size)
+    resizelist(l, l->size * 2);
+
+  memcpy((char *) &l->c[l->index++], (char *) c, sizeof(struct configitem));
+}
+
+/*==============================================================================
 | readconfig(char *prog)
 |
 |  this function reads the config file and alters the config structure
@@ -254,13 +340,14 @@ readconfig(char *programname, char *confname)
   char		*tokens[NETL_CONFIG_MAXTOKENS];
   int		i,n;
   u32		tmp;
+  struct configitem
+		citem;
 
   prog = programname;
 
-  if((config = malloc(sizeof(struct configitem) * NETL_CONFIG_MAXREQ)) == NULL) {
-    fprintf(stderr, "%s: unable to malloc()\n", prog);
-    exit(2);
-  }
+  setlist(&icmp_req);
+  setlist(&tcp_req);
+  setlist(&udp_req);
 
   if((fp=fopen(confname, "r")) == NULL) {
     fprintf(stderr, "%s: error opening %s for read\n", prog, NETL_CONFIG);
@@ -304,7 +391,7 @@ readconfig(char *programname, char *confname)
       continue;
     }
 
-    memset(&config[configmax], 0, sizeof(struct configitem));
+    memset(&citem, 0, sizeof(struct configitem));
 
     /*==========================================================================
     | check the action field.  this should be one of:
@@ -313,9 +400,11 @@ readconfig(char *programname, char *confname)
     ==========================================================================*/
 
     if(!strcmp(tokens[0], "log"))
-      config[configmax].action = ACTION_LOG;
+      citem.action = ACTION_LOG;
     else if(!strcmp(tokens[0], "dump"))
-      config[configmax].action = ACTION_DUMP;
+      citem.action = ACTION_DUMP;
+    else if(!strcmp(tokens[0], "ignore"))
+      citem.action = ACTION_IGNORE;
     else {
       fprintf(stderr, "%s: warning: unknown action %s (line %d)\n", 
               prog, tokens[0], line);
@@ -330,11 +419,11 @@ readconfig(char *programname, char *confname)
     ==========================================================================*/
 
     if(!strcmp(tokens[1], "tcp")) 
-      config[configmax].protocol = PROTOCOL_TCP;
+      citem.protocol = PROTOCOL_TCP;
     else if(!strcmp(tokens[1], "icmp"))
-      config[configmax].protocol = PROTOCOL_ICMP;
+      citem.protocol = PROTOCOL_ICMP;
     else if(!strcmp(tokens[1], "udp")) 
-      config[configmax].protocol = PROTOCOL_UDP;
+      citem.protocol = PROTOCOL_UDP;
     else {
       fprintf(stderr, "%s: warning: unknown protocol %s (line %d)\n", 
               prog, tokens[1], line);
@@ -365,7 +454,7 @@ readconfig(char *programname, char *confname)
     | code=		icmp code
     ==========================================================================*/
 
-    config[configmax].logname = emptystring;
+    citem.logname = emptystring;
 
     for(n=2; n<i; n++) {
 
@@ -374,7 +463,7 @@ readconfig(char *programname, char *confname)
       ========================================================================*/
 
       if(!strncmp(tokens[n], "name=", 5)) {
-        config[configmax].logname = copyname(tokens[n] + 5);
+        citem.logname = copyname(tokens[n] + 5);
       }
 
       /*========================================================================
@@ -382,28 +471,32 @@ readconfig(char *programname, char *confname)
       ========================================================================*/
       
       else if(!strncmp(tokens[n], "dstport=", 8)) {
-        config[configmax].check_dst_prt = modifyport(
-               &config[configmax].dst_prt,
-               tokens[n] + 8,
-               config[configmax].protocol);
+        citem.check_dst_prt = modifyport(
+		&citem.dst_prt1,
+		&citem.dst_prt2,
+		tokens[n] + 8,
+		citem.protocol);
       }
       else if(!strncmp(tokens[n], "!dstport=", 9)) {
-        config[configmax].check_dst_prt_not = modifyport(
-               &config[configmax].dst_prt_not,
-               tokens[n] + 9,
-               config[configmax].protocol);
+        citem.check_dst_prt_not = modifyport(
+		&citem.dst_prt_not,
+		NULL,
+		tokens[n] + 9,
+		citem.protocol);
       }
       else if(!strncmp(tokens[n], "srcport=", 8)) {
-        config[configmax].check_src_prt = modifyport(
-               &config[configmax].src_prt,
-               tokens[n] + 8,
-               config[configmax].protocol);
+        citem.check_src_prt = modifyport(
+		&citem.src_prt1,
+		&citem.src_prt2,
+		tokens[n] + 8,
+		citem.protocol);
       }
       else if(!strncmp(tokens[n], "!srcport=", 9)) {
-        config[configmax].check_src_prt_not = modifyport(
-               &config[configmax].src_prt_not,
-               tokens[n] + 9,
-               config[configmax].protocol);
+        citem.check_src_prt_not = modifyport(
+		&citem.src_prt_not,
+		NULL,
+		tokens[n] + 9,
+		citem.protocol);
       }
 
       /*========================================================================
@@ -411,24 +504,24 @@ readconfig(char *programname, char *confname)
       ========================================================================*/
 
       else if(!strncmp(tokens[n], "dstip=", 6)) {
-        config[configmax].check_dst_ip = modifyip(
-               &config[configmax].dst_ip,
+        citem.check_dst_ip = modifyip(
+               &citem.dst_ip,
                tokens[n] + 6);
       }
       else if(!strncmp(tokens[n], "!dstip=", 7)) {
-        config[configmax].check_dst_ip_not = modifyip(
-               &config[configmax].dst_ip_not,
+        citem.check_dst_ip_not = modifyip(
+               &citem.dst_ip_not,
                tokens[n] + 7);
       }
 
       else if(!strncmp(tokens[n], "srcip=", 6)) {
-        config[configmax].check_src_ip = modifyip(
-               &config[configmax].src_ip,
+        citem.check_src_ip = modifyip(
+               &citem.src_ip,
                tokens[n] + 6);
       }
       else if(!strncmp(tokens[n], "!srcip=", 7)) {
-        config[configmax].check_src_ip_not = modifyip(
-               &config[configmax].src_ip_not,
+        citem.check_src_ip_not = modifyip(
+               &citem.src_ip_not,
                tokens[n] + 7);
       }
 
@@ -437,15 +530,15 @@ readconfig(char *programname, char *confname)
       ========================================================================*/
 
       else if(!strncmp(tokens[n], "type=", 5)) {
-        config[configmax].check_icmp_type = modifyicmp(
-		&config[configmax].icmp_type,
+        citem.check_icmp_type = modifyicmp(
+		&citem.icmp_type,
 		tokens[n] + 5,
 		icmptype,
 		MAXICMPTYPE);
       }
       else if(!strncmp(tokens[n], "code=", 5)) {
-        config[configmax].check_icmp_type = modifyicmp(
-		&config[configmax].icmp_type,
+        citem.check_icmp_type = modifyicmp(
+		&citem.icmp_type,
 		tokens[n] + 5,
 		icmpcode,
 		MAXICMPCODE);
@@ -456,15 +549,15 @@ readconfig(char *programname, char *confname)
       ========================================================================*/
 
       else if(!strncmp(tokens[n], "flag=", 5)) {
-        config[configmax].check_tcp_flags_on = modifyflags(
-		(struct flagbyte *) &config[configmax].tcp_flags_on, 
-		config[configmax].tcp_flags_off,
+        citem.check_tcp_flags_on = modifyflags(
+		(struct flagbyte *) &citem.tcp_flags_on, 
+		citem.tcp_flags_off,
 		tokens[n] + 5);
       } 
       else if(!strncmp(tokens[n], "!flag=", 6)) {
-        config[configmax].check_tcp_flags_off = modifyflags(
-		(struct flagbyte *) &config[configmax].tcp_flags_off, 
-		config[configmax].tcp_flags_on,
+        citem.check_tcp_flags_off = modifyflags(
+		(struct flagbyte *) &citem.tcp_flags_off, 
+		citem.tcp_flags_on,
 		tokens[n] + 6);
       } 
 
@@ -478,14 +571,31 @@ readconfig(char *programname, char *confname)
       }
     }
 
-    configmax++;
-    if(configmax > NETL_CONFIG_MAXREQ) {
-      fprintf(stderr, "%s: warning: too many requirements in config file (line %d)\n",
-             prog, line);
-      fprintf(stderr, "%s: modify source code to increase max requirements\n",prog);
-      break;
+    /*==========================================================================
+    | store the requirement in the correct config array.
+    ==========================================================================*/
+
+    switch(citem.protocol) {
+      case PROTOCOL_TCP:
+	additem(&tcp_req, &citem);
+        break;
+
+      case PROTOCOL_UDP:
+	additem(&udp_req, &citem);
+        break;
+
+      case PROTOCOL_ICMP:
+	additem(&icmp_req, &citem);
+        break;
+
+      default:
+	break;
     }
+
   }
   endservent();
 
+  resizelist(&icmp_req, icmp_req.index);
+  resizelist(&tcp_req, tcp_req.index);
+  resizelist(&udp_req, udp_req.index);
 }

@@ -6,7 +6,8 @@ what is netl?
 netl will log or dump any ip datagram you might like to log or dump.  by
 log i mean it sends a nify message in to syslogd.  by dump i mean it will
 save the datagram to a file in /tmp/netl.  see the netl.conf file for
-information on hwo to configure.
+information on how to configure.  the only real limitation on netl for
+network logging/sniffing is your imagination.
 
 netl doesn't really care if the destination addresses happen to be yours,
 unless you specify it to be so.  for this reason, netl sort of doubles as
@@ -15,15 +16,19 @@ a sniffer.
 portability
 -----------
 
-netl should work on any linux platform.  however i've only been able to
+netl *should* work on any linux platform.  however i've only been able to
 test it on my personal intel linux station.  i have made consideration of
-the fact that the playfor it is compiled on may not in fact be little
+the fact that the platform it is compiled on may not in fact be little
 endian.  the big endian code is actually simpler and leads me to think big
-endian hardware is better for networking.
+endian hardware is better for networking. 
 
 netl probably won't work on any other unix platform with out a lot of
 work.  if you are sucessful in porting netl to other platforms, please let
 me know what you did and i can add the apropriate code to my netl source. 
+most of what you are going to want to change should be in the header file
+netl.h.  if your platform doesn't provide a neatly packaged ip, udp, tcp
+and icmp header structures, you may have to implement them yourself (linux
+is nice that way).
 
 how do i install it?
 --------------------
@@ -43,3 +48,36 @@ how do i install it?
 
  5. execute netl
 
+credits
+-------
+
+tyler parsons-
+
+i couldn't have done this program or started work on the stealth kernel
+without the networking knoledge of tyler parsons.  even after that, his
+alpha testing has been extremely useful in making netl what it is today.
+
+jeff thompson-
+
+early versions of netl were heavily derived from a program by jeff
+thompson which didn't even quite work right.  i had to debug and correct
+it.  when i got deeper in to the problem i discovered that his `synlogger'
+(as it was called) was highly specalized and didn't have to be. 
+
+graham the ollis-
+
+my name is graham the ollis, i'm a computer science/math major at the
+university of arizona.  or undergraduate student at los alamos national
+labratories in los alamos new mexico.  or some even call me grand dictator
+of the universe, but for the most part i am apt to reply to the name
+`graham' (no mr. ollises thanks much).  if you have anything relivent or
+non-relivent to say about netl then i would certainly like to hear from
+you.  especially if you have improvements for netl.  you can get my public
+pgp key by fingering my university account: 
+
+contact information
+-------------------
+
+finger:ollisg@u.arizona.edu
+mailto:ollisg@ns.arizona.edu
+http://www.u.arizona.edu/~ollisg/

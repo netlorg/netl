@@ -39,6 +39,7 @@ typedef __u32 u32;
 #define ACTION_NONE		0
 #define ACTION_LOG		1
 #define ACTION_DUMP		2
+#define ACTION_IGNORE		3
 
 #define TRUE			1
 #define FALSE			0
@@ -140,8 +141,10 @@ struct configitem {
 
   u32		src_ip,
 		dst_ip;
-  u16		src_prt,		/* udp and tcp only */
-		dst_prt;
+  u16		src_prt1,		/* udp and tcp only */
+		src_prt2,
+		dst_prt1,
+		dst_prt2;
   u32		src_ip_not,
 		dst_ip_not;
   u16		src_prt_not,
@@ -154,6 +157,12 @@ struct configitem {
 		tcp_flags_off;
 
   char		*logname;		/* what to give syslog */
+};
+
+struct configlist {
+  struct configitem *c;
+  int size;		/* physical size in memory */
+  int index;		/* number of elemts with meaningful information */
 };
 
 /*==============================================================================
@@ -187,7 +196,7 @@ void	parsedg(u8 *dg, int len);
 void readconfig(char *programname, char *confname);
 
 extern int configmax;
-extern struct configitem *config;
+extern struct configlist icmp_req, tcp_req, udp_req;
 extern char netdevice[255];
 
 #endif /* NETL_H */

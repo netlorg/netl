@@ -58,7 +58,7 @@ main(int argc, char *argv[])
   else
     readconfig(argv[0], NETL_CONFIG);
 
-  puts("netl 0.9 by graham the ollis <ollisg@ns.arizona.edu>");
+  puts("netl 0.91 by graham the ollis <ollisg@ns.arizona.edu>");
 
   if((temp = fork()) == 0) 
     return netl(netdevice);
@@ -197,42 +197,49 @@ checkicmp(u8 *dg, struct iphdr ip, struct icmphdr *h, int len)
 {
   int i;
   int logged=FALSE,dumped=FALSE;
+  struct configitem *c;
 
-  for(i=0; i<configmax; i++) {
+  for(i=0; i<icmp_req.index; i++) {
+
+    c = &icmp_req.c[i];
 
     if(
        /* if we already logged or dumped it, we may not have to check it */
-       (config[i].action == ACTION_LOG && logged) ||
-       (config[i].action == ACTION_DUMP && dumped) ||
-
-       /* must be ICMP */
-       (config[i].protocol != PROTOCOL_ICMP) ||
+       (c->action == ACTION_LOG && logged) ||
+       (c->action == ACTION_DUMP && dumped) ||
 
        /* must be the correct type */
-       (config[i].check_icmp_type && config[i].icmp_type != h->type) ||
+       (c->check_icmp_type && c->icmp_type != h->type) ||
+       (c->check_icmp_code && c->icmp_code != h->code) ||
 
        /* addresses must be correct */
-       (config[i].check_src_ip && config[i].src_ip != ip.saddr) ||
-       (config[i].check_dst_ip && config[i].dst_ip != ip.daddr) ||
-       (config[i].check_src_ip_not && config[i].src_ip_not == ip.saddr) ||
-       (config[i].check_dst_ip_not && config[i].dst_ip_not == ip.daddr) 
+       (c->check_src_ip && c->src_ip != ip.saddr) ||
+       (c->check_dst_ip && c->dst_ip != ip.daddr) ||
+       (c->check_src_ip_not && c->src_ip_not == ip.saddr) ||
+       (c->check_dst_ip_not && c->dst_ip_not == ip.daddr) 
       )
       continue;
 
-    switch(config[i].action) {
+    switch(c->action) {
       case ACTION_LOG:
         syslog(LOG_NOTICE,
 		"%s %s => %s\n",
-                config[i].logname,
+                c->logname,
                 ip2string(ip.saddr),
                 ip2string(ip.daddr));
         logged = TRUE;
         break;
 
-      default:
-        dgdump(dg, config[i].logname, len);
+      case ACTION_DUMP:
+        dgdump(dg, c->logname, len);
         dumped = TRUE;
         break;
+
+      case ACTION_IGNORE:
+	return;
+
+      default:
+	break;
     }
 
   }
@@ -248,40 +255,46 @@ checktcp(u8 *dg, struct iphdr ip, struct tcphdr *h, int len)
   int i;
   int logged=FALSE,dumped=FALSE;
   u8 flags=*(((char *) h) + 13);
+  struct configitem *c;
+  u16 source=net16(h->source), dest=net16(h->dest);
 
-  for(i=0; i<configmax; i++) {
+  for(i=0; i<tcp_req.index; i++) {
+
+    c = &tcp_req.c[i];
 
     if(
        /* if we already logged or dumped it, we may not have to check it */
-       (config[i].action == ACTION_LOG && logged) ||
-       (config[i].action == ACTION_DUMP && dumped) ||
-
-       /* must be TCP */
-       (config[i].protocol != PROTOCOL_TCP) ||
+       (c->action == ACTION_LOG && logged) ||
+       (c->action == ACTION_DUMP && dumped) ||
 
        /* port must be correct */
-       (config[i].check_src_prt && config[i].src_prt != h->source) ||
-       (config[i].check_dst_prt && config[i].dst_prt != h->dest) ||
+       (c->check_src_prt_not && c->src_prt_not == source) ||
+       (c->check_src_prt_not && c->dst_prt_not == dest) ||
+
+       (c->check_src_prt && (source < c->src_prt1 ||
+                              source > c->src_prt2)) ||
+       (c->check_dst_prt && (dest < c->dst_prt1 ||
+                              dest > c->dst_prt2)) ||
 
        /* flags must be correct */
-       (config[i].check_tcp_flags_on && 
-           (flags & config[i].tcp_flags_on) != config[i].tcp_flags_on) ||
-       (config[i].check_tcp_flags_off && 
-           (~flags & config[i].tcp_flags_off) != config[i].tcp_flags_off) ||
+       (c->check_tcp_flags_on && 
+          (flags & c->tcp_flags_on) != c->tcp_flags_on) ||
+       (c->check_tcp_flags_off && 
+          (~flags & c->tcp_flags_off) != c->tcp_flags_off) ||
 
        /* addresses must be correct */
-       (config[i].check_src_ip && config[i].src_ip != ip.saddr) ||
-       (config[i].check_dst_ip && config[i].dst_ip != ip.daddr) ||
-       (config[i].check_src_ip_not && config[i].src_ip_not == ip.saddr) ||
-       (config[i].check_dst_ip_not && config[i].dst_ip_not == ip.daddr) 
+       (c->check_src_ip && c->src_ip != ip.saddr) ||
+       (c->check_dst_ip && c->dst_ip != ip.daddr) ||
+       (c->check_src_ip_not && c->src_ip_not == ip.saddr) ||
+       (c->check_dst_ip_not && c->dst_ip_not == ip.daddr) 
       )
       continue;
 
-    switch(config[i].action) {
+    switch(c->action) {
       case ACTION_LOG:
         syslog(LOG_NOTICE,
 		"%s %s:%d => %s:%d\n",
-                config[i].logname,
+                c->logname,
                 ip2string(ip.saddr),
 		net16(h->source),
                 ip2string(ip.daddr),
@@ -289,9 +302,15 @@ checktcp(u8 *dg, struct iphdr ip, struct tcphdr *h, int len)
         logged = TRUE;
         break;
 
-      default:
-        dgdump(dg, config[i].logname, len);
+      case ACTION_DUMP:
+        dgdump(dg, c->logname, len);
         dumped = TRUE;
+        break;
+
+      case ACTION_IGNORE:
+	return;
+
+      default:
         break;
     }
 
@@ -307,45 +326,57 @@ checkudp(u8 *dg, struct iphdr ip, struct udphdr *h, int len)
 {
   int i;
   int logged=FALSE,dumped=FALSE;
+  struct configitem *c;
+  u16 source=net16(h->source), dest=net16(h->dest);
 
-  for(i=0; i<configmax; i++) {
+  for(i=0; i<udp_req.index; i++) {
+
+    c = &udp_req.c[i];
 
     if(
        /* if we already logged or dumped it, we may not have to check it */
-       (config[i].action == ACTION_LOG && logged) ||
-       (config[i].action == ACTION_DUMP && dumped) ||
-
-       /* must be TCP */
-       (config[i].protocol != PROTOCOL_UDP) ||
+       (c->action == ACTION_LOG && logged) ||
+       (c->action == ACTION_DUMP && dumped) ||
 
        /* port must be correct */
-       (config[i].check_src_prt && config[i].src_prt != h->source) ||
-       (config[i].check_dst_prt && config[i].dst_prt != h->dest) ||
+       (c->check_src_prt_not && c->src_prt_not == source) ||
+       (c->check_src_prt_not && c->dst_prt_not == dest) ||
+
+       (c->check_src_prt && (source < c->src_prt1 ||
+                              source > c->src_prt2)) ||
+       (c->check_dst_prt && (dest < c->dst_prt1 ||
+                              dest > c->dst_prt2)) ||
 
        /* addresses must be correct */
-       (config[i].check_src_ip && config[i].src_ip != ip.saddr) ||
-       (config[i].check_dst_ip && config[i].dst_ip != ip.daddr) ||
-       (config[i].check_src_ip_not && config[i].src_ip_not == ip.saddr) ||
-       (config[i].check_dst_ip_not && config[i].dst_ip_not == ip.daddr) 
+       (c->check_src_ip && c->src_ip != ip.saddr) ||
+       (c->check_dst_ip && c->dst_ip != ip.daddr) ||
+       (c->check_src_ip_not && c->src_ip_not == ip.saddr) ||
+       (c->check_dst_ip_not && c->dst_ip_not == ip.daddr) 
       )
       continue;
 
-    switch(config[i].action) {
+    switch(c->action) {
       case ACTION_LOG:
         syslog(LOG_NOTICE,
 		"%s %s:%d => %s:%d\n",
-                config[i].logname,
+                c->logname,
                 ip2string(ip.saddr),
-		net16(h->source),
+		source,
                 ip2string(ip.daddr),
-                net16(h->dest));
+                dest);
         logged = TRUE;
         break;
 
-      default:
-        dgdump(dg, config[i].logname, len);
+      case ACTION_DUMP:
+        dgdump(dg, c->logname, len);
         dumped = TRUE;
         break;
+
+      case ACTION_IGNORE:
+	return;
+
+      default:
+	break;
     }
 
   }

@@ -1,9 +1,9 @@
 before we get to a final release on netl:
 
- * allow range listening (e.g. traceroute)
-
  * datagram analysis software (for dumped files)
 
  * consider an ipx logger
 
  * better documentation, maybe a man page
+
+ * add no hostname resolution option
