@@ -51,6 +51,7 @@ int resolveHostnames=TRUE;
 
 /*==============================================================================
 | alias_dump() - for the netl compiler
+| + makes C code which will generate dynamically the appropriate lookup stack.
 |=============================================================================*/
 
 void
@@ -77,6 +78,8 @@ alias_dump(FILE *fp)
 
 /*==============================================================================
 | printalias()
+| + this is a debuging routine.
+| + i am not sure if it is actually used anywhere anymore.
 |=============================================================================*/
 
 void
@@ -175,6 +178,7 @@ search(u32 ip)
 
 /*==============================================================================
 | searchbyname();
+| + i don't know what this does.
 |=============================================================================*/
 
 u32

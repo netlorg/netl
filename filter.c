@@ -70,6 +70,8 @@ add(filt_mod *fm)
 
 /*==============================================================================
 | filt_mod *lookup_filter(char *)
+| + called by config.y and others.
+| + dynamically load (if necessary) and return a filter/action module.
 |=============================================================================*/
 
 filt_mod *

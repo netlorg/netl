@@ -32,7 +32,9 @@
 #include "netl/dump.h"
 
 /*==============================================================================
-| readentire
+| readentire()
+| + read the whole file *fn into a allocated buffer, and return it.
+| + *prog is a pointer to argv[0];
 |=============================================================================*/
 
 unsigned char *
@@ -87,6 +89,8 @@ readentire(char *fn, size_t *size, size_t max, char *prog)
 
 /*==============================================================================
 | dumpdata
+| + given a buffer *data, output it in a sort of "od -x" kind of way, with
+|   an extra ASCII representation on the far right.
 |=============================================================================*/
 
 void dumpdata(unsigned char *data, size_t size)

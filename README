@@ -86,9 +86,9 @@ logging packets.  by default this is on.
 
 -imodule, --input module
 
-	use module as the input module.  by default, the module default
-is used (which should be a symbolic link to the appropriate module on
-your architecture).
+	use module as the input module.  by default, the module
+default is used (which should be a symbolic link to the appropriate
+module on your architecture).
 
 -Ldir, --lib-dir dir
 

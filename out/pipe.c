@@ -62,6 +62,22 @@ construct(void)
 	char *s;
 	int fd[2];
 	char buffer[10];
+
+	memcpy(h.id, "NETL", 4);
+
+	if((s = getenv("NETL_PIPE_FD")) != NULL) {
+		/* we are the callee rather than the caller */
+		readfd = -1;
+		writefd = atoi(s);
+		if(writefd == -1) {
+			err("pipe.c:\"%s\" is not a valid fd", s);
+			exit(1);
+		}
+		log("pipe.c: using pipefd \"%s\"(%d)", s, writefd);
+		return;
+	}
+
+
 	if(pipe(fd) == -1) {
 		err("pipe module could not open a pipe!  bad.\n");
 		exit(1);
@@ -85,8 +101,6 @@ construct(void)
 		err("pipe.c: could not fork()!  bad.\n");
 		exit(1);
 	}
-
-	memcpy(h.id, "NETL", 4);
 }
 
 void

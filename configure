@@ -1,10 +1,10 @@
 #!/bin/sh
 
-SYSTEM=`system.guess`
-VER="1.05"
+SYSTEM=`./system.guess`
+VER="1.07"
 TDR_VER="1.00"
 NETL_VER_MAJOR=1
-NETL_VER_MINOR=5
+NETL_VER_MINOR=7
 
 if test "$CFLAGS" = "" ; then
 	CFLAGS="-O3 -Wall"
@@ -33,6 +33,7 @@ MANPATH=$PREFIX/man
 LIBPATH=$PREFIX/lib/netl-$VER
 INCLUDEPATH=$LIBPATH/include
 DUMPPATH=$LIBPATH/dump
+CONFFILE=/etc/netl.conf
 
 while test "$1" != ""; do
 
@@ -46,6 +47,10 @@ while test "$1" != ""; do
 	case $arg in
 		--target=*)
 			TARGET=${opt}-
+		;;
+
+		--conffile=*)
+			CONFFILE=$opt
 		;;
 
 		--prefix=*)
@@ -104,6 +109,8 @@ Configuration:
   --manpath=DIR		directory to install man pages [PREFIX/man]
   --dumppath=DIR	directory where netl will dump packets to by default
 			[LIBDIR/dump]
+  --conffile=FILE	configuration file netl will read by default
+			[/etc/netl.conf]
   --target=HOSTTYPE	specify a cross compiler
   --static		produce a statically linked binary
 Environemnt:
@@ -155,19 +162,28 @@ cat > test_prog.c <<EOF
 int main(int arcg, char *argv[]) { printf("hello world\n"); return 0;}
 EOF
 
-if $CC $CFLAGS $LDFLAGS test_prog.c -o test_prog 1> /dev/null 2> /dev/null; then
+rm -f configure.out
+echo "% $CC $CFLAGS $LDFLAGS test_prog.c -o test_prog" >> configure.out
+
+if $CC $CFLAGS $LDFLAGS test_prog.c -o test_prog >> configure.out 2>&1; then
 	echo gcc compile test good
 else
 	echo gcc is not right!
 	rm -f test_prog.c test_prog
+	echo "% printenv" >> configure.out
+	printenv >> configure.out
 	exit
 fi
 
-if test_prog 1> /dev/null 2> /dev/null; then
+echo "% test_prog" >> configure.out
+
+if test_prog >> configure.out 2>&1; then
 	echo gcc run test good
 else
 	echo gcc output failed!
 	rm -f test_prog.c test_prog
+	echo "% printenv" >> configure.out
+	printenv >> configure.out
 	exit
 fi
 
@@ -196,31 +212,42 @@ cat > test.l <<EOF
 int main() { return 0; }
 EOF
 
+echo "% $LEX $LEXFLAGS test.l" >> configure.out
 
-if $LEX $LEXFLAGS test.l 1>/dev/null 2> /dev/null; then
+if $LEX $LEXFLAGS test.l >> configure.out 2>&1; then
 	echo lex generate test good
 else
 	echo lex is not right!
 	cd ..
 	rm -rf .lextest
+	echo "% printenv" >> configure.out
+	printenv >> configure.out
 	exit
 fi
 
-if $CC $CFLAGS $LDFLAGS lex.yy.c -o lex_test $LEX_LIBS 1> /dev/null 2> /dev/null ; then
+echo "% $CC $CFLAGS $LDFLAGS lex.yy.c -o lex_test $LEX_LIBS" >> configure.out
+
+if $CC $CFLAGS $LDFLAGS lex.yy.c -o lex_test $LEX_LIBS >> configure.out 2>&1; then
 	echo lex compile test good
 else
 	echo lex compile is not right!
 	cd ..
 	rm -rf .lextest
+	echo "% printenv" >> configure.out
+	printenv >> configure.out
 	exit
 fi
 
-if lex_test 1> /dev/null 2>/dev/null ; then
+echo "% lex_test" >> configure.out
+
+if lex_test >> configure.out 2>&1; then
 	echo lex run test good
 else
 	echo lex runtime is not right!
 	cd ..
 	rm -rf .lextest
+	echo "% printenv" >> configure.out
+	printenv >> configure.out
 	exit
 fi
 
@@ -253,31 +280,42 @@ int yylex() { return 1; }
 int main() { return 0; }
 EOF
 
-if $YACC $YACCFLAGS test.y 1> /dev/null 2> /dev/null; then
+echo "% $YACC $YACCFLAGS test.y" >> configure.out
+
+if $YACC $YACCFLAGS test.y >> configure.out 2>&1; then
 	echo yacc generate test good
 else
 	echo yacc is not right!
 	cd ..
 	rm -rf .yacctest
+	echo "% printenv" >> configure.out
+	printenv >> configure.out
 	exit
 fi
 
+echo "% $CC $CFLAGS $LDFLAGS test.tab.c -o yacc_test $YACC_LIBS $LEX_LIBS" >> configure.out
 
-if $CC $CFLAGS $LDFLAGS test.tab.c -o yacc_test $YACC_LIBS $LEX_LIBS 1> /dev/null 2> /dev/null; then
+if $CC $CFLAGS $LDFLAGS test.tab.c -o yacc_test $YACC_LIBS $LEX_LIBS >> configure.out 2>&1 ; then
 	echo yacc compile test good
 else
 	echo yacc compile is not right!
 	cd ..
 	rm -rf .yacctest
+	echo "% printenv" >> configure.out
+	printenv >> configure.out
 	exit
 fi
 
-if yacc_test 1> /dev/null 2>/dev/null ; then
+echo "% yacc_test" >> configure.out
+
+if yacc_test >> configure.out 2>&1; then
 	echo yacc run test good
 else
 	echo yacc runtime is not right!
 	cd ..
 	rm -rf .yacctest
+	echo "% printenv" >> configure.out
+	printenv >> configure.out
 	exit
 fi
 
@@ -321,6 +359,7 @@ fi
 
 echo generating Makefile.inc
 
+rm -f Makefile.inc
 echo "#do not modify" > Makefile.inc
 echo "CC=$CC" >> Makefile.inc
 echo "CFLAGS=$CFLAGS" >> Makefile.inc
@@ -355,10 +394,12 @@ echo "PERL=$PERL" >> Makefile.inc
 
 echo generating include/netl/version.h
 
+rm -f include/netl/version.h
 echo "/* do not modify */" > include/netl/version.h
 echo "#define NETL_VER_MAJOR $NETL_VER_MAJOR" >> include/netl/version.h
 echo "#define NETL_VER_MINOR $NETL_VER_MINOR" >> include/netl/version.h
 echo "#define COPYVER \"$VER copyright 1997-1999 Graham THE Ollis <ollisg@wwa.com>\"" >> include/netl/version.h
 echo "#define NETL_LIB_PATH \"$LIBPATH\"" >> include/netl/version.h
 echo "#define NETL_DUMP_PATH \"$DUMPPATH\"" >> include/netl/version.h
+echo "#define NETL_CONFIG \"$CONFFILE\"" >> include/netl/version.h
 

@@ -217,7 +217,7 @@ clean:
 	$(RM) lib*.so* lib*.a tdr.log
 	$(RM) lex.yy.c config.tab.h config.tab.c config.output config_test
 	$(RM) userfilter.c *.so README INSTALL conf/*.c conf/*.so conf/*.o
-	$(RM) *.a *.so hwpassive hwpassive.exe
+	$(RM) *.a *.so hwpassive hwpassive.exe configure.out
 	cd in; $(MAKE) clean
 	cd filt; $(MAKE) clean
 	cd out; $(MAKE) clean

@@ -24,7 +24,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define NETL_CONFIG		"/etc/netl.conf"
 #define NETL_CONFIG_MAXREQ	100
 
 /*==============================================================================

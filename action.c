@@ -69,6 +69,9 @@ add(action_mod *am)
 
 /*==============================================================================
 | action_mod *lookup_act(char *)
+| + given an action or output module (those which live in LIB/out), we see if
+|   has already been loaded and load and return or just return as necessary.
+| + this function is called primarily from config.y.
 |=============================================================================*/
 
 action_mod *

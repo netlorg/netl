@@ -59,7 +59,12 @@ static void dumb(char *d) { dumb(id); }
 #include "netl/compiler.h"
 
 /*==============================================================================
-| int main(int, char **)
+| int main()
+|  + from here, we call functions in options.c to parse the command line.
+|    from there, we decide where, if any a config file needs to be read using
+|    the parser, scanner in config.l and config.y.  lastly, we fork a process
+|    running the function netl().  if it's windows, or if the user requests not
+|    to run in the background, then it won't fork of course.
 |=============================================================================*/
 
 int
@@ -68,34 +73,6 @@ main(int argc, char *argv[])
 #ifndef NO_SYSLOGD
 	pid_t		temp;
 #endif
-
-/*	printf("sizeof(iphdr) = %d\n", sizeof(iphdr));
-	printf("sizeof(tcphdr) = %d\n", sizeof(tcphdr));
-	printf("sizeof(udphdr) = %d\n", sizeof(udphdr));
-	printf("sizeof(icmphdr) = %d\n", sizeof(icmphdr));
-	{
-		tcphdr th;
-		u16 *flags = &(((char *)(&th))[12]);
-		memset((char *)&th, 0xff, sizeof(th));
-		th.res1 = th.doff = th.fin = th.syn = th.syn = th.rst = 
-		th.psh = th.ack = th.urg = th.res2 = 0;
-		printf(" clear: %04x\n", htons(*flags));
-		th.fin = 1;
-		printf(" fin:   %04x\n", htons(*flags));
-		th.fin = 0; th.syn = 1;
-		printf(" syn:   %04x\n", htons(*flags));
-		th.syn = 0; th.rst = 1;
-		printf(" rst:   %04x\n", htons(*flags));
-		th.rst = 0; th.psh = 1;
-		printf(" psh:   %04x\n", htons(*flags));
-		th.psh = 0; th.ack = 1;
-		printf(" ack:   %04x\n", htons(*flags));
-		th.ack = 0; th.urg = 1;
-		printf(" urg:   %04x\n", htons(*flags));
-		th.urg = 0; th.doff = 15;
-		printf(" doff:  %04x\n", htons(*flags));
-	}*/
-
 	prog = argv[0];
 
 	//setservent(TRUE);
@@ -110,6 +87,8 @@ main(int argc, char *argv[])
 		while(--argc > 0) {
 			argv++;
 			if(argv[0][0] != '-') {
+				if(debug_mode)
+					err("configline:%s", argv[0]);
 				parseconfigline(argv[0]);
 				configfile = NULL;
 			}

@@ -78,6 +78,10 @@ openteefile(char *s)
 
 /*==============================================================================
 | parse the command line
+| + it would probably be better to use some sort of library, but while i was 
+|   writing i liked the idea of the BORLAND style -c+ -c- options for indicating
+|   on and off.
+| + later i added GNU style --long options.
 |=============================================================================*/
 
 void

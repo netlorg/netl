@@ -57,6 +57,10 @@
 
 /*==============================================================================
 | GLOBALS
+| + grab is a pointer to the function which actually collects the packets as
+|   they pass by.
+| + in_path specifies the path realtive to the netl library directory to where
+|   the different input modules are located.
 |=============================================================================*/
 
 int (*grab)(char *buf);
@@ -68,6 +72,7 @@ int (*grab)(char *);
 
 /*==============================================================================
 | prepare dl wrapper
+| + calls the dynamic device preperation routine in the input or grab module.
 |=============================================================================*/
 
 void
@@ -91,6 +96,11 @@ prepare(char *dev)
 
 /*==============================================================================
 | void netl(char *)
+| + this is where the main loop lives.
+| + we call grab(), which is dynamic from the LIB/in directory.
+| + check() is a dynamic routine from LIB/filt and will be a filter.
+|   if a check() routine wants to force netl to re-read the config file, then
+|   it sets reload_config_file before returning.
 |=============================================================================*/
 
 int reload_config_file = 0;

@@ -35,7 +35,8 @@
 #include "netl/config.h"
 
 /*==============================================================================
-| void parsedg(u8 *buff);
+| void check();
+| + given a packet *dg of length len, pass it to each of the filters.
 |=============================================================================*/
 
 void
@@ -43,13 +44,17 @@ check(u8 *dg, size_t len)
 {
 	int i;
 
-	// 1. reset the action_done flag in each output module
+	/*======================================================================
+	| 1. reset the action_done flag in each output module
+	|=====================================================================*/
 
 	for(i=0; i<num_acts; i++) {
 		*(acts[i]).action_done = FALSE;
 	}
 
-	// 2. run check() from each filt module on the datagram
+	/*======================================================================
+	| 2. run check() from each filt module on the datagram
+	|=====================================================================*/
 
 	for(i=0; i<num_filters; i++) {
 		(*filters[i].check)(dg, len);

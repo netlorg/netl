@@ -53,6 +53,7 @@ static void printentry(hwpassive_entry *e);
 
 /*==============================================================================
 | int main(int, char **)
+| + main routine for hwlookup.  see the hwlookup(1) man page for detains on use.
 |=============================================================================*/
 
 int

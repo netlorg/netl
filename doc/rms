@@ -12,7 +12,8 @@ print INDEX "<html><head><title>CORE software : netl homepage</title></head>
 <body bgcolor=#f1f1f1 text=#000000 link=#0000ff vlink=#9090ff>
 <h2>CORE software : netl homepage</h2>
 
-<p><i>netl</i> intended to be a customizable low level network logger.</p>
+<p><i>netl</i> intended to be a customizable low level network
+monitor.</p>
 
 <p><i>netl</i> can be configured to look for particular TCP, UDP or ICMP
 packets, or can be setup to look for generic IP packets or even raw
@@ -34,18 +35,53 @@ href=HISTORY>HISTORY</a> file.
 
 <ul><li><a href=netl-$version.tar.gz>netl-$version.tar.gz</a></ul>
 
+<h3>old versions</h3>
+
+<p>We keep a limited number of older versions of netl available.</p>
+
+<ul>
+	<li><a href=netl-1.04.tar.gz>netl-1.04.tar.gz</a>
+	<li><a href=netl-1.04-1.i386.rpm>netl-1.04-1.i386.rpm</a>
+	<li><a href=netl-1.04-1.alpha.rpm>netl-1.04-1.alpha.rpm</a>
+	<li><a href=netl-1.03.tar.gz>netl-1.03.tar.gz</a>
+	<li><a href=netl-1.02.tar.gz>netl-1.02.tar.gz</a>
+	<li><a href=netl-1.01.tar.gz>netl-1.01.tar.gz</a>
+</ul>
+
+<h3>netl/perl API</h3>
+
+<p>I am working on a perl API to netl. this should, in conjunction with
+Perl/Tk, make it possible to write simple, user friendly apps which work
+with netl. This is still highly developmental, but I provide it here in
+case you want to work with it.</p>
+
+<p>It comes with two working applications, netatk, which is similar to
+the c program neta(1), except that it is designed for use with XWindows.
+pipeprog is also intended as an interactive program designed for
+analizing packets that netl finds, as it is running.</p>
+
+<p><b>Note:</b> there is probably a better name for this perl module than
+Netl, but until i figure out what that name is, you will have to
+diferentiate netl the program and Netl the perl module by the fact that
+the perl module (as other perl modules) is capatalized and the program is
+not.</p>
+
+<ul>
+<li><a href=Netl-1.00.tar.gz>Netl-1.00.tar.gz</a>
+</ul>
+
 $line
 
 <h3>netl documentation</h3>
 
 <p>It's best to start out with the main daemon <a
-href=netl.8.html>netl(8)</a>, unless you haven't managed to install
-netl yet, in which case it's best to start with the <a
+href=netl.8.html>netl(8)</a>, unless you haven't managed to install netl
+yet, in which case it's best to start with the <a
 href=netl_install.1.html>install guide</a>.  The newest, and most
 exciting new features for netl are the new <a
 href=netl_module.1.html>netl modules</a> and <a href=netlcc.1.html>netl
-compiler</a>.  Modules are considered stable, netl 1.02 and later are
-module based.  The compiler is experimental, but useable.</p>
+compiler</a>.  Modules are considered stable, in fact netl 1.02 and later
+are module based.  The compiler is experimental, but useable.</p>
 
 <ul>
 ";

@@ -12,15 +12,6 @@ auth.o: \
 	../include/netl/action.h \
 	../include/netl/filter.h \
 	../include/netl/config.h 
-fred.o: \
-	../include/netl/global.h \
-	../include/netl/ether.h \
-	../include/netl/ip.h \
-	../include/netl/action.h \
-	../include/netl/filter.h \
-	../include/netl/config.h \
-	../include/netl/io.h \
-	../include/netl/resolve.h 
 stub.o: \
 	../include/netl/global.h \
 	../include/netl/action.h \

@@ -60,7 +60,8 @@ options.o: \
 	include/netl/action.h \
 	include/netl/config.h \
 	include/netl/options.h \
-	include/netl/io.h 
+	include/netl/io.h \
+	include/netl/hwpassive.h 
 dump.o: \
 	include/netl/dump.h 
 xd.o: \
@@ -109,4 +110,9 @@ catch.o: \
 	include/netl/global.h \
 	include/netl/catch.h \
 	include/netl/io.h 
-fred.o: 
+hwlookup.o: \
+	include/netl/global.h \
+	include/netl/options.h \
+	include/netl/hwpassive.h \
+	include/netl/resolve.h \
+	include/netl/io.h 

@@ -23,7 +23,15 @@
 |  26 jun 99  G. Ollis	created module
 |=============================================================================*/
 
-/* please NOTE: this is unfinished.  it is UNLIKELY that any of this works yet */
+/* 
+
+THIS DOES NOT WORK.  DO NOT USE IT.  DON'T EVEN TRY WORKING ON IT.
+IT IS CURRENTLY NOT USEFUL.
+
+please NOTE: this is unfinished.  it is UNLIKELY that any of this
+works yet
+
+*/
 
 #include "netl/global.h"
 #include "netl/ether.h"

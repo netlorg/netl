@@ -6,6 +6,7 @@ Makefile
 Makefile.dep
 README
 TODO
+hwcode
 hwlookup.c
 action.c
 catch.c
@@ -39,6 +40,8 @@ doc/netl_module.1
 doc/netl_module.1.rms
 doc/netlcc.1
 doc/netlcc.1.rms
+doc/unsoiled.1
+doc/unsoiled.1.rms
 doc/rms
 doc/tail.rms
 doc/tdr.1
@@ -100,7 +103,7 @@ ipv6.c
 lookup.c
 main.c
 neta.c
-netl-1.05.lsm
+netl-1.07.lsm
 netl.c
 netlcc.pl
 options.c
@@ -109,7 +112,6 @@ out/Makefile.dep
 out/auth.c
 out/dl.c
 out/dump.c
-out/fred.c
 out/log.c
 out/null.c
 out/pipe.c

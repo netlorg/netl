@@ -84,9 +84,10 @@ off (respectively).  the default is to turn the option on, even if the
 default value is also on.
 .PP
 .B -f
-filename, 
+.I filename
+, 
 .B --file
-filename
+.I filename
 .PP
 	use an alternative config file.  if this option is not specified,
 then /etc/netl.conf shall be used.
@@ -100,9 +101,10 @@ then /etc/netl.conf shall be used.
 	run netl in the foreground, and send output to stdout.
 .PP
 .B -o
-filename, 
+.I filename
+, 
 .B --tee
-filename
+.I filename
 .PP
 	when used with -z, this option sends output to filename as well
 as stdout.
@@ -129,18 +131,22 @@ logging packets.  by default this is on.
 	print out usage and quit.
 .PP
 .B -i
-module, 
+.I module
+, 
 .B --input
-module
+.I module
 .PP
-	use module as the input module.  by default, the module default
-is used (which should be a symbolic link to the appropriate module on
-your architecture).
+	use 
+.I module
+as the input module.  by default, the module
+default is used (which should be a symbolic link to the appropriate
+module on your architecture).
 .PP
 .B -L
-dir, 
+.I dir
+, 
 .B --lib-dir
-dir
+.I dir
 .PP
 	specify an alternate module directory.  by default,
 /usr/local/lib/netl is used.
@@ -152,15 +158,21 @@ gcc.  typically, this is done through the netl compiler,
 .BR netlcc (1).
 .PP
 .B --output-name
-filename
+.I filename
 .PP
-	when generating a c file (via that --generate-c option), this
+	when generating a c file (via that 
+.B --generate-c
+option), this
 option specifies the c file name.  this is generally invoked by
 .BR netlcc (1).
 .PP
 .B --stdout
 .PP
-	combination of --generate-c and --output-name which sends the C
+	combination of 
+.B --generate-c
+and 
+.B --output-name
+which sends the C
 code to stdout.
 .PP
 .B --dump-dir

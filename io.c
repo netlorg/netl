@@ -49,7 +49,8 @@ FILE *teefile = NULL;
 char *prog="[unassigned]";
 
 /*==============================================================================
-| log
+| log()
+| + send to syslogd() or to stdout, depending on configuration.
 |=============================================================================*/
 
 void
@@ -81,6 +82,11 @@ log(char *cp,...)
 	}
 #endif
 }
+
+/*==============================================================================
+| err()
+| + send to syslogd() or to stderr, depending on configuration.
+|=============================================================================*/
 
 void
 err(char *cp,...)
@@ -117,6 +123,7 @@ err(char *cp,...)
 
 /*==============================================================================
 | allocate memory, and die if we don't have enough.
+| the fact that malloc() returns NULL is non helpful.
 |=============================================================================*/
 
 void *
@@ -156,6 +163,12 @@ clo()
 }
 #endif
 
+/*==============================================================================
+| netl module open.
+| + open the given module, run construct() if it exists and return the handle
+|   to the new module.
+|=============================================================================*/
+
 void *
 nmopen(char *name)
 {
@@ -178,10 +191,19 @@ nmopen(char *name)
 	return handle;
 }
 
+
+/*==============================================================================
+| + call destroy()
+| + deallocate the module.
+|=============================================================================*/
+
 int 
 nmclose(void *handle)
 {
 	void (*f)(void);
+
+	if(debug_mode)
+		log("destroying module: ??");
 
 	f = dlsym(handle, "destroy");
 	if(f != NULL)
@@ -189,6 +211,11 @@ nmclose(void *handle)
 
 	return dlclose(handle);
 }
+
+
+/*==============================================================================
+| wrapper around dlsym for netl modules.
+|=============================================================================*/
 
 void *
 nmsym(void *handle, char *symbol)
@@ -202,6 +229,12 @@ nmsym(void *handle, char *symbol)
 	}
 	return sym;
 }
+
+
+/*==============================================================================
+| ahextoi() 
+| + convert a hex string 0xa1f9 into its machine representation.
+|=============================================================================*/
 
 int
 ahextoi(char *s)

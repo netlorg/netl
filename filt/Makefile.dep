@@ -157,4 +157,5 @@ hwpassive.o: \
 	../include/netl/action.h \
 	../include/netl/config.h \
 	../include/netl/io.h \
-	../include/netl/resolve.h 
+	../include/netl/resolve.h \
+	../include/netl/hwpassive.h 

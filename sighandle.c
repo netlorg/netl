@@ -71,8 +71,12 @@ handle()
 }
 
 /*==============================================================================
-| handle();
-| install the signal handler.
+| sig_handle()
+| catch the signal, and deal with it correctly.  in general, this involves
+| dying.  might be a good idea to use this to reload the config file
+| rather than using DCP.  however, given the current implmentation, this 
+| would require a module to receive a signal.  however, this is something we
+| can probably do.  hrm.
 ==============================================================================*/
 
 extern int line;	/* hack, formerly static variable in config.c */
@@ -103,8 +107,9 @@ sig_handler(int sig)
 | it's the clean up function!  it really doesn't need to do much so...
 | (btw- clo is the name of the planet the decepticons invaded shortly after 
 | the battle with unicron.  the autobots initially sustained incredable 
-| losses, optimus prime returns and turns the tide with the help of the 
-| "last autobot".  however, this has nothing to do with the clean up function)
+| losses, but optimus prime returned and turned the tide with the help of the 
+| "last autobot".  however, this has nothing to do with the clean up function,
+| or for that matter, netl)
 |=============================================================================*/
 
 void cleanup()

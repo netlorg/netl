@@ -56,7 +56,7 @@ all boolean options can be followed by a + or - to turn the value on or
 off (respectively).  the default is to turn the option on, even if the
 default value is also on.
 
-b<-f>filename, b<--file> filename
+b<-f>i<filename>, b<--file> i<filename>
 
 	use an alternative config file.  if this option is not specified,
 then /etc/netl.conf shall be used.
@@ -65,7 +65,7 @@ b<-z>, b<--foreground>, b<--background>
 
 	run netl in the foreground, and send output to stdout.
 
-b<-o>filename, b<--tee> filename
+b<-o>i<filename>, b<--tee> i<filename>
 
 	when used with -z, this option sends output to filename as well
 as stdout.
@@ -83,13 +83,13 @@ b<-h>, b<--help>
 
 	print out usage and quit.
 
-b<-i>module, b<--input> module
+b<-i>i<module>, b<--input> i<module>
 
-	use module as the input module.  by default, the module default
-is used (which should be a symbolic link to the appropriate module on
-your architecture).
+	use i<module> as the input module.  by default, the module
+default is used (which should be a symbolic link to the appropriate
+module on your architecture).
 
-b<-L>dir, b<--lib-dir> dir
+b<-L>i<dir>, b<--lib-dir> i<dir>
 
 	specify an alternate module directory.  by default,
 /usr/local/lib/netl is used.
@@ -99,15 +99,15 @@ b<--generate-c>
 	generate a netl module in c format which can then be compiled by
 gcc.  typically, this is done through the netl compiler, sa<netlcc>(1).
 
-b<--output-name> filename
+b<--output-name> i<filename>
 
-	when generating a c file (via that --generate-c option), this
+	when generating a c file (via that b<--generate-c> option), this
 option specifies the c file name.  this is generally invoked by
 sa<netlcc>(1).
 
 b<--stdout>
 
-	combination of --generate-c and --output-name which sends the C
+	combination of b<--generate-c> and b<--output-name> which sends the C
 code to stdout.
 
 b<--dump-dir> directory

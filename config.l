@@ -109,6 +109,7 @@ hd			[A-Fa-f0-9]
 <INITIAL>"dump"		cpy2("RULE_T", ACTION_DUMP);	return RULE_T;
 <INITIAL>"dl"		cpy2("RULE_T", ACTION_DL);	return RULE_T;
 <INITIAL>"null"		cpy2("RULE_T", ACTION_NULL);	return RULE_T;
+<INITIAL>"pipe"		cpy2("RULE_T", ACTION_NULL);	return RULE_T;
 <INITIAL>"@"{alphanum}+	cpy2("RULE_T", ACTION_USER);	return RULE_T;
 
 
