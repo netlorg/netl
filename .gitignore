@@ -1,0 +1,10 @@
+/Makefile.inc
+*.o
+/config.output
+/config.tab.c
+/config.tab.h
+/hwpassive
+/lex.yy.c
+*.so
+/xd
+/include/netl/version.h
