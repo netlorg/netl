@@ -1,0 +1,575 @@
+#!/bin/sh
+# shar: Shell Archiver  (v1.22)
+#
+#       Run the following text with /bin/sh to create:
+#         OUT
+#         README
+#         find.c
+#         find.h
+#         globals.h
+#         inet.h
+#         main.c
+#         packet.h
+#         sniff.c
+#         sniff.h
+#
+sed 's/^X//' << 'SHAR_EOF' > OUT &&
+SHAR_EOF
+chmod 0644 OUT || echo "restore of OUT fails"
+sed 's/^X//' << 'SHAR_EOF' > README &&
+XTo compile on a Linux box type
+Xgcc -o Sniff find.c main.c sniff.c
+X
+XEnjoy,
+X
+XMythrandir
+SHAR_EOF
+chmod 0644 README || echo "restore of README fails"
+sed 's/^X//' << 'SHAR_EOF' > find.c &&
+X#include <string.h>
+X
+Xint Find(char * String, char * Match, int length2)
+X{
+Xint length;
+Xint i, k;
+Xchar buf[100];
+X
+Xlength = strlen(Match);
+X
+Xif(length2 < length)
+X    return 0;
+X
+Xfor(i = 0; i < (length2 - length); i++)
+X    {
+X    for(k = 0; k < length; k++)
+X        buf[k] = String[k + i];
+X    if(!strncmp(buf,Match,length))
+X        return 1;
+X    }
+X
+Xreturn 0;
+X}
+SHAR_EOF
+chmod 0644 find.c || echo "restore of find.c fails"
+sed 's/^X//' << 'SHAR_EOF' > find.h &&
+Xint Find(char * String, char * Match, int);
+SHAR_EOF
+chmod 0644 find.h || echo "restore of find.h fails"
+sed 's/^X//' << 'SHAR_EOF' > globals.h &&
+X#define PACKET_LENGTH 500
+X
+X
+X
+SHAR_EOF
+chmod 0644 globals.h || echo "restore of globals.h fails"
+sed 's/^X//' << 'SHAR_EOF' > inet.h &&
+X#ifndef INET
+X#define INET
+X
+X#include <stdio.h>
+X#include <string.h>
+X#include <unistd.h>
+X#include <stdlib.h>
+X
+X#include <sys/ioctl.h>
+X#include <sys/types.h>
+X#include <sys/socket.h>
+X#include <netinet/in.h>
+X#include <arpa/inet.h>
+X
+X#include <linux/inet.h>
+X#include <linux/in.h>
+X#include <linux/types.h>
+X#include <linux/socket.h>
+X
+X
+Xchar *pname;
+X
+X#endif
+SHAR_EOF
+chmod 0644 inet.h || echo "restore of inet.h fails"
+sed 's/^X//' << 'SHAR_EOF' > main.c &&
+X#include "sniff.h"
+X#include "inet.h"
+X#include "find.h"
+X
+X#include <string.h>
+X
+Xvoid main()
+X{
+XFILE * fd;
+Xint i,j;
+Xint choice;
+Xchar name[2];
+Xchar buf[500];
+Xstruct PACKET *Out;
+Xstruct CONNECTION List[256];
+Xchar View[256][50];
+Xchar Data[256][50];
+Xstruct CONNECTION Check[1];
+Xint toggle = 0;
+Xint count = 0;   /* Stores the number of unique connections */
+X
+Xstrncpy(name, "lo\0", 3);
+X
+Xinit(name);
+X
+Xwhile(1)
+X    {
+X
+X    /*
+X     * Get the next packet to fly by the network
+X     */
+X    Get_Packet(buf);
+X
+X    /*
+X     * Convert the buffer into a Packet type structure
+X     */
+X    Out = Convert_Packet(buf);
+X
+X    /*
+X     * Display all of the packet information
+X     */
+X    Display_Packet(Out);
+X
+X    /*
+X     * If the program detects login in the text it will then check
+X     * if the connection is unique
+X     */
+X        if(Unique(List, Out, count) == -1)
+X            {
+X            printf("Found a Unique connection\n");
+X            count = count + 1;
+X            Display_Connections(List, count);
+X            }
+X
+X    }
+X}
+SHAR_EOF
+chmod 0644 main.c || echo "restore of main.c fails"
+sed 's/^X//' << 'SHAR_EOF' > packet.h &&
+X#include "globals.h"
+X
+X
+X
+X
+Xstruct iphdr {
+X    unsigned char version;
+X    unsigned char tos;
+X    unsigned char tot_len[2];
+X    unsigned char id[2];
+X    unsigned char frag_off[2];
+X    unsigned char ttl;
+X    unsigned char protocol;
+X    unsigned char check[2];
+X    unsigned char saddr[4];
+X    unsigned char daddr[4];
+X    };
+X
+Xstruct tcphdr {
+X    unsigned char source[2];
+X    unsigned char dest[2];
+X    unsigned char seq[4];
+X    unsigned char ack_seq[4];
+X    unsigned char flags[2];
+X    unsigned char window[2];
+X    unsigned char check[2];
+X    unsigned char urg_ptr[2];
+X    };
+X
+X/*
+X * A structure which contains all of the parts of a packet
+X */
+X
+Xstruct PACKET {
+X    struct iphdr IP;
+X    struct tcphdr TCP;
+X    char DATA[PACKET_LENGTH];
+X    };
+X
+Xstruct CONNECTION {
+X    unsigned char protocol;
+X    unsigned char saddr[4];
+X    unsigned char daddr[4];
+X    unsigned char source[2];
+X    unsigned char dest[2];
+X    unsigned char seq[4];
+X    unsigned char ack_seq[4];
+X    };
+X
+X
+SHAR_EOF
+chmod 0644 packet.h || echo "restore of packet.h fails"
+sed 's/^X//' << 'SHAR_EOF' > sniff.c &&
+X#include <linux/if_ether.h>
+X#include <linux/if.h>
+X#include <string.h>
+X
+X#include "inet.h"
+X#include "sniff.h"
+X#include "globals.h"
+X
+X/* Globals */
+X
+X
+X
+Xint Sock;
+Xstruct ifreq oldifr, ifr;
+X
+Xvoid init(char * DEV)
+X{
+X
+XSock = socket(AF_INET, SOCK_PACKET, htons(ETH_P_ALL));
+X
+X/*
+X * Stores device name to access in ifr and oldifr
+X */
+Xstrcpy(ifr.ifr_name, DEV);
+Xstrcpy(oldifr.ifr_name, DEV);
+X
+X/*
+X * Stores the cards current setting into ifr and oldifr
+X */
+Xif(ioctl(Sock, SIOCGIFFLAGS, &ifr) < 0)
+X    {
+X    printf("Unable to get %s flags.\n", DEV);
+X    exit(1);
+X    }
+X
+Xif(ioctl(Sock, SIOCGIFFLAGS, &oldifr) < 0)
+X    {
+X    printf("Unable to get %s flags.\n", DEV);
+X    exit(1);
+X    }
+X
+X/*
+X * Sets ifr's flags to include Promiscuous Mode
+X */
+Xifr.ifr_flags |= IFF_PROMISC;
+X
+X/*
+X * Sets devices flags to that of ifr's
+X */
+Xif(ioctl(Sock, SIOCSIFFLAGS, &ifr) < 0)
+X    {
+X    printf("Unable to set %s flags.\n", DEV);
+X    exit(1);
+X    }
+Xprintf("%s device has been successfully configured.\n", DEV);
+X}
+X
+Xvoid Get_Packet(char buf[PACKET_LENGTH])
+X{
+Xint length;
+Xstruct sockaddr saddr;
+Xint sizeaddr;
+X
+Xlength = recvfrom(Sock, buf, PACKET_LENGTH, 0, &saddr, &sizeaddr);
+X
+X
+X}
+X
+Xstruct PACKET * Convert_Packet(char buf[PACKET_LENGTH])
+X{
+Xint i;
+Xchar tmp[PACKET_LENGTH];
+Xstruct PACKET Holder;
+X
+X/*
+X * Copy over ip information
+X */
+Xfor(i = 14; i < 34; i++)
+X    tmp[i - 14] = buf[i];
+X/*
+X * Copy tmp to iphdr structure
+X */
+Xbcopy(tmp, &Holder.IP, 20);
+X
+X/*
+X * Copy over tcp information
+X */
+Xfor(i = 34; i < 54; i++)
+X    tmp[i - 34] = buf[i];
+Xbcopy(tmp, &Holder.TCP, 20);
+X
+Xfor(i = 54; i < PACKET_LENGTH; i++)
+X    tmp[i - 54] = buf[i];
+Xbcopy(tmp, &Holder.DATA, (PACKET_LENGTH - 54));
+X
+Xreturn &Holder;
+X}
+X
+Xvoid Display_Packet(struct PACKET * Out)
+X{
+Xint i,k;      /* loop variables */
+Xint dlength;
+X
+X
+X
+X/*
+X * Display ip Information
+X */
+Xprintf("Header Length: %d   Service Type: %d",
+X        Out->IP.version & 0x000f, Out->IP.tos & 0x00ff);
+Xprintf("    Total Length: %d\n",
+X        (Out->IP.tot_len[0] & 0x00ff) * 256 + (Out->IP.tot_len[1] & 0x00ff));
+Xprintf("Id: %d    FragFlags: %d\n",
+X        (Out->IP.id[0] & 0x00ff) * 256 + (Out->IP.id[1] & 0x00ff),
+X        (Out->IP.frag_off[0] & 0x00ff) * 256 + (Out->IP.frag_off[1] & 0x00ff))
+;
+Xprintf("TTL: %d    Protocol: %d    HeaderChecksum: %d\n",
+X        Out->IP.ttl & 0x00ff, Out->IP.protocol & 0x00ff,
+X        (Out->IP.check[0] & 0x00ff) * 256 + (Out->IP.check[1] & 0x00ff));
+Xprintf("Source Address: %d.%d.%d.%d    Destination Address: %d.%d.%d.%d\n",
+X        Out->IP.saddr[0] & 0x00ff, Out->IP.saddr[1] & 0x00ff,
+X        Out->IP.saddr[2] & 0x00ff, Out->IP.saddr[3] & 0x00ff,
+X        Out->IP.daddr[0] & 0x00ff, Out->IP.daddr[1] & 0x00ff,
+X        Out->IP.daddr[2] & 0x00ff, Out->IP.daddr[3] & 0x00ff);
+X
+X/*
+X * Display tcp information
+X */
+X
+Xprintf("Source Port: %d    Destination Port: %d\n",
+X        ((Out->TCP.source[0] & 0x00ff) * 256) + (Out->TCP.source[1] & 0x00ff),
+X        ((Out->TCP.dest[0] & 0x00ff) * 256) + (Out->TCP.dest[1] & 0x00ff));
+Xprintf("Sequence Number: %ld    Acknowledgement Number: %ld\n",
+X        (Out->TCP.seq[0] & 0x00ff) * 65536 + (Out->TCP.seq[1] & 0x00ff) * 4096
+X        + (Out->TCP.seq[2] & 0x00ff) * 256 + (Out->TCP.seq[3] & 0x00ff),
+X        (Out->TCP.ack_seq[0] & 0x00ff) * 65536 + (Out->TCP.ack_seq[1] & 0x00ff
+) * 4096
+X        + (Out->TCP.ack_seq[2] & 0x00ff) * 256 + (Out->TCP.ack_seq[3] & 0x00ff
+));
+Xprintf("TCP Header length: %d    Checksum: %d    Urgent Pointer: %d\n",
+X        (Out->TCP.flags[0] & 0x00f0) >> 4, (Out->TCP.check[0] & 0x00ff) * 256
++
+X        (Out->TCP.check[1] & 0x00ff), (Out->TCP.urg_ptr[0] & 0x0ff) * 256 +
+X        (Out->TCP.urg_ptr[1] & 0x00ff));
+X
+X/*
+X * Display data information
+X */
+X
+X/*
+X * Data length = Total length - IP header length - TCP Header length
+X */
+Xdlength = (Out->IP.tot_len[0] & 0x00ff) * 256 + (Out->IP.tot_len[1] & 0x00ff)
+X          - (Out->IP.version & 0x000f) * 4 - ((Out->TCP.flags[0] & 0x00f0) >>
+4) * 4;
+X
+Xprintf("Data Length: %d\n", dlength);
+Xif((Out->IP.tot_len[0] & 0x00ff) > PACKET_LENGTH)
+X    dlength = PACKET_LENGTH - (Out->IP.version & 0x00ff) * 4 -
+X              ((Out->TCP.flags[0] & 0x00ff) >> 4) * 4;
+Xprintf("-------------------------------------------------------------\n");
+Xfor(i = 0 + (((Out->TCP.flags[0] & 0x00f0) >> 4) - 5) * 4;
+X        i <  (dlength + (((Out->TCP.flags[0] & 0x00f0) >> 4) - 5) * 4);
+X        i += 16)
+X    {
+X    if((dlength + (((Out->TCP.flags[0] & 0x00f0) >> 4) - 5) * 4) - i >= 16)
+X        for(k = 0; k < 16; k++)
+X            if((Out->DATA[i + k] & 0x00ff) < 16)
+X                printf("0%x", Out->DATA[i + k] & 0x00ff);
+X            else
+X                printf("%x", Out->DATA[i + k] & 0x00ff);
+X    else
+X        for(k = 0; k < (dlength + (((Out->TCP.flags[0] & 0x00f0) >> 4) - 5) *
+4) - i; k++)
+X            if((Out->DATA[i + k] & 0x00ff) < 16)
+X                printf("0%x", Out->DATA[i + k] & 0x00ff);
+X            else
+X                printf("%x", Out->DATA[i + k] & 0x00ff);
+X    printf("                ");
+X    if((dlength + (((Out->TCP.flags[0] & 0x00f0) >> 4) - 5) * 4) - i >= 16)
+X        for(k = 0; k < 16; k++)
+X            if((Out->DATA[i + k] & 0x00ff) > 39)
+X                printf("%c", Out->DATA[i + k]);
+X            else
+X                printf(".");
+X    else
+X        for(k = 0; k < (dlength + (((Out->TCP.flags[0] & 0x00f0) >> 4) - 5) *
+4) - i; k++)
+X            if((Out->DATA[i + k] & 0x00ff) > 39)
+X                printf("%c", Out->DATA[i + k]);
+X            else
+X                printf(".");
+X    printf("\n");
+X    }
+Xprintf("-------------------------------------------------------------\n");
+X}
+X
+Xint Unique(struct CONNECTION List[256], struct PACKET * Out, int count)
+X{
+Xint i,j;    /* Loop counters */
+Xint flag = -1;
+Xint num;    /* Number where non uniqueness occurs */
+X
+X/*
+X * Scan through list of connections and see if Out differs.
+X */
+Xfor(i = 0; i < count; i++)
+X    {
+X    /*
+X     * Checks if this is a non-unique connection
+X     */
+X    if((Out->IP.protocol & 0x00ff) == (List[i].protocol & 0x00ff))
+X    if((Out->IP.saddr[0] & 0x00ff) == (List[i].saddr[0] & 0x00ff))
+X    if((Out->IP.saddr[1] & 0x00ff) == (List[i].saddr[1] & 0x00ff))
+X    if((Out->IP.saddr[2] & 0x00ff) == (List[i].saddr[2] & 0x00ff))
+X    if((Out->IP.saddr[3] & 0x00ff) == (List[i].saddr[3] & 0x00ff))
+X    if((Out->IP.daddr[0] & 0x00ff) == (List[i].daddr[0] & 0x00ff))
+X    if((Out->IP.daddr[1] & 0x00ff) == (List[i].daddr[1] & 0x00ff))
+X    if((Out->IP.daddr[2] & 0x00ff) == (List[i].daddr[2] & 0x00ff))
+X    if((Out->IP.daddr[3] & 0x00ff) == (List[i].daddr[3] & 0x00ff))
+X    if((Out->TCP.source[0] & 0x00ff) == (List[i].source[0] & 0x00ff))
+X    if((Out->TCP.source[1] & 0x00ff) == (List[i].source[1] & 0x00ff))
+X    if((Out->TCP.dest[0] & 0x00ff) == (List[i].dest[0] & 0x00ff))
+X    if((Out->TCP.dest[1] & 0x00ff) == (List[i].dest[1] & 0x00ff))
+X        flag = i;
+X    }
+X
+Xif (flag == -1)
+X    {
+X    List[count].protocol = Out->IP.protocol;
+X    List[count].saddr[0] = Out->IP.saddr[0];
+X    List[count].saddr[1] = Out->IP.saddr[1];
+X    List[count].saddr[2] = Out->IP.saddr[2];
+X    List[count].saddr[3] = Out->IP.saddr[3];
+X    List[count].daddr[0] = Out->IP.daddr[0];
+X    List[count].daddr[1] = Out->IP.daddr[1];
+X    List[count].daddr[2] = Out->IP.daddr[2];
+X    List[count].daddr[3] = Out->IP.daddr[3];
+X    List[count].source[0] = Out->TCP.source[0];
+X    List[count].source[1] = Out->TCP.source[1];
+X    List[count].dest[0] = Out->TCP.dest[0];
+X    List[count].dest[1] = Out->TCP.dest[1];
+X    List[count].seq[0] = Out->TCP.seq[0];
+X    List[count].seq[1] = Out->TCP.seq[1];
+X    List[count].seq[2] = Out->TCP.seq[2];
+X    List[count].seq[3] = Out->TCP.seq[3];
+X    List[count].ack_seq[0] = Out->TCP.ack_seq[0];
+X    List[count].ack_seq[1] = Out->TCP.ack_seq[1];
+X    List[count].ack_seq[2] = Out->TCP.ack_seq[2];
+X    List[count].ack_seq[3] = Out->TCP.ack_seq[3];
+X    }
+X
+Xreturn flag;
+X}
+X
+X/*
+X * Display unique connections
+X */
+X
+Xvoid Display_Connections(struct CONNECTION List[256], int count)
+X{
+Xint i;
+X
+Xfor(i = 0; i < count; i++)
+X    {
+X    printf("#%d, P: %d, ", i, List[i].protocol & 0x00ff);
+X    printf("SA: %d.%d.%d.%d, DA: %d.%d.%d.%d, ",
+X        List[i].saddr[0] & 0x00ff, List[i].saddr[1] & 0x00ff,
+X        List[i].saddr[2] & 0x00ff, List[i].saddr[3] & 0x00ff,
+X        List[i].daddr[0] & 0x00ff, List[i].daddr[1] & 0x00ff,
+X        List[i].daddr[2] & 0x00ff, List[i].daddr[3] & 0x00ff);
+X    printf("SP: %d, DP: %d\n",
+X        (List[i].source[0] & 0x00ff) * 256 + (List[i].source[1] & 0x00ff),
+X        (List[i].dest[0] & 0x00ff) * 256 + (List[i].dest[1] & 0x00ff));
+X    }
+Xprintf("---------------------------------------------------------\n");
+X}
+X
+Xvoid Set_Connection(struct PACKET * Out, struct CONNECTION List[256])
+X    {
+X    List[0].protocol = Out->IP.protocol;
+X    List[0].saddr[0] = Out->IP.saddr[0];
+X    List[0].saddr[1] = Out->IP.saddr[1];
+X    List[0].saddr[2] = Out->IP.saddr[2];
+X    List[0].saddr[3] = Out->IP.saddr[3];
+X    List[0].daddr[0] = Out->IP.daddr[0];
+X    List[0].daddr[1] = Out->IP.daddr[1];
+X    List[0].daddr[2] = Out->IP.daddr[2];
+X    List[0].daddr[3] = Out->IP.daddr[3];
+X    List[0].source[0] = Out->TCP.source[0];
+X    List[0].source[1] = Out->TCP.source[1];
+X    List[0].dest[0] = Out->TCP.dest[0];
+X    List[0].dest[1] = Out->TCP.dest[1];
+X    List[0].seq[0] = Out->TCP.seq[0];
+X    List[0].seq[1] = Out->TCP.seq[1];
+X    List[0].seq[2] = Out->TCP.seq[2];
+X    List[0].seq[3] = Out->TCP.seq[3];
+X    List[0].ack_seq[0] = Out->TCP.ack_seq[0];
+X    List[0].ack_seq[1] = Out->TCP.ack_seq[1];
+X    List[0].ack_seq[2] = Out->TCP.ack_seq[2];
+X    List[0].ack_seq[3] = Out->TCP.ack_seq[3];
+X    }
+X
+Xint Data_Length(struct PACKET *Out)
+X{
+Xreturn (Out->IP.tot_len[0] & 0x00ff) * 256 + (Out->IP.tot_len[1] & 0x00ff)
+X       - (Out->IP.version & 0x000f) * 4 - ((Out->TCP.flags[0] & 0x00f0) >> 4)
+X       * 4;
+X}
+X
+Xvoid Write_Data(struct PACKET * Out)
+X{
+Xint dlength;
+Xint i, k;
+X
+X/*
+X * Data length = Total length - IP header length - TCP Header length
+X */
+Xdlength = (Out->IP.tot_len[0] & 0x00ff) * 256 + (Out->IP.tot_len[1] & 0x00ff)
+X          - (Out->IP.version & 0x000f) * 4 - ((Out->TCP.flags[0] & 0x00f0) >>
+4) * 4;
+Xfor(i = 0 + (((Out->TCP.flags[0] & 0x00f0) >> 4) - 5) * 4;
+X        i <  (dlength + (((Out->TCP.flags[0] & 0x00f0) >> 4) - 5) * 4);
+X        i += 16)
+X    {
+X    if((dlength + (((Out->TCP.flags[0] & 0x00f0) >> 4) - 5) * 4) - i >= 16)
+X        for(k = 0; k < 16; k++)
+X            if((Out->DATA[i + k] & 0x00ff) > 39)
+X                printf("%c", Out->DATA[i + k]);
+X            else
+X                printf(".");
+X    else
+X        for(k = 0; k < (dlength + (((Out->TCP.flags[0] & 0x00f0) >> 4) - 5) *
+4) - i; k++)
+X            if((Out->DATA[i + k] & 0x00ff) > 39)
+X                printf("%c", Out->DATA[i + k]);
+X            else
+X                printf(".");
+X    }
+X}
+X
+X
+SHAR_EOF
+chmod 0644 sniff.c || echo "restore of sniff.c fails"
+sed 's/^X//' << 'SHAR_EOF' > sniff.h &&
+X#include "packet.h"
+X
+X/*
+X * Header file for sniff functions
+X */
+X
+Xvoid init(char *);
+X
+Xvoid Get_Packet(char buf[PACKET_LENGTH]);
+X
+Xstruct PACKET * Convert_Packet(char *);
+X
+Xvoid Display_Packet(struct PACKET *);
+X
+Xint Unique(struct CONNECTION *, struct PACKET *, int);
+X
+Xvoid Set_Connection(struct PACKET *, struct CONNECTION *);
+X
+Xvoid Write_Data(struct PACKET *);
+X
+Xvoid Display_Connections(struct CONNECTION *, int);
+X
+Xint Data_Length(struct PACKET *);
+X
+SHAR_EOF
+chmod 0644 sniff.h || echo "restore of sniff.h fails"
+exit 0

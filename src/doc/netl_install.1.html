@@ -1,0 +1,205 @@
+
+<HTML>
+	<HEAD>
+		<TITLE>White Dactyl Labs : netl_install(1)</TITLE>
+		<LINK REL=STYLESHEET TYPE="text/css"
+			HREF=/css/core.css NAME=core>
+	</HEAD>
+<body>
+<h1>White Dactyl Labs : netl_install(1)</h1>
+<h2>table of content</h2>
+<ul>
+  <li><a href=#sec1>NAME</a>
+  <li><a href=#sec2>DESCRIPTION</a>
+  <li><a href=#sec3>DIRECTIONS</a>
+  <li><a href=#sec4>TK NETL</a>
+  <li><a href=#sec5>SEE ALSO</a>
+  <li><a href=#sec6>BUGS</a>
+  <li><a href=#sec7>COPYING</a>
+  <li><a href=#sec8>AUTHOR</a>
+
+</ul>
+<p>
+<a name=sec1><h2>NAME</h2>
+
+<p>
+ <b>netl_install</b> -  <i>netl</i> install instructions.
+<p>
+<a name=sec2><h2>DESCRIPTION</h2>
+
+<p>
+these are directions for installing the  <i>netl</i> package.  you will need
+to download the  <i>netl</i> package.  the latest version should be available
+at http://www.netl.org
+<p>
+<a name=sec3><h2>DIRECTIONS</h2>
+
+<p>
+ AS NOT ROOT:
+<p>
+ 1. type 'sh configure'
+<p>
+configure takes a few options which may be of interest, try
+<p>
+% sh configure --help
+<p>
+for information.  in general, the defaults are
+reasonable.
+<p>
+if you want to build a threaded version of netl, then provide --threaded
+to configure.
+<p>
+if you want to build netl as a static executable, then provide --static
+to configure.  note that if your platform supports dynamic linking, and
+passes the regression tests without linking statically, then you are
+better off not building a static executable.
+<p>
+[ currently, dynamic netl on FreeBSD has some known problems, compile
+with --static or --no-dynamic-modules for now ]
+<p>
+if you want, you can build netl outside the source directory.  this is
+handy if you are building netl for multiple platforms from the same set
+of source files.  simple execute configure from the directory you want to
+compile in.  for example, suppose you wanted to build from a directory
+called `build' under the netl source directory.  you would then type:
+<p>
+<pre>% mkdir build
+% cd build
+% sh ../configure
+</pre><p>
+ 2. type `make'
+<p>
+NOTE: if you're using a UNIX where GNU make is not the default (eg.
+FreeBSD or Solaris), you may have to type `gmake' instead.  netl will
+probably not build without GNU make.
+<p>
+NOTE: if you are compiling on a modern linux system and didn't configure
+with either the --static or --no-dynamic-modules options, you shouldn't
+get any warning or error messages.  if you are compiling a static build,
+expect a lot of warning messages.
+<p>
+ 3. optionally run the regression tests.  you will need perl. type `make
+test'.  any failed tests will produce `.ao' (actual output) files which
+you can read, if you speak gibberish. alternatively, you can e-mail me
+.ao files for any failed test case.
+<p>
+NOTE: if you requested thread support when configuring, then the filter_*
+tests may take unusally long (2-6 seconds each).  this is normal, please
+be patient.
+<p>
+ 4. take a look at conf/netl.conf.  modify it to your liking. at least,
+READ IT, as this will save you a lot of trouble.
+<p>
+ AS ROOT
+<p>
+ 5. type `netl -z -fconf/netl.conf -L.' to try out the configuration. go
+to another virtual terminal and send yourself a ping (or something else
+you are logging), come back and see if it shows up on the screen.
+<p>
+the -z tells  <i>netl</i> to run in the foreground, -f indicates the config
+file and -L is for the module directory.  see  <i>netl</i> (8) for more
+information on  <b>netl</b> options.
+<p>
+ 6. type `make install'
+<p>
+ 7. copy conf/netl.conf to your /etc directory, and run `netl' with no
+arguments to have it run in the background.  when it runs in this manner,
+output is sent to syslogd and will show up in your ~adm/messages file
+(unless you modify  <a href=syslog.conf.5.html>syslog.conf (5)</a> ).  you may want to run  <b>netl</b> from
+one of your startup scripts in /etc/rc.d or thereabouts.
+<p>
+ 8. read the documentation.  start with the  <b>netl</b> (8) man page.
+<p>
+<a name=sec4><h2>TK NETL</h2>
+
+<p>
+there is now a perl/Tk front end for netl, which you can optionally
+install after the netl base has been installed.  you will need perl5 and
+Tk8 or better.  these can be found at
+<p>
+ftp://ftp.cdrom.com/pub/perl/CPAN/src/
+ftp://ftp.cdrom.com/pub/perl/CPAN/by-module/Tk/
+<p>
+once those are installed, you're ready to install tknetl.
+<p>
+ 1. `cd face/perltk' from the netl dist.
+<p>
+ 2. `perl Makefile.PL'
+	this may ask you questions about where the netl library directory
+or header files are located.  unless you did something funny when
+installing the netl base, Makefile.PL should be able to find the library
+unaided.
+<p>
+ 3. `make'
+<p>
+ 4. `make test'
+	optionally.  currently the tests are very basic, essentially
+making sure the Netl perl modules load correctly.  this doesn't even
+check to see if you have perl/Tk.
+<p>
+ 5. `make install'
+	you may have to be root to do this, depending on how perl is
+installed.
+<p>
+ 6. `tknetl'
+	should open up the tk version of the netl GUI interface.
+<p>
+if you have already used netl before, you will notice that tknetl uses a
+different configuration file by default: /etc/tknetl.conf.  if you want
+to use a your existing config file, then you may use the -f option, such
+as:
+<p>
+% tknetl -f /etc/netl.conf
+<p>
+although, the reason tknetl has a different configuration file is because
+usually you want to use the `pipe' output method instead of `log' or
+`dump' common to the standard console netl.
+<p>
+<a name=sec5><h2>SEE ALSO</h2>
+
+<p>
+ <a href=netl.8.html>netl (8)</a> ,  <a href=netl.conf.5.html>netl.conf (5)</a> ,  <a href=netlcc.1.html>netlcc (1)</a> ,  <a href=netl_install.1.html>netl_install (1)</a> ,
+ <a href=netl_module.1.html>netl_module (1)</a> ,  <a href=netl_api.3.html>netl_api (3)</a> ,  <a href=neta.1.html>neta (1)</a> ,  <a href=hwpassive.8.html>hwpassive (8)</a> ,
+ <a href=hwlookup.1.html>hwlookup (1)</a> ,  <a href=dcp.1.html>dcp (1)</a> and  <a href=xd.1.html>xd (1)</a> 
+<p>
+<a name=sec6><h2>BUGS</h2>
+
+<p>
+there are almost certainly bugs, please report them to me.  send bugs and
+bug fixes to netl@netl.org.  the netl home page is at
+<a href=http://www.netl.org>http://www.netl.org</a>which should contain up to date information on
+ <b>netl</b> .
+<p>
+i have attempted to write pretty readable documentation, however, i'm not
+really the best technically writer.  if you are, maybe we could
+colaborate?
+<p>
+<a name=sec7><h2>COPYING</h2>
+
+<p>
+Copyright 1996, 1997, 1999, 2000 Graham THE Ollis
+<p>
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+<p>
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License for more details.
+<p>
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+675 Mass Ave, Cambridge, MA 02139, USA.
+<p>
+<p>
+<a name=sec8><h2>AUTHOR</h2>
+
+<p>
+Graham THE Ollis <ollisg@netl.org>
+
+
+
+</BODY></HTML>
+

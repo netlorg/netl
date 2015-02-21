@@ -1,0 +1,166 @@
+.ad b
+.TH netl_config 3 "25 April 2000" "White Dactyl Labs" "White Dactyl Labs"
+.AT 3
+.de sh
+.br
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.PP
+.SH NAME
+.PP
+.I netl_config_readfile
+, 
+.I netl_config_parseline
+, 
+.I netl_config_pre
+, 
+.I netl_config_post
+, 
+.I netl_config_set
+, 
+.I netl_config_clear
+, 
+.I netl_config_listenport
+- routines and data for reading netl configuration files.
+.PP
+.SH SYNOPSIS
+.PP
+#include <netl/api.h>
+.br
+.PP
+void 
+.B netl_config_readfile
+(char *
+.I filename
+, int 
+.I nbg
+);
+.br
+void 
+.B netl_config_parseline
+(char *
+.I configline
+);
+.br
+void 
+.B netl_config_pre
+(void);
+.br
+void 
+.B netl_config_post
+(void);
+.br
+void 
+.B netl_config_set
+(void *
+.I l
+);
+.br
+void 
+.B netl_config_clear
+(void);
+.br
+extern int 
+.B netl_config_listenport
+;
+.br
+ 
+.SH DESCRIPTION
+.PP
+routines for reading a 
+.BR netl (8)
+configuration file 
+.BR netl.conf (5).
+.PP
+before using any of the configuration functions, you should all
+.B netl_config_pre
+and when done, call 
+.B netl_config_post
+.  they
+currently do nothing, though they may preform some initilization work in
+the future.
+.PP
+.B netl_config_readfile
+reads the file 
+.I filename
+and loads 
+.BR netl (8)
+modules (
+.BR netl_module (1))
+as necessary for later use by the packet
+grab event loop.  
+.I nbg
+should always be 1.  
+.B netl_config_parseline
+parses the configura tion line given by configline
+.PP
+if you want to start from scratch, you may use 
+.B netl_config_clear
+to erase the current configuration.  from there, call 
+.B netl_config_pre
+,
+.B netl_config_readfile
+or 
+.B netl_config_parseline
+, and then
+.B netl_config_post
+as you usually would.
+.PP
+you should not use 
+.B netl_config_set
+unless you understand the internals of
+core 
+.BR netl (8)
+better.
+.PP
+.B netl_config_listenport
+is the port which dcp will listen to, if the
+module is loaded.  see 
+.BR dcp (1)
+and 
+.BR netl (8)
+for more information.
+.PP
+.SH SEE ALSO
+.PP
+.BR netl (8),
+.BR netl_api (3),
+.BR netl_module (1)
+.PP
+.SH BUGS
+.PP
+there are almost certainly bugs, please report them to me.  send bugs and
+bug fixes to netl@netl.org.  the netl home page is at
+http://www.netl.org which should contain up to date information on
+.B netl
+.
+.PP
+i have attempted to write pretty readable documentation, however, i'm not
+really the best technically writer.  if you are, maybe we could
+colaborate?
+.PP
+.SH COPYING
+.PP
+Copyright 1996, 1997, 1999, 2000 Graham THE Ollis
+.PP
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+.PP
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License for more details.
+.PP
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+675 Mass Ave, Cambridge, MA 02139, USA.
+.PP
+.PP
+.SH AUTHOR
+.PP
+Graham THE Ollis <ollisg@netl.org>

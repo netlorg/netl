@@ -1,0 +1,159 @@
+.ad b
+.TH netl_catch 3 "25 April 2000" "White Dactyl Labs" "White Dactyl Labs"
+.AT 3
+.de sh
+.br
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.PP
+.SH NAME
+.PP
+.I netl_catch_prepare
+,
+.I netl_catch_fork
+,
+.I netl_catch_catch
+- routines for communicating with netl as a seperate process.
+.PP
+.SH SYNOPSIS
+.PP
+#include <netl/api.h>
+.br
+.PP
+void 
+.B netl_catch_prepare
+(int 
+.I fd
+);
+.br
+int 
+.B netl_catch_fork
+(char * 
+.I progpath
+, char *
+.I arg
+[]);
+.br
+netl_catch_t *
+.B netl_catch_catch
+(void);
+.br
+ 
+.SH DESCRIPTION
+.PP
+routines for communicating with netl as a sperate process. using the
+.I pipe
+method for output in 
+.BR netl (8),
+it is possible to write a
+program which receives packet data through a pipe from 
+.BR netl (8).
+there are two ways of doing this. you may fork a new 
+.BR netl (8)
+yourself, or 
+.BR netl (8)
+may execute a program (usually named pipeprog).  
+either way, the calling program must set the environment variable
+NETL_PIPE_FD to the number of the file descripter the consumer process
+will read from.  if 
+.BR netl (8)
+is the calling process, then you may also
+use the environment variable NETL_PIPE_PROG to the name of the consumer
+program.
+.PP
+to fork a new 
+.BR netl (8),
+use 
+.B netl_catch_fork
+.I progpath
+is the
+location of the 
+.BR netl (8)
+executable, while 
+.I arg
+is any optional
+arguments you wish to pass.  to avoid unnecessary forks, you will
+probably at least want to provide the -z option. the last element in
+.I arg
+should be NULL.
+.PP
+if the consumer is the callee, then it should call 
+.B netl_catch_prepare
+on the file descripter indicated by the NETL_PIPE_FD environment
+variable.
+.PP
+now the consumer can call 
+.B netl_catch_catch
+to get the packets
+.BR netl (8)
+has deemed suitable for processing. netl_catch_t looks like
+this:
+.PP
+typedef struct {
+.br
+	char *name;
+.br
+	char *packet;
+.br
+	int packet_len;
+.br
+} netl_catch_t;
+.br
+.PP
+if 
+.BR netl (8)
+has died for as unknown reason, packet_len will be -1.  
+if 
+.BR netl (8)
+signaled a die to the consumer, -2 is returned.  if there
+are no packets currently available for the consumer, NULL will be
+returned.  otherwise, name will point to the string used in the
+name="string" portion of the rule which triggered 
+.BR netl (8),
+packet
+will point to the ethernet frame, or other packet, and packet_len will
+indicate the length of that packet.
+.PP
+.SH SEE ALSO
+.PP
+.BR netl (8),
+.BR netl_api (3),
+.BR netl_module (1)
+.PP
+.SH BUGS
+.PP
+there are almost certainly bugs, please report them to me.  send bugs and
+bug fixes to netl@netl.org.  the netl home page is at
+http://www.netl.org which should contain up to date information on
+.B netl
+.
+.PP
+i have attempted to write pretty readable documentation, however, i'm not
+really the best technically writer.  if you are, maybe we could
+colaborate?
+.PP
+.SH COPYING
+.PP
+Copyright 1996, 1997, 1999, 2000 Graham THE Ollis
+.PP
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+.PP
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License for more details.
+.PP
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+675 Mass Ave, Cambridge, MA 02139, USA.
+.PP
+.PP
+.SH AUTHOR
+.PP
+Graham THE Ollis <ollisg@netl.org>

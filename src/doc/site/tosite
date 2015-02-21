@@ -1,0 +1,41 @@
+#!/web/bin/perl
+
+use WDL::IO;
+use IO::File;
+use GNR::HTML;
+
+my $out = IO::File->new;
+
+my $io = WDL::IO->new;
+
+my @list = $io->dir_list('..');
+
+for(@list) {
+	next if /^\./ || -d $_;
+	next unless /\.html$/;
+	print "$_\n";
+
+	my $content = $io->slurp("../$_");
+
+	$content =~ s#<HTML>.*?<BODY>##is;
+	$content =~ s#</BODY>.*$##is;
+
+	$out->open(">$_") || die "unable to open $_ $!";
+
+	my $name = $_;
+	$name =~ s/\.html$//;
+
+	my @thingie = ([ 'NETL', 'netl' ]);
+	push @thingie, [ $name, $_ ]
+		unless $name eq 'index';
+
+	my $title = $name;
+	$title = 'netl' if $name eq 'index';
+
+	print $out GNR::HTML::docHeaderSimple(@thingie);
+	print $out GNR::HTML::section_header($title);
+	print $out $content;
+	print $out GNR::HTML::section_tail();
+	print $out GNR::HTML::docTailSimple('/netl/');
+	$out->close;
+}

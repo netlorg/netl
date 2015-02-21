@@ -1,0 +1,1555 @@
+#!/bin/sh
+#===============================================================================
+# Copyright 2000 Graham THE Ollis <ollisg@netl.org>
+#
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#===============================================================================
+
+rm -f configure.out
+echo "## NETL CONFIGURE.OUT ##" >> configure.out
+
+mkdir include 2> /dev/null
+mkdir include/netl 2> /dev/null
+
+BUILD_DIR=`pwd`
+SOURCE_DIR=`which $0`
+SOURCE_DIR=`echo "$SOURCE_DIR" | sed 's/configure$//'`
+cd $SOURCE_DIR
+SOURCE_DIR=`pwd`
+cd $BUILD_DIR
+SOURCE_DIR=`echo "$SOURCE_DIR" | sed 's/\/*$//'`
+
+OPTFLAGS="-O2"
+
+if test "$BUILD_DIR" != "$SOURCE_DIR" ; then
+	echo "hello" > different.test.$$
+	if test -e $SOURCE_DIR/different.test.$$ ; then
+		SAMEDIR=1
+	else
+		echo "building in $BUILD_DIR"
+		echo "from source $SOURCE_DIR"
+		SAMEDIR=0
+	fi
+	rm -f different.test.$$
+else
+	SAMEDIR=1
+fi
+
+SYSTEM=`sh $SOURCE_DIR/system.guess`
+TARGET=$SYSTEM
+VER="1.10"
+NETL_VER_MAJOR=1
+NETL_VER_MINOR=10
+
+INPUT_MODULES="file.so"
+FILT_MODULES="icmp4.so icmp6.so icmp.so ip4.so ip6.so ip.so tcp4.so tcp6.so tcp.so udp4.so udp6.so udp.so ignp.so raw.so dcp.so ping.so gnr.so hwpassive.so httplog.so nmap.so"
+OUTPUT_MODULES="dl.so dump.so log.so null.so pipe.so"
+
+PREFIX=/usr/local
+SUBINPATH=$PREFIX/sbin
+BINPATH=$PREFIX/bin
+MANPATH=$PREFIX/man
+LIBPATH=$PREFIX/lib/netl-$VER
+INCLUDEPATH=$LIBPATH/include
+DUMPPATH=$LIBPATH/dump
+CONFFILE=/etc/netl.conf
+BOOL_CROSS_TARGET=0
+BOOL_STATIC=0
+EXE_POSTFIX=""
+
+NETLOBJ_EXTRA=""
+NETAOBJ_EXTRA=""
+XDOBJ_EXTRA=""
+HWLOOKUPOBJ_EXTRA=""
+
+
+if test "$LEX" = "" ; then
+	LEX=flex
+fi
+if test "$LEXFLAGS" = "" ; then
+	LEXFLAGS="-F"
+fi
+if test "$LEX_LIBS" = "" ; then
+	LEX_LIBS="-lfl"
+fi
+
+BOOL_DYNAMIC_MODULES=1
+
+while test "$1" != ""; do
+
+	arg=$1;
+	shift
+	case $arg in
+		-*=*) opt=`echo "$arg" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+		*) opt= ;;
+	esac
+
+	case $arg in
+		--target=*)
+			TARGET=${opt}
+			TARGET_PREFIX=${opt}-
+			BOOL_CROSS_TARGET=1
+		;;
+		--conffile=*)
+			CONFFILE=$opt
+		;;
+
+		--with-perl=*)
+			PERL=$opt
+		;;
+
+
+		--prefix=*)
+			PREFIX=$opt
+			SUBINPATH=$PREFIX/sbin
+			BINPATH=$PREFIX/bin
+			MANPATH=$PREFIX/man
+			LIBPATH=$PREFIX/lib/netl-$VER
+			INCLUDEPATH=$LIBPATH/include
+			DUMPPATH=$LIBPATH/dump
+		;;
+
+		--libdir=*)
+			LIBPATH=$opt
+			INCLUDEPATH=$LIBPATH/include
+			DUMPPATH=$LIBPATH/dump
+		;;
+
+		--profile)
+			CFLAGS="$CFLAGS -pg"
+		;;
+
+		--lex-libs=*)
+			LEX_LIBS=$opt
+		;;
+
+		--incdir=*)
+			INCDIR=$opt
+		;;
+
+		--subinpath=*)
+			SUBINPATH=$opt
+		;;
+		--binpath=*)
+			BINPATH=$opt
+		;;
+		--manpath=*)
+			MANPATH=$opt
+		;;
+
+		--static)
+			BOOL_STATIC=1
+			BOOL_DYNAMIC_MODULES=0
+		;;
+
+		--no-dynamic-modules)
+			BOOL_DYNAMIC_MODULES=0
+		;;
+
+		--cross-target)
+			BOOL_CROSS_TARGET=1
+		;;
+
+		--dumppath=*)
+			DUMPPATH=$opt
+		;;
+
+		--threaded)
+			BOOL_THREADED_REQUEST=1
+		;;
+
+		--help)
+			cat <<EOF
+Usage: configure [options]
+Configuration:
+  --help                print out this message
+  --compiler=CC         use alternative compiler
+  --debug		include debug symbols in compile
+  --prefix=DIR		base directory to install into [/usr/local]
+  --libdir=DIR		directory to install support files into 
+			[PREFIX/lib/netl]
+  --incdir=DIR		directory to install header files into
+			[LIBDIR/include]
+  --bindir=DIR		directory to install user programs [PREFIX/bin]
+  --subindir=DIR	directory to install daemons [PREFIX/sbin]
+  --manpath=DIR		directory to install man pages [PREFIX/man]
+  --dumppath=DIR	directory where netl will dump packets to by default
+			[LIBDIR/dump]
+  --conffile=FILE	configuration file netl will read by default
+			[/etc/netl.conf]
+  --target=HOSTTYPE	specify a cross compiler
+  --static		produce a statically linked binary
+  --cross-target	compiler produces code for a non native target
+  --threaded		request that a threaded netl be made
+  --no-dynamic-modules	do not compile standard net modules as dynamic
+			libraries, link them directly to the netl executable.
+  --include-path=DIR	add DIR to the list of paths to look for header files
+  --lib-path=DIR	add DIR to the list of paths to look for library files
+  --profile		include profile information in executable
+Environemnt:
+  CC			C Compiler [gcc]
+  CFLAGS		flags [-O2]
+  LDFLAGS		linker flags [-L.]
+
+  LEX			lexical analizer generator [flex]
+  LEXFLAGS		lex flags [-F]
+  LEX_LIBS		libraries required by lex [-lfl]
+
+  YACC			parser generator [bison]
+  YACCFLAGS		yacc flags [-v -d]
+  YACC_LIBS		libraries required by yacc []
+
+  AR			library creator [ar]
+  RANLIB		archive indexer [ranlib]
+  MISC_LIBS		additional libraries []
+EOF
+			exit
+		;;
+
+		--compiler=*)
+			CC=$opt
+		;;
+
+		--debug)
+			OPTFLAGS="-g3"
+		;;
+
+		--profile)
+			CFLAGS="$CFLAGS -pg"
+		;;
+
+		--include-path=*)
+			CFLAGS="$CFLAGS -I $opt"
+		;;
+
+		--lib-path=*)
+			LDFLAGS="$LDFLAGS -L $opt"
+		;;
+
+		*)
+			echo invalid option $opt
+		;;
+	esac
+done
+
+case $TARGET in
+	i486-*)
+		CFLAGS="$CFLAGS -march=i486 -m486"
+	;;
+	i586-*)
+		CFLAGS="$CFLAGS -march=pentium -mpentium"
+	;;
+	i[6789]86-*)
+		CFLAGS="$CFLAGS -march=pentiumpro -mpentiumpro"
+	;;
+esac
+
+MISC_LIBS=""
+
+case $TARGET in
+	*-linux*)
+		INPUT_MODULES="$INPUT_MODULES linux-ether.so"
+		NETL_INPUT_DEFAULT=linux-ether.so
+		DEVICE_DEFAULT=eth0
+	;;
+	*-freebsd*)
+		DEVICE_DEFAULT=ed0
+		if test "$BOOL_DYNAMIC_MODULES" = 1 ; then
+			echo "*** WARNING dynamic modules on FreeBSD is experimental"
+			echo "*** if this is for production work, provide the --no-dynamic-modules option"
+			echo "*** to configure."
+		fi
+	;;
+	*-cygwin32*)
+		NETL_INPUT_DEFAULT=file.so
+		BOOL_STATIC=1
+		BOOL_DYNAMIC_MODULES=0
+		EXE_POSTFIX=.exe
+	;;
+	*-mingw32*)
+		NETL_INPUT_DEFAULT=file.so
+		BOOL_STATIC=1
+		BOOL_DYNAMIC_MODULES=0
+		EXE_POSTFIX=.exe
+
+		# this is a problem...
+		NETLOBJ_EXTRA="$NETLOBJ_EXTRA djgpp.o"
+		NETAOBJ_EXTRA="$NETAOBJ_EXTRA djgpp.o"
+		XDOBJ_EXTRA="$XDOBJ_EXTRA djgpp.o"
+		HWLOOKUPOBJ_EXTRA="$HWLOOKUPOBJ_EXTRA djgpp.o"
+	;;
+	*-sun*)
+		# this is a fairly random guess
+		DEVICE_DEFAULT=hme0
+	;;
+	*-solaris*)
+		DEVICE_DEFAULT=hme0
+	;;
+	*-ibm-aix*)
+		# !! FIXME !! device_default?
+		# !! FIXME !! would be nice if we used the native compiler
+		#             provided by the company which pays my salery
+		#if test "$CC" = "" ; then
+		#	CC=xlc
+		#	if test "$BOOL_THREADED_REQUEST" = 1 ; then
+		#		CC=xlc_r
+		#	fi
+		#fi
+		BOOL_DYNAMIC_MODULES=0
+	;;
+	*-hp-hpux*)
+		# !! FIXME !! device_default?
+		BOOL_DYNAMIC_MODULES=0
+	;;		
+	*-go32*)
+		NETL_INPUT_DEFAULT=file.so
+		BOOL_STATIC=1
+		BOOL_DYNAMIC_MODULES=0
+		EXE_POSTFIX=.exe
+		CFLAGS="$CFLAGS -D__DJGPP__"
+		NETLOBJ_EXTRA="$NETLOBJ_EXTRA djgpp.o"
+		NETAOBJ_EXTRA="$NETAOBJ_EXTRA djgpp.o"
+		XDOBJ_EXTRA="$XDOBJ_EXTRA djgpp.o"
+		HWLOOKUPOBJ_EXTRA="$HWLOOKUPOBJ_EXTRA djgpp.o"
+	;;
+esac
+
+CFLAGS="$OPTFLAGS $CFLAGS"
+
+if test "$DEVICE_DEFAULT" = ""; then
+	DEVICE_DEFAULT=eth0
+fi
+
+LDFLAGS="-L."
+
+if test "$BOOL_STATIC" = 1 ; then
+	LDFLAGS="$LDFLAGS -static"
+fi
+
+echo "configuring for building for $TARGET on a $SYSTEM machine"
+
+NATIVECC="$CC"
+if test "$CC" = "" ; then
+	CC=${TARGET_PREFIX}gcc
+	NATIVECC=gcc
+fi
+
+case $CC in
+	*gcc)
+		CFLAGS="$CFLAGS -Wall"
+		LDFLAGS="$LDFLAGS -rdynamic"
+	;;
+esac
+
+################################################################################
+# useful programs
+################################################################################
+
+if test "$PERL" = "" ; then
+	PERL=perl
+fi
+
+cat > perltest.pl <<EOF
+print "hello world\n";
+EOF
+
+echo "## PERL TEST ##" >> configure.out
+if  $PERL perltest.pl >> configure.out 2>&1; then
+	echo "perl ... good"
+else
+	echo "perl ... missing"
+	PERL=""
+fi
+
+rm -f perltest.pl
+
+TDR=`which wdltdr 2>/dev/null`
+if test -x "$TDR" ; then
+	echo "wdltdr ... good"
+else
+	echo "wdltdr ... missing"
+	TDR=""
+	if test "$PERL" != "" ; then
+		if test "$SAMEDIR" = "0" ; then
+			TDR="$PERL $SOURCE_DIR/tdr.pl"
+		else
+			TDR="$PERL ../tdr.pl"
+		fi
+	fi
+fi
+
+################################################################################
+# compiler test
+################################################################################
+
+echo "## COMPILER TEST ##" >> configure.out
+
+cat > ./test_prog.c <<EOF
+#include <stdio.h>
+int main(int arcg, char *argv[]) { printf("hello world\n"); return 0;}
+EOF
+
+CC_OK=0
+echo "% $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog" >> configure.out
+if $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog >> configure.out 2>&1; then
+	echo c compiler "($CC)" ... good
+	CC_OK=1
+fi
+
+if test "$CC_OK" = "0" ; then
+	echo "% cc $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog" >> configure.out
+	if cc $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog >> configure.out 2>&1; then
+		echo c compiler "(cc)" ... good
+		CC=cc
+		CC_OK=1
+	fi
+fi
+
+if test "$CC_OK" = "0" ; then
+	echo "% gcc -L. ./test_prog.c -o ./test_prog" >> configure.out
+	if gcc ./test_prog.c -L. -o ./test_prog >> configure.out 2>&1; then
+		echo c compiler "(gcc)" ... good
+		CC=gcc
+		CFLAGS=""
+		LDFLAGS="-L."
+		CC_OK=1
+	fi
+fi
+
+if test "$CC_OK" = "0" ; then
+	echo "% cc -L. ./test_prog.c -o ./test_prog" >> configure.out
+	if cc -L. ./test_prog.c -o ./test_prog >> configure.out 2>&1; then
+		echo c compiler "(cc)" ... good
+		CC=cc
+		CFLAGS=""
+		LDFLAGS="-L."
+		CC_OK=1
+	else
+		echo gcc is not right!
+		rm -f ./test_prog.c ./test_prog
+		exit
+	fi
+fi
+
+if test $BOOL_CROSS_TARGET = 1; then
+	echo "skipping c run test since output is not native."
+else
+	echo "% ./test_prog" >> configure.out
+	if ./test_prog >> configure.out 2>&1; then
+		echo c run "($CC)" ... good
+	else
+		echo gcc output failed!
+		rm -f ./test_prog.c ./test_prog
+		echo "% printenv" >> configure.out
+		printenv >> configure.out
+		exit
+	fi
+fi
+
+rm -f ./test_prog.c ./test_prog
+
+####
+# NOTE: don't do SIZES or BYTE ORDER on a cross compile...
+####
+
+if test $BOOL_CROSS_TARGET = 1; then
+	echo "skipping SIZES and BYTE order for cross compile"
+	echo "make sure your OS is defined in include/netl/global.h, or create an include/netl/guess.h file"
+	echo "#error \"you need to define types for u8 u16 and u32, as well as \"" > include/netl/guess.h
+	echo "/* define either NETL_LITTLE_ENDIAN or NETL_BIG_ENDIAN */" >> include/netl/guess.h
+else
+
+################################################################################
+# SIZES
+################################################################################
+
+echo "## SIZES ##" >> configure.out
+
+mkdir .sztest
+cd .sztest
+
+cat > ./test_prog.c <<EOF
+#include <stdio.h>
+#include <stdlib.h>
+char *getofsize(int i)
+{
+	if(sizeof(char) == i)
+		return "char";
+	if(sizeof(short) == i)
+		return "short";
+	if(sizeof(int) == i)
+		return "int";
+	if(sizeof(long) == i)
+		return "long";
+	fprintf(stderr, "could not find a native type of size %d\n", i);
+	exit(-1);
+}
+int main()
+{
+	printf("typedef unsigned %s u8;\n", getofsize(1));
+	printf("typedef unsigned %s u16;\n", getofsize(2));
+	printf("typedef unsigned %s u32;\n", getofsize(4));
+	return 0;
+}
+EOF
+
+echo "% $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog" >> ../configure.out
+
+if $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog >> ../configure.out 2>&1; then
+	echo "hello world" > /dev/null
+else
+	echo "could not determine types for u8 u16 and u32"
+	cd ..
+	rm -rf .sztest
+	exit
+fi
+
+if test $BOOL_CROSS_TARGET = 1; then
+	echo "could not determine types for u8 u16 and u32 since output is not native."
+else
+	echo "% ./test_prog" >> ../configure.out
+	if ./test_prog > ../include/netl/guess.h 2>&1; then
+		cat ../include/netl/guess.h >> ../configure.out
+		echo "found types for u8 u16 and u32"
+	else
+		cat ../include/netl/guess.h >> ../configure.out
+		echo "could not determine types for u8 u16 and u32"
+		cd ..
+		rm -rf .sztest
+		exit
+	fi
+fi
+
+cd ..
+rm -rf .sztest
+
+################################################################################
+# BYTE ORDER
+################################################################################
+
+echo "## BYTE ORDER ##" >> configure.out
+
+mkdir .botest
+cd .botest
+
+cat > ./test_prog.c <<EOF
+#include "../include/netl/guess.h"
+int main()
+{
+	union {
+		u32	x;
+		char	y[4];
+	} fred;
+	char buff[1024];
+	fred.x = 0x12345678;
+	sprintf(buff, "%02x%02x%02x%02x", fred.y[0], fred.y[1], fred.y[2], fred.y[3]);
+	printf("/* byte order: %s */\n", buff);
+	if(!strcmp(buff, "78563412")) {
+		printf("#define NETL_LITTLE_ENDIAN\n");
+	} else if(!strcmp(buff, "12345678")) {
+		printf("#define NETL_BIG_ENDIAN\n");
+	} else {
+		return -1;
+	}
+	return 0;
+}
+EOF
+
+echo "% $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog" >> ../configure.out
+
+if $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog >> ../configure.out 2>&1; then
+	echo "hello world" > /dev/null
+else
+	echo "could not determine byte order"
+	cd ..
+	rm -rf .botest
+	exit
+fi
+
+if test $BOOL_CROSS_TARGET = 1; then
+	echo "skipping gcc run test since output is not native."
+else
+	echo "% ./test_prog" >> ../configure.out
+	if ./test_prog >> ../include/netl/guess.h 2>&1; then
+		cat ../include/netl/guess.h >> ../configure.out
+		echo "found byte order"
+	else
+		cat ../include/netl/guess.h >> ../configure.out
+		echo "could not determine byte order"
+		cd ..
+		rm -rf .botest
+		exit
+	fi
+fi
+
+cd ..
+rm -rf .botest
+
+####
+# NOTE: don't do SIZES or BYTE ORDER on a cross compile...
+####
+
+fi
+
+################################################################################
+# snprintf
+################################################################################
+
+echo "## SNPRINTF TEST ##" >> configure.out
+
+mkdir .snprintftest
+cd .snprintftest
+
+cat > ./test_prog.c <<EOF
+#include <stdio.h>
+int main() {
+	char b[100];
+	snprintf(b, 100, "hello %d world", 47);
+	printf("%s\n", b);
+	return 0;
+}
+EOF
+
+echo "% $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog" >> ../configure.out
+
+if $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog >> ../configure.out 2>&1; then
+	echo "snprintf() ... good"
+else
+	echo "snprintf() ... missing"
+	NO_SNPRINTF=1
+fi
+
+cd ..
+rm -rf .snprintftest
+
+################################################################################
+# vsnprintf
+################################################################################
+
+echo "## VSNPRINTF TEST ##" >> configure.out
+
+mkdir .vsnprintftest
+cd .vsnprintftest
+
+cat > ./test_prog.c <<EOF
+#include <stdio.h>
+#include <stdarg.h>
+int main() {
+	char *s;
+	size_t n;
+	char *format;
+	va_list ap;
+	vsnprintf(s,n,format,ap);
+}
+EOF
+
+echo "% $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog" >> ../configure.out
+
+if $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog >> ../configure.out 2>&1; then
+	echo "vsnprintf() ... good"
+else
+	echo "vsnprintf() ... missing"
+	NO_VSNPRINTF=1
+fi
+
+cd ..
+rm -rf .vsnprintftest
+
+################################################################################
+# gethostbyname()
+################################################################################
+
+echo "## GETHOSTBYNAME/GETHOSTBYADDR TEST ##" >> configure.out
+
+mkdir .ghtest
+cd .ghtest
+
+cat > ./test_prog.c <<EOF
+int main(int argc, char *argv[]) {
+	extern void *gethostbyname(char *);
+	extern void *gethostbyaddr(char *, int, int);
+	if(atoi(argv[1])) {
+		gethostbyname(argv[0]);
+		gethostbyaddr(argv[0], 1, 2);
+	}
+	return 0;
+}
+EOF
+
+echo "% $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog" >> ../configure.out
+if $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog >> ../configure.out 2>&1; then
+	echo "gethostbyname() ... good"
+else
+
+	echo "% $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog -lxnet" >> ../configure.out
+	if $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog -lxnet >> ../configure.out 2>&1; then
+		MISC_LIBS="$MISC_LIBS -lxnet"
+		echo "gethostbyname() ... good"
+	else
+		echo "gethostbyname() ... missing"
+		echo "*** right now, i really need a working gethostbyname() and"
+		echo "*** gethostbyaddr().  please fix your libc!"
+		cd ..
+		rm -rf .ghtest
+		exit
+	fi
+fi
+
+cd ..
+rm -rf .ghtest
+
+################################################################################
+# ntohl()
+################################################################################
+
+echo "## NTOHL/NTOHS TEST ##" >> configure.out
+
+mkdir .ntohtest
+cd .ntohtest
+
+cat > ./test_prog.c <<EOF
+int main(int argc, char *argv[]) {
+	unsigned int i = 0;
+	i = ntohl(i);
+	return 0;
+}
+EOF
+
+echo "% $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog" >> ../configure.out
+if $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog >> ../configure.out 2>&1; then
+	echo "ntohl() ... good"
+	NTOHL_OK=1
+else
+
+	echo "% $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog -lisode" >> ../configure.out
+	if $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog -lisode >> ../configure.out 2>&1; then
+		MISC_LIBS="$MISC_LIBS -lisode"
+		echo "ntohl() ... good"
+		NTOHL_OK=1
+	else
+		NTOHL_OK=0
+	fi
+fi
+
+
+if test "$NTOHL_OK" = 0 ; then
+
+cat > ./test_prog.c <<EOF
+#include <netinet/in.h>
+int main(int argc, char *argv[]) {
+	unsigned int i = 0;
+	i = ntohl(i);
+	return 0;
+}
+EOF
+
+	echo "% $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog" >> ../configure.out
+	if $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog >> ../configure.out 2>&1; then
+		echo "ntohl() ... good"
+	else
+	
+		echo "% $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog -lisode" >> ../configure.out
+		if $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog -lisode >> ../configure.out 2>&1; then
+			MISC_LIBS="$MISC_LIBS -lisode"
+			echo "ntohl() ... good"
+		else
+			echo "ntohl() ... missing"
+			echo "*** right now, i really need a working ntohl() and"
+			echo "*** ntohs().  please fix your libc!"
+			cd ..
+			rm -rf .ntohtest
+			exit
+		fi
+	fi
+
+fi
+
+cd ..
+rm -rf .ntohtest
+
+################################################################################
+# libdl
+################################################################################
+
+echo "## libdl TEST ##" >> configure.out
+
+if test '(' "$BOOL_STATIC" = 1 ')' -o '(' "$BOOL_DYNAMIC_MODULES" = 0 ')' ; then
+	echo "now" > /dev/null
+else 
+
+mkdir .dltest
+cd .dltest
+
+cat > ./test_prog.c <<EOF
+#include <stdio.h>
+#include <dlfcn.h>
+int fred(void)
+{
+	return 0;
+}
+int main(int argc, char *argv[])
+{
+	void *handle = dlopen("./derf.so", RTLD_NOW);
+	int (*derf)(void);
+	if(handle == 0)
+		return -1;
+	derf = dlsym(handle, "derf");
+	if(derf == NULL)
+		return -1;
+	return derf();
+}
+EOF
+
+cat > ./derf.c <<EOF
+int derf(void)
+{
+	return fred();
+}
+EOF
+
+echo "% $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog" >> ../configure.out
+if $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog >> ../configure.out 2>&1; then
+	echo "ok" > /dev/null
+else
+	echo "% $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog -ldl" >> ../configure.out
+	if $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog -ldl>> ../configure.out 2>&1; then
+		MISC_LIBS="$MISC_LIBS -ldl"
+	else
+		echo "hrm.  i'm having trouble with dynamic linking."
+		echo "check to see if your compiler flags are correct,"
+		echo "or try ./configure --no-dynamic-modules"
+		cd ..
+		rm -rf .dltest
+		exit
+	fi
+fi
+
+echo "% $CC -shared $CFLAGS $LDFLAGS ./derf.c -o derf.so" >> ../configure.out
+if $CC -shared $CFLAGS $LDFLAGS ./derf.c -o derf.so >> ../configure.out 2>&1; then
+	echo "ok" > /dev/null
+else
+	echo "hrm.  i'm having trouble with dynamic linking."
+	echo "check to see if your compiler flags are correct,"
+	echo "or try ./configure --no-dynamic-modules"
+	cd ..
+	rm -rf .dltest
+	exit
+fi
+
+echo "% ./test_prog" >> ../configure.out
+if ./test_prog >> ../configure.out 2>&1; then
+	echo "libdl ... good"
+else
+	echo "hrm.  i'm having trouble with dynamic linking."
+	echo "check to see if your compiler flags are correct,"
+	echo "or try ./configure --no-dynamic-modules"
+	cd ..
+	rm -rf .dltest
+	exit
+fi
+
+cd ..
+rm -rf .dltest
+
+fi
+
+################################################################################
+# libpcap
+################################################################################
+
+echo "## libpcap TEST ##" >> configure.out
+
+mkdir .pctest
+cd .pctest
+
+cat > ./test_prog.c <<EOF
+#include <pcap.h>
+#include <stdlib.h>
+int main(int argc, char *argv[]) {
+	char ebuf[PCAP_ERRBUF_SIZE];
+	pcap_t *pc;
+	if(atoi(argv[1]))
+		pc = pcap_open_live(argv[1], 96, 1, 20, ebuf);
+	return 0;
+}
+EOF
+
+echo "% $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog -lpcap" >> ../configure.out
+if $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog -lpcap >> ../configure.out 2>&1; then
+	echo "% ./test_prog 0" >> ../configure.out
+	if ./test_prog 0 ; then
+		echo "libpcap ... good"
+		NET_LIBS="$NET_LIBS -lpcap"
+		INPUT_MODULES="$INPUT_MODULES pcap.so"
+		if test "$NETL_INPUT_DEFAULT" = "linux-ether.so" ; then
+			echo "hello" > /dev/null
+		else
+			NETL_INPUT_DEFAULT=pcap.so
+		fi
+	else
+		echo "libpcap ... missing"
+		NO_LIBPCAP=1
+	fi
+else
+	echo "libpcap ... missing"
+	NO_LIBPCAP=1
+fi
+
+cd ..
+rm -rf .pctest
+
+################################################################################
+# libpthread
+################################################################################
+
+echo "## libpthread TEST ##" >> configure.out
+
+mkdir .thtest
+cd .thtest
+
+cat > ./test_prog.c <<EOF
+#include <pthread.h>
+#include <stdlib.h>
+#include <stdio.h>
+void *actual(void *x) {
+	printf("OK called actual()\n");
+	exit(0);
+}
+int main(int argc, char *argv[]) {
+	pthread_t thread;
+	void *value;
+	if(pthread_create(&thread, NULL, actual, NULL) != 0) {
+		printf("pthread_create() failed!\n");
+		return 1;
+	}
+	if(pthread_join(thread, &value) != 0) {
+		printf("pthread_join() faled!\n");
+		return 1;
+	}
+	printf("actual() didn't call exit()!\n");
+	return 1;
+}
+EOF
+
+PTHREAD=0
+echo "% $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog" >> ../configure.out
+if $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog >> ../configure.out 2>&1; then
+	echo "% ./test_prog" >> ../configure.out
+	if ./test_prog >> ../configure.out ; then
+		echo -n "libpthread ... good"
+		if test "$BOOL_THREADED_REQUEST" = 1 ; then
+			BOOL_THREADED=1
+			echo " [will build a threaded netl]"
+		else
+			echo " [i haven't been asked to build a threaded netl]"
+		fi
+		PTHREAD=1
+	else
+		echo "hello" > /dev/null
+	fi
+else
+	echo "hello" > /dev/null
+fi
+
+if test "$PTHREAD" = "0" ; then
+	echo "// trying with -lpthread" >> ../configure.out
+	echo "% $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog -lpthread" >> ../configure.out
+	if $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog -lpthread >> ../configure.out 2>&1; then
+		echo "% ./test_prog" >> ../configure.out
+		if ./test_prog >> ../configure.out ; then
+			echo -n "libpthread ... good"
+			if test "$BOOL_THREADED_REQUEST" = 1 ; then
+				BOOL_THREADED=1
+				NET_LIBS="$NET_LIBS -lpthread"
+				echo " [will build a threaded netl]"
+			else
+				echo " [i haven't been asked to build a threaded netl]"
+			fi
+			PTHREAD=1
+		else
+			echo "hello" > /dev/null
+		fi
+	else
+		echo "hello" > /dev/null
+	fi
+fi
+
+if test "$PTHREAD" = "0" ; then
+	echo "// trying with -lpthreads" >> ../configure.out
+	echo "% $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog -lpthreads" >> ../configure.out
+	if $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog -lpthreads >> ../configure.out 2>&1; then
+		echo "% ./test_prog" >> ../configure.out
+		if ./test_prog >> ../configure.out ; then
+			echo -n "libpthread ... good"
+			if test "$BOOL_THREADED_REQUEST" = 1 ; then
+				BOOL_THREADED=1
+				NET_LIBS="$NET_LIBS -lpthreads"
+				echo " [will build a threaded netl]"
+			else
+				echo " [i haven't been asked to build a threaded netl]"
+			fi
+			PTHREAD=1
+		else
+			echo "hello" > /dev/null
+		fi
+	else
+		echo "hello" > /dev/null
+	fi
+fi
+
+if test "$PTHREAD" = "0" ; then
+	echo "// trying with -pthread" >> ../configure.out
+	echo "% $CC $CFLAGS $LDFLAGS -pthread ./test_prog.c -o ./test_prog" >> ../configure.out
+	if $CC $CFLAGS $LDFLAGS -pthread ./test_prog.c -o ./test_prog >> ../configure.out 2>&1; then
+		echo "% ./test_prog" >> ../configure.out
+		if ./test_prog >> ../configure.out ; then
+			echo -n "libpthread ... good"
+			if test "$BOOL_THREADED_REQUEST" = 1 ; then
+				BOOL_THREADED=1
+				LDFLAGS="$LDFLAGS -pthread"
+				echo " [will build a threaded netl]"
+			else
+				echo " [i haven't been asked to build a threaded netl]"
+			fi
+			PTHREAD=1
+		else
+			echo "libpthread ... missing"
+		fi
+	else
+		echo "libpthread ... missing"
+	fi
+fi
+
+cd ..
+rm -rf .thtest
+
+################################################################################
+# libpq
+################################################################################
+
+echo "## libpq TEST ##" >> configure.out
+
+mkdir .pqtest
+cd .pqtest
+
+cat > ./test_prog.c <<EOF
+#include <libpq-fe.h>
+int main(int argc, char *argv[])
+{
+	return 0;
+}
+EOF
+
+echo "% $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog -lpq" >> ../configure.out
+if $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog -lpq >> ../configure.out 2>&1; then
+
+	echo "% ./test_prog" >> ../configure.out
+	if ./test_prog >> ../configure.out 2>&1 ; then
+		echo "libpq ... good"
+		OUTPUT_MODULES="$OUTPUT_MODULES pg.so"
+	else
+		echo "libpq ... bad"
+	fi
+
+else
+	echo "libpq ... missing"
+fi
+
+cd ..
+rm -rf .pqtest
+
+################################################################################
+# netdb.h
+################################################################################
+
+echo "## <netdb.h> TEST ##" >> configure.out
+
+mkdir .htest
+cd .htest
+
+cat > ./test_prog.c <<EOF
+#include <netdb.h>
+int main(int argc, char *argv[]) { return 0; }
+EOF
+
+echo "% $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog" >> ../configure.out
+if $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog >> ../configure.out 2>&1; then
+	echo "<netdb.h> ... good"
+else
+	echo "<netdb.h> ... missing"
+	NO_NETDB_H=1
+fi
+
+cd ..
+rm -rf .htest
+
+
+################################################################################
+# net/if.h
+################################################################################
+
+echo "## <net/if.h> TEST ##" >> configure.out
+
+mkdir .htest
+cd .htest
+
+cat > ./test_prog.c <<EOF
+#include <net/if.h>
+int main(int argc, char *argv[]) { return 0; }
+EOF
+
+echo "% $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog" >> ../configure.out
+if $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog >> ../configure.out 2>&1; then
+	echo "<net/if.h> ... good"
+else
+	echo "<net/if.h> ... missing"
+	NO_NET_IF_H=1
+fi
+
+cd ..
+rm -rf .htest
+
+################################################################################
+# netinet/in.h
+################################################################################
+
+echo "## <netinet/in.h> TEST ##" >> configure.out
+
+mkdir .htest
+cd .htest
+
+cat > ./test_prog.c <<EOF
+#include <netinet/in.h>
+int main(int argc, char *argv[]) { return 0; }
+EOF
+
+echo "% $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog" >> ../configure.out
+if $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog >> ../configure.out 2>&1; then
+	echo "<netinet/in.h> ... good"
+else
+	echo "<netinet/in.h> ... missing"
+	NO_NETINET_IN_H=1
+fi
+
+cd ..
+rm -rf .htest
+
+################################################################################
+# dlfcn.h
+################################################################################
+
+echo "## <dlfcn.h> TEST ##" >> configure.out
+
+mkdir .htest
+cd .htest
+
+cat > ./test_prog.c <<EOF
+#include <dlfcn.h>
+int main(int argc, char *argv[]) { return 0; }
+EOF
+
+echo "% $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog" >> ../configure.out
+if $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog >> ../configure.out 2>&1; then
+	echo "<dlfcn.h> ... good"
+else
+	echo "<dlfcn.h> ... missing"
+	NO_DLFCN_H=1
+fi
+
+cd ..
+rm -rf .htest
+
+################################################################################
+# SEEK_SET
+################################################################################
+
+echo "## SEEK_SET TEST ##" >> configure.out
+
+mkdir .sstest
+cd .sstest
+
+cat > ./test_prog.c <<EOF
+#include <stdio.h>
+int main(int argc, char *argv[]) {
+int i = SEEK_SET;
+i = SEEK_CUR;
+i = SEEK_END;
+return 0;
+}
+EOF
+
+echo "% $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog" >> ../configure.out
+if $CC $CFLAGS $LDFLAGS ./test_prog.c -o ./test_prog >> ../configure.out 2>&1; then
+	echo "<stdio.h> SEEK_SET ... good"
+else
+	echo "<stdio.h> SEEK_SET ... missing"
+	echo "#define SEEK_SET 0" >> ../include/netl/guess.h
+	echo "#define SEEK_CUR 1" >> ../include/netl/guess.h
+	echo "#define SEEK_END 2" >> ../include/netl/guess.h
+fi
+
+cd ..
+rm -rf .sstest
+
+################################################################################
+# flex test
+################################################################################
+
+echo "## LEX/FLEX TEST ##" >> configure.out
+
+mkdir .lextest || true
+cd .lextest
+
+cat > test.l <<EOF
+%%
+%%
+int main() { return 0; }
+int yywrap() { return 1; }
+EOF
+
+LEX_OK=0
+
+echo "% $LEX $LEXFLAGS test.l" >> ../configure.out
+if $LEX $LEXFLAGS test.l >> ../configure.out 2>&1; then
+	echo lex generate ... good
+	LEX_OK=1
+fi
+
+if test "$LEX_OK" = 0 ; then
+	echo "% lex $LEXFLAGS test.l" >> ../configure.out
+	if lex $LEXFLAGS test.l >> ../configure.out 2>&1; then
+		echo lex generate ... good
+		LEX=lex
+		LEX_OK=1
+	else
+		if lex test.l >> ../configure.out 2>&1; then
+			echo lex generate ... good
+			LEX=lex
+			LEXFLAGS=""
+		else
+			echo lex is not right!
+			cd ..
+			rm -rf .lextest
+			echo "% printenv" >> ../configure.out
+			printenv >> ../configure.out
+			exit
+		fi
+	fi
+fi
+
+LEX_OK=0
+
+echo "% $CC $CFLAGS $LDFLAGS lex.yy.c -o lex_test $LEX_LIBS" >> ../configure.out
+if $CC $CFLAGS $LDFLAGS lex.yy.c -o lex_test $LEX_LIBS >> ../configure.out 2>&1; then
+	echo lex compile ... good
+	LEX_OK=1
+fi
+
+if test "$LEX_OK" = 0 ; then
+	echo "% $CC $CFLAGS $LDFLAGS lex.yy.c -o lex_test" >> ../configure.out
+	if $CC $CFLAGS $LDFLAGS lex.yy.c -o lex_test >> ../configure.out 2>&1; then
+		echo lex compile ... good
+		LEX_LIBS=""
+		LEX_OK=1
+	else
+		echo lex compile is not right!
+		cd ..
+		rm -rf .lextest
+		echo "% printenv" >> ../configure.out
+		printenv >> ../configure.out
+		exit
+	fi
+fi
+
+if test $BOOL_CROSS_TARGET = 1; then
+	echo "skipping lex run test since output is not native."
+else
+	echo "% lex_test" >> ../configure.out
+	if ./lex_test >> ../configure.out 2>&1; then
+		echo lex run ... good
+	else
+		echo lex runtime is not right!
+		cd ..
+		rm -rf .lextest
+		echo "% printenv" >> ../configure.out
+		printenv >> ../configure.out
+		exit
+	fi
+fi
+
+cd ..
+rm -rf .lextest
+
+################################################################################
+# yacc test
+################################################################################
+
+echo "## YACC/BISON TEST ##" >> configure.out
+
+if test "$YACC" = "" ; then
+	YACC=bison
+fi
+if test "$YACCFLAGS" = "" ; then
+	YACCFLAGS="-v -d"
+fi
+if test "$YACC_LIBS" = "" ; then
+	YACC_LIBS=""
+fi
+
+rm -rf .yacctest
+mkdir .yacctest
+cd .yacctest
+
+cat > test.y <<EOF
+%%
+start: ;
+%%
+int yyerror(char *s) { return 1; }
+int yylex() { return 1; }
+int main() { return 0; }
+EOF
+
+echo "% $YACC $YACCFLAGS test.y" >> ../configure.out
+if $YACC $YACCFLAGS test.y >> ../configure.out 2>&1; then
+	echo yacc generate ... good
+else
+	if yacc $YACCFLAGS test.y >> ../configure.out 2>&1; then
+		echo yacc generate ... good
+		YACC=yacc
+	else
+		echo yacc is not right!
+		cd ..
+		rm -rf .yacctest
+		echo "% printenv" >> ../configure.out
+		printenv >> ../configure.out
+		exit
+	fi
+fi
+
+echo "% $CC $CFLAGS $LDFLAGS test.tab.c -o yacc_test $YACC_LIBS $LEX_LIBS" >> ../configure.out
+if $CC $CFLAGS $LDFLAGS test.tab.c -o yacc_test $YACC_LIBS $LEX_LIBS >> ../configure.out 2>&1 ; then
+	echo yacc compile ... good
+else
+	echo yacc compile is not right!
+	cd ..
+	rm -rf .yacctest
+	echo "% printenv" >> ../configure.out
+	printenv >> ../configure.out
+	exit
+fi
+
+if test $BOOL_CROSS_TARGET = 1; then
+	echo "skipping yacc run test since output is not native."
+else
+	echo "% yacc_test" >> ../configure.out
+	if ./yacc_test >> ../configure.out 2>&1; then
+		echo yacc run ... good
+	else
+		echo yacc runtime is not right!
+		cd ..
+		rm -rf .yacctest
+		echo "% printenv" >> ../configure.out
+		printenv >> ../configure.out
+		exit
+	fi
+fi
+
+cd ..
+rm -rf .yacctest
+
+################################################################################
+# misc programs, no tests
+################################################################################
+
+if test "$AR" = "" ; then
+	AR=${TARGET_PREFIX}ar
+fi
+if test "$RANLIB" = "" ; then
+	RANLIB=${TARGET_PREFIX}ranlib
+fi
+if test "$LN" = "" ; then
+	LN=ln
+fi
+if test "$RM" = "" ; then
+	RM="rm -f"
+fi
+if test "$CP" = "" ; then
+	CP=cp
+fi
+if test "$PGP" = "" ; then
+	PGP=pgp262
+fi
+if test "$M4" = "" ; then
+	M4=m4
+fi
+if test "$M4FLAGS" = "" ; then
+	M4FLAGS=
+fi
+
+if test "$BOOL_DYNAMIC_MODULES" = 0 ; then 
+	NETLOBJ_EXTRA="$NETLOBJ_EXTRA simdl.o in/libin.a filt/libfilt.a out/libout.a"
+
+	rm -f .tmpim .tmpim2
+	echo "$INPUT_MODULES" > .tmpim
+	sed 's/\.so/\.o/g' .tmpim > .tmpim2
+	INPUT_MODULES=`cat .tmpim2`
+	rm -f .tmpim .tmpim2
+
+	rm -f .tmpim .tmpim2
+	echo "$FILT_MODULES" > .tmpim
+	sed 's/\.so/\.o/g' .tmpim > .tmpim2
+	FILT_MODULES=`cat .tmpim2`
+	rm -f .tmpim .tmpim2
+
+	rm -f .tmpim .tmpim2
+	echo "$OUTPUT_MODULES" > .tmpim
+	sed 's/\.so/\.o/g' .tmpim > .tmpim2
+	OUTPUT_MODULES=`cat .tmpim2`
+	rm -f .tmpim .tmpim2
+fi
+
+INCFLAGS=''
+if test "$SAMEDIR" = "0" ; then
+	INCFLAGS="-I $SOURCE_DIR/include"
+fi
+
+echo generating Makefile.inc
+
+rm -f Makefile.inc
+echo "#do not modify" > Makefile.inc
+echo "CC=$CC" >> Makefile.inc
+echo "LD=$CC" >> Makefile.inc
+echo "CFLAGS=$CFLAGS" >> Makefile.inc
+echo "LDFLAGS=$LDFLAGS" >> Makefile.inc
+echo "LEX=$LEX" >> Makefile.inc
+echo "LEXFLAGS=$LEXFLAGS" >> Makefile.inc
+echo "LEX_LIBS=$LEX_LIBS" >> Makefile.inc
+echo "YACC=$YACC" >> Makefile.inc
+echo "YACCFLAGS=$YACCFLAGS" >> Makefile.inc
+echo "YACC_LIBS=$YACC_LIBS" >> Makefile.inc
+echo "AR=$AR" >> Makefile.inc
+echo "RANLIB=$RANLIB" >> Makefile.inc
+echo "LN=$LN" >> Makefile.inc
+echo "RM=$RM" >> Makefile.inc
+echo "CP=$CP" >> Makefile.inc
+echo "M4=$M4" >> Makefile.inc
+echo "M4FLAGS=$M4FLAGS" >> Makefile.inc
+echo "VER=$VER" >> Makefile.inc
+echo "NETL_VER_MAJOR=$NETL_VER_MAJOR" >> Makefile.inc
+echo "NETL_VER_MINOR=$NETL_VER_MINOR" >> Makefile.inc
+echo "PREFIX=\$(INST)$PREFIX" >> Makefile.inc
+echo "SUBINPATH=\$(INST)$SUBINPATH" >> Makefile.inc
+echo "BINPATH=\$(INST)$BINPATH" >> Makefile.inc
+echo "MANPATH=\$(INST)$MANPATH" >> Makefile.inc
+echo "LIBPATH=\$(INST)$LIBPATH" >> Makefile.inc
+echo "DUMPPATH=\$(INST)$DUMPPATH" >> Makefile.inc
+echo "INCLUDEPATH=\$(INST)$INCLUDEPATH" >> Makefile.inc
+echo "NET_LIBS=$NET_LIBS" >> Makefile.inc
+echo "MISC_LIBS=$MISC_LIBS" >> Makefile.inc
+echo "PERL=$PERL" >> Makefile.inc
+echo "INPUT_DEFAULT=$NETL_INPUT_DEFAULT" >> Makefile.inc
+echo "NETLOBJ_EXTRA=$NETLOBJ_EXTRA" >> Makefile.inc
+echo "NETAOBJ_EXTRA=$NETAOBJ_EXTRA" >> Makefile.inc
+echo "XDOBJ_EXTRA=$XDOBJ_EXTRA" >> Makefile.inc
+echo "HWLOOKUPOBJ_EXTRA=$HWLOOKUPOBJ_EXTRA" >> Makefile.inc
+echo "INPUT_MODULES=$INPUT_MODULES" >> Makefile.inc
+echo "BOOL_STATIC=$BOOL_STATIC" >> Makefile.inc
+echo "BOOL_DYNAMIC_MODULES=$BOOL_DYNAMIC_MODULES" >> Makefile.inc
+echo "FILT_MODULES=$FILT_MODULES" >> Makefile.inc
+echo "OUTPUT_MODULES=$OUTPUT_MODULES" >> Makefile.inc
+echo "NATIVECC=$NATIVECC" >> Makefile.inc
+echo "EXE_POSTFIX=$EXE_POSTFIX" >> Makefile.inc
+echo "TDR=$TDR" >> Makefile.inc
+echo "INCFLAGS=$INCFLAGS" >> Makefile.inc
+if test "$BOOL_DYNAMIC_MODULES" = 0 ; then 
+	echo "MODULE_MODE=static" >> Makefile.inc
+fi
+if test "$BOOL_DYNAMIC_MODULES" = 1 ; then
+	echo "MODULE_MODE=dynamic" >> Makefile.inc
+fi
+if test "$SAMEDIR" = "0" ; then
+	echo "BUILD_DIR=$BUILD_DIR" >> Makefile.inc
+	echo "BUILD_DIRx=\$(BUILD_DIR)/" >> Makefile.inc
+	echo "SOURCE_DIR=$SOURCE_DIR" >> Makefile.inc
+	echo "SOURCE_DIRx=\$(SOURCE_DIR)/" >> Makefile.inc
+	echo "SOURCE_DIRxin=\$(SOURCE_DIRx)in/" >> Makefile.inc
+	echo "SOURCE_DIRxfilt=\$(SOURCE_DIRx)filt/" >> Makefile.inc
+	echo "SOURCE_DIRxout=\$(SOURCE_DIRx)out/" >> Makefile.inc
+	echo "SOURCE_DIRxdoc=\$(SOURCE_DIRx)doc/" >> Makefile.inc
+	$RM Makefile Makefile.dep
+	$LN -fs $SOURCE_DIR/Makefile .
+	$LN -fs $SOURCE_DIR/Makefile.dep
+	mkdir in out filt 2> /dev/null
+	$RM {in,filt,out}/Makefile{,.dep}
+	$LN -fs $SOURCE_DIR/in/Makefile.dep in/Makefile.dep
+	$LN -fs $SOURCE_DIR/filt/Makefile.dep filt/Makefile.dep
+	$LN -fs $SOURCE_DIR/out/Makefile.dep out/Makefile.dep
+	$LN -fs $SOURCE_DIR/in/Makefile in/Makefile
+	$LN -fs $SOURCE_DIR/filt/Makefile filt/Makefile
+	$LN -fs $SOURCE_DIR/out/Makefile out/Makefile
+	mkdir t 2> /dev/null
+	cd t
+	$RM *
+	$LN -fs $SOURCE_DIR/t/*.{t,eo,eERR,eRET} $SOURCE_DIR/t/eg .
+	cd ..
+	$RM doc
+	$LN -fs $SOURCE_DIR/doc .
+	$RM dnm2static.pl
+	$LN -fs $SOURCE_DIR/dnm2static.pl .
+else
+	echo "ONELEVEL=../" >> Makefile.inc
+fi
+
+echo generating include/netl/version.h
+
+rm -f include/netl/version.h
+echo "/* do not modify */" > include/netl/version.h
+echo "#define NETL_VER_MAJOR $NETL_VER_MAJOR" >> include/netl/version.h
+echo "#define NETL_VER_MINOR $NETL_VER_MINOR" >> include/netl/version.h
+echo "#define COPYVER \"$VER copyright 1997-2000 Graham THE Ollis <ollisg@netl.org>\"" >> include/netl/version.h
+echo "#define NETL_LIB_PATH \"$LIBPATH\"" >> include/netl/version.h
+echo "#define NETL_DUMP_PATH \"$DUMPPATH\"" >> include/netl/version.h
+echo "#define NETL_CONFIG \"$CONFFILE\"" >> include/netl/version.h
+echo "#define NETL_CC \"$CC\"" >> include/netl/version.h
+echo "#define NETL_INCLUDEPATH \"$INCLUDEPATH\"" >> include/netl/version.h
+echo "#define NETL_PERLPATH \"$PERL\"" >> include/netl/version.h
+echo "#define NETL_INPUT_DEFAULT \"in/$NETL_INPUT_DEFAULT\"" >> include/netl/version.h
+echo "#define DEVICE_DEFAULT \"$DEVICE_DEFAULT\"" >> include/netl/version.h
+echo "#define BOOL_STATIC $BOOL_STATIC" >> include/netl/version.h
+echo "#define BOOL_DYNAMIC_MODULES $BOOL_DYNAMIC_MODULES" >> include/netl/version.h
+
+if test "$NO_SNPRINTF" = 1 ; then
+	echo "#define NO_SNPRINTF 1" >> include/netl/version.h
+fi
+if test "$NO_VSNPRINTF" = 1 ; then
+	echo "#define NO_VSNPRINTF 1" >> include/netl/version.h
+fi
+if test "$NO_NETDB_H" = 1 ; then
+	echo "#define NO_NETDB_H 1" >> include/netl/version.h
+fi
+if test "$NO_NET_IF_H" = 1 ; then
+	echo "#define NO_NET_IF_H 1" >> include/netl/version.h
+fi
+if test "$NO_NETINET_IN_H" = 1 ; then
+	echo "#define NO_NETINET_IN_H 1" >> include/netl/version.h
+fi
+if test "$NO_DLFCN_H" = 1 ; then
+	echo "#define NO_DLFCN_H 1" >> include/netl/version.h
+	echo "#define RTLD_NOW 1" >> include/netl/version.h
+fi
+if test "$BOOL_THREADED" = 1 ; then
+	echo "#define BOOL_THREADED 1" >> include/netl/version.h
+	echo "#define PTHR_MAXTHREADS 10" >> include/netl/version.h
+fi

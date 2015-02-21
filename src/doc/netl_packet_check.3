@@ -1,0 +1,82 @@
+.ad b
+.TH netl_packet 3 "25 April 2000" "White Dactyl Labs" "White Dactyl Labs"
+.AT 3
+.de sh
+.br
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.PP
+.SH NAME
+.PP
+.I netl_packet_check
+- single round of the netl event loop.
+.PP
+.SH SYNOPSIS
+.PP
+#include <netl/api.h>
+.br
+.PP
+void 
+.B netl_packet_check
+(char *
+.I datagram
+, size_t 
+.I length
+);
+.br
+ 
+.SH DESCRIPTION
+.PP
+given the packet datagram of length length , react appro priately given
+an already configured (see 
+.BR netl_config (3))
+.BR netl (8).
+this is the
+function which gets called every time 
+.BR netl (8)
+reads a packet from the
+network.
+.PP
+.SH SEE ALSO
+.PP
+.BR netl (8),
+.BR netl_api (3),
+.BR netl_module (1)
+.PP
+.SH BUGS
+.PP
+there are almost certainly bugs, please report them to me.  send bugs and
+bug fixes to netl@netl.org.  the netl home page is at
+http://www.netl.org which should contain up to date information on
+.B netl
+.
+.PP
+i have attempted to write pretty readable documentation, however, i'm not
+really the best technically writer.  if you are, maybe we could
+colaborate?
+.PP
+.SH COPYING
+.PP
+Copyright 1996, 1997, 1999, 2000 Graham THE Ollis
+.PP
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+.PP
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License for more details.
+.PP
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+675 Mass Ave, Cambridge, MA 02139, USA.
+.PP
+.PP
+.SH AUTHOR
+.PP
+Graham THE Ollis <ollisg@netl.org>

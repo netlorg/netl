@@ -1,0 +1,30 @@
+#TITLE netl_table
+#SECTION 3
+#HEAD White Dactyl Labs
+#TAIL 25 April 2000
+#START
+#ALSOAS netl_table_icmptype(3)
+#ALSOAS netl_table_icmp6type(3)
+#ALSOAS netl_table_icmpcode(3)
+
+#H NAME
+
+i<netl_table_icmptype>,
+i<netl_table_icmp6type>,
+i<netl_table_icmpcode>,
+- tables for ICMP type and code lookups.
+
+#H SYNOPSIS
+
+#PRE
+hash#include <netl/api.h>
+
+!!FIXME!!
+#/PRE
+ 
+#H DESCRIPTION
+
+this document has yet to be (re)written.
+
+#EXEC apitail
+

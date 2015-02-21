@@ -1,0 +1,29 @@
+#TITLE neta
+#SECTION 1
+#HEAD White Dactyl Labs
+#TAIL 18 June 1999
+#START
+
+#H NAME
+
+i<neta> - network packet analyzer
+
+#H SYNOPSIS
+
+i<neta> [options] file [...]
+
+#H DESCRIPTION
+
+i<neta> is a network packet analyzer.  it was designed to decode an IP
+packet stored as a file.  usually this will be a packet dumped by
+sa<netl>(8).  first the address is shown, followed by header data.  the
+final part is a hex dump, which displays offset, hex data, and character
+data. because the header data is interpreted for you, it is not included
+in the hex dump.
+
+#H OPTIONS
+
+i<neta> uses a subset of the options from sa<netl>(8).  these include -h,
+-r and -v.  the reminder do not make sense.
+
+#EXEC tail

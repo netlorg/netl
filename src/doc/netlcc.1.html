@@ -1,0 +1,122 @@
+
+<HTML>
+	<HEAD>
+		<TITLE>White Dactyl Labs : netlcc(8)</TITLE>
+		<LINK REL=STYLESHEET TYPE="text/css"
+			HREF=/css/core.css NAME=core>
+	</HEAD>
+<body>
+<h1>White Dactyl Labs : netlcc(8)</h1>
+<h2>table of content</h2>
+<ul>
+  <li><a href=#sec1>NAME</a>
+  <li><a href=#sec2>SYNOPSIS</a>
+  <li><a href=#sec3>DESCRIPTION</a>
+  <li><a href=#sec4>OPTIONS</a>
+  <li><a href=#sec5>SEE ALSO</a>
+  <li><a href=#sec6>BUGS</a>
+  <li><a href=#sec7>COPYING</a>
+  <li><a href=#sec8>AUTHOR</a>
+
+</ul>
+<p>
+<a name=sec1><h2>NAME</h2>
+
+<p>
+ <i>netlcc</i> - convert  <i>netl</i> configuration files into  <i>netl</i> modules /  <i>gcc</i> front end for  <i>netl</i> modules
+<p>
+<a name=sec2><h2>SYNOPSIS</h2>
+
+<p>
+ <i>netlcc</i> [gcc options] netl.conf
+<p>
+<a name=sec3><h2>DESCRIPTION</h2>
+
+<p>
+PLEASE NOTE: the  <i>netl</i> compiler is still somewhat experimental.  you
+are encouraged to use it to generate  <i>netl</i> modules which you then
+modify by hand.
+<p>
+ <i>netlcc</i> takes a  <i>netl</i> configuration file and converts it into a
+ <i>netl</i> module, which can be loaded dynamically.  the advantage to a
+ <i>netl</i> module is that it is compiled code and therefore theoretically
+faster.  any .conf files are given to  <a href=netl.8.html>netl (8)</a> to generate a .c file.  
+this .c file is then compiled using  <a href=gcc.1.html>gcc (1)</a> , with any other options
+that have been passed to the command line.  by default, a .so (shared
+object file) is generated, which can be copied into the  <i>netl</i> modules
+directory.
+<p>
+for more information on the  <i>netl</i> configuration format, see
+ <a href=netl.conf.5.html>netl.conf (5)</a> .
+<p>
+for more information on  <i>netl</i> modules, see  <a href=netl_module.1.html>netl_module (1)</a> .
+<p>
+for more information on  <i>netl</i> in general, see  <a href=netl.8.html>netl (8)</a> .
+<p>
+<a name=sec4><h2>OPTIONS</h2>
+
+<p>
+ <i>netlcc</i> grabs two options, if seen, and passes the rest to gcc when it
+reaches the compile stage.  therefore all the options you would expect to
+work for a compiler such as -c or -O2 should work with  <i>netlcc</i> .
+<p>
+-generate-c
+<p>
+	generate c code and stop.  this is handy, if you want to hand
+optimize the module generated from your configuration file.
+<p>
+-install
+<p>
+	once the module has been compiled successfully, this option will
+direct  <i>netlcc</i> to install it in the correct place so that  <a href=netl.8.html>netl (8)</a> 
+can find it.  this option only works when compiling modules from
+configuration files.
+<p>
+<a name=sec5><h2>SEE ALSO</h2>
+
+<p>
+ <a href=netl.8.html>netl (8)</a> ,  <a href=netl.conf.5.html>netl.conf (5)</a> ,  <a href=netlcc.1.html>netlcc (1)</a> ,  <a href=netl_install.1.html>netl_install (1)</a> ,
+ <a href=netl_module.1.html>netl_module (1)</a> ,  <a href=netl_api.3.html>netl_api (3)</a> ,  <a href=neta.1.html>neta (1)</a> ,  <a href=hwpassive.8.html>hwpassive (8)</a> ,
+ <a href=hwlookup.1.html>hwlookup (1)</a> ,  <a href=dcp.1.html>dcp (1)</a> and  <a href=xd.1.html>xd (1)</a> 
+<p>
+<a name=sec6><h2>BUGS</h2>
+
+<p>
+there are almost certainly bugs, please report them to me.  send bugs and
+bug fixes to netl@netl.org.  the netl home page is at
+<a href=http://www.netl.org>http://www.netl.org</a>which should contain up to date information on
+ <b>netl</b> .
+<p>
+i have attempted to write pretty readable documentation, however, i'm not
+really the best technically writer.  if you are, maybe we could
+colaborate?
+<p>
+<a name=sec7><h2>COPYING</h2>
+
+<p>
+Copyright 1996, 1997, 1999, 2000 Graham THE Ollis
+<p>
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+<p>
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License for more details.
+<p>
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+675 Mass Ave, Cambridge, MA 02139, USA.
+<p>
+<p>
+<a name=sec8><h2>AUTHOR</h2>
+
+<p>
+Graham THE Ollis <ollisg@netl.org>
+
+
+
+</BODY></HTML>
+

@@ -1,0 +1,23 @@
+$opt = '-O3' if defined $ARG{opt};
+$opt = '-O3 -m486' if $ARG{opt} eq 'lnx486';
+$dbg = '-g' unless $ARG{opt};
+
+$cons = new cons(
+	CC	=> 'gcc',
+	CFLAGS	=> "$dbg $opt"
+);
+
+Program $cons 'netl',		'netl.c', 'resolve.c', 'sighandle.c',
+				'config.c', 'lookup.c', 'options.c',
+				'io.c', 'dcp.c', 'grab.c', 'parse.c',
+				'dgprintf.c';
+
+Program $cons 'hwpassive',	'hwpassive.c', 'io.c', 'options.c',
+				'sighandle.c';
+
+Program $cons 'neta',		'neta.c', 'resolve.c', 'lookup.c',
+				'options.c', 'dump.c', 'io.c';
+
+Program $cons 'xd',		'xd.c', 'dump.c';
+
+Program $cons 'dcp',		'dcpclient.c', 'io.c';

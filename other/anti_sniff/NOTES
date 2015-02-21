@@ -1,0 +1,75 @@
+# Anti-Sniff notes file for Unix Systems
+#
+# L0pht Heavy Industries
+#
+# This is a command line only version that runs many of the same tests
+# that the Windows NT/98/95 GUI does. This code base was the original 
+# core for the MS version that we wrote.
+#
+# http://www.L0pht.com/antisniff/
+# 
+# Currently only Solaris and OpenBSD are supported for the nix version.
+# 
+# Anti_sniff for unix was written to work with BPF and DLPI. Though porting
+# should be a fairly straight forward effort.
+#
+# THIS IS NOT FREEWARE - this is software under our research license.
+# By using this software you are agreeing to the license. In a nutshell
+# the license states that this is for use only in non-commercial commercial
+# environments. The software is being maintained by L0pht heavy industries.
+# Should you wish to contribute or modify the code please send the diffs
+# to antisniff@l0pht.com. See the LICENSE file for the gory details.
+#
+# By default the interface that will be used is as follows:
+#  OpenBSD - ep1
+#  Solaris - le0
+#
+# The environment variable ANTI_INTERFACE will override the above defaults.
+# refer to your shell man pages for information on setting environment 
+# variables.
+#
+# [example for tcsh or csh]
+#  setenv ANTI_INTERFACE hme0
+# [example for sh]
+#  ANTI_INTERFACE=hme0
+#  export ANTI_INTERFACE
+#
+# The available devices on most systems can be found by running the 
+# ifconfig(1m) command with the appropriate arguments.
+# Only ethernet adapters are supported.
+#
+# [example]
+# ifconfig -a
+# lo0: flags=849<UP,LOOPBACK,RUNNING,MULTICAST> mtu 8232
+#         inet 127.0.0.1 netmask ff000000
+# le0: flags=863<UP,BROADCAST,NOTRAILERS,RUNNING,MULTICAST> mtu 1366
+#         inet 199.201.145.234 netmask ffffff00 broadcast 199.201.145.255
+#
+---------------------
+Turning off sniffers:
+
+net-xray:
+entire packets comprised of nothing but 0x66's seem to turn off several
+types of sniffers. notably net-xray in certain configurations.
+
+snoop:
+if snoop is running in verbose mode arp frames with the arp opcode set to
+non-realistic values - snoop dies (similar to icmp problem)
+
+struct  arphdr {                                                     
+        u_int16_t ar_hrd;       /* format of hardware address */
+#define ARPHRD_ETHER    1       /* ethernet hardware format */            
+#define ARPHRD_FRELAY   15      /* frame relay hardware format */          
+        u_int16_t ar_pro;       /* format of protocol address */
+        u_int8_t  ar_hln;       /* length of hardware address */
+        u_int8_t  ar_pln;       /* length of protocol address */
+        u_int16_t ar_op;        /* one of: */
+#define ARPOP_REQUEST   1       /* request to resolve address */
+#define ARPOP_REPLY     2       /* response to previous request */
+#define ARPOP_REVREQUEST 3      /* request protocol address given hardware */
+#define ARPOP_REVREPLY  4       /* response giving protocol address */
+#define ARPOP_INVREQUEST 8      /* request to identify peer */
+#define ARPOP_INVREPLY  9       /* response identifying peer */
+
+ar_op set to anything other than the defines should do it.
+

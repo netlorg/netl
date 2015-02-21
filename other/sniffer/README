@@ -1,0 +1,6 @@
+To compile on a Linux box type
+gcc -o Sniff find.c main.c sniff.c
+
+Enjoy,
+
+Mythrandir

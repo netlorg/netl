@@ -1,0 +1,126 @@
+
+<HTML>
+	<HEAD>
+		<TITLE>White Dactyl Labs : netl_catch(3)</TITLE>
+		<LINK REL=STYLESHEET TYPE="text/css"
+			HREF=/css/core.css NAME=core>
+	</HEAD>
+<body>
+<h1>White Dactyl Labs : netl_catch(3)</h1>
+<h2>table of content</h2>
+<ul>
+  <li><a href=#sec1>NAME</a>
+  <li><a href=#sec2>SYNOPSIS</a>
+  <li><a href=#sec3>DESCRIPTION</a>
+  <li><a href=#sec4>SEE ALSO</a>
+  <li><a href=#sec5>BUGS</a>
+  <li><a href=#sec6>COPYING</a>
+  <li><a href=#sec7>AUTHOR</a>
+
+</ul>
+<p>
+<a name=sec1><h2>NAME</h2>
+
+<p>
+ <i>netl_catch_prepare</i> ,
+ <i>netl_catch_fork</i> ,
+ <i>netl_catch_catch</i> 
+- routines for communicating with netl as a seperate process.
+<p>
+<a name=sec2><h2>SYNOPSIS</h2>
+
+<p>
+<pre>#include <netl/api.h>
+<p>
+void  <b>netl_catch_prepare</b> (int  <i>fd</i> );
+int  <b>netl_catch_fork</b> (char *  <i>progpath</i> , char * <i>arg</i> []);
+netl_catch_t * <b>netl_catch_catch</b> (void);
+</pre> 
+<a name=sec3><h2>DESCRIPTION</h2>
+
+<p>
+routines for communicating with netl as a sperate process. using the
+ <i>pipe</i> method for output in  <a href=netl.8.html>netl (8)</a> , it is possible to write a
+program which receives packet data through a pipe from  <a href=netl.8.html>netl (8)</a> .  
+there are two ways of doing this. you may fork a new  <a href=netl.8.html>netl (8)</a> 
+yourself, or  <a href=netl.8.html>netl (8)</a> may execute a program (usually named pipeprog).  
+either way, the calling program must set the environment variable
+NETL_PIPE_FD to the number of the file descripter the consumer process
+will read from.  if  <a href=netl.8.html>netl (8)</a> is the calling process, then you may also
+use the environment variable NETL_PIPE_PROG to the name of the consumer
+program.
+<p>
+to fork a new  <a href=netl.8.html>netl (8)</a> , use  <b>netl_catch_fork</b> <i>progpath</i> is the
+location of the  <a href=netl.8.html>netl (8)</a> executable, while  <i>arg</i> is any optional
+arguments you wish to pass.  to avoid unnecessary forks, you will
+probably at least want to provide the -z option. the last element in
+ <i>arg</i> should be NULL.
+<p>
+if the consumer is the callee, then it should call  <b>netl_catch_prepare</b> 
+on the file descripter indicated by the NETL_PIPE_FD environment
+variable.
+<p>
+now the consumer can call  <b>netl_catch_catch</b> to get the packets
+ <a href=netl.8.html>netl (8)</a> has deemed suitable for processing. netl_catch_t looks like
+this:
+<p>
+<pre>typedef struct {
+	char *name;
+	char *packet;
+	int packet_len;
+} netl_catch_t;
+</pre><p>
+if  <a href=netl.8.html>netl (8)</a> has died for as unknown reason, packet_len will be -1.  
+if  <a href=netl.8.html>netl (8)</a> signaled a die to the consumer, -2 is returned.  if there
+are no packets currently available for the consumer, NULL will be
+returned.  otherwise, name will point to the string used in the
+name="string" portion of the rule which triggered  <a href=netl.8.html>netl (8)</a> , packet
+will point to the ethernet frame, or other packet, and packet_len will
+indicate the length of that packet.
+<p>
+<a name=sec4><h2>SEE ALSO</h2>
+
+<p>
+ <a href=netl.8.html>netl (8)</a> ,  <a href=netl_api.3.html>netl_api (3)</a> ,  <a href=netl_module.1.html>netl_module (1)</a> 
+<p>
+<a name=sec5><h2>BUGS</h2>
+
+<p>
+there are almost certainly bugs, please report them to me.  send bugs and
+bug fixes to netl@netl.org.  the netl home page is at
+<a href=http://www.netl.org>http://www.netl.org</a>which should contain up to date information on
+ <b>netl</b> .
+<p>
+i have attempted to write pretty readable documentation, however, i'm not
+really the best technically writer.  if you are, maybe we could
+colaborate?
+<p>
+<a name=sec6><h2>COPYING</h2>
+
+<p>
+Copyright 1996, 1997, 1999, 2000 Graham THE Ollis
+<p>
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+<p>
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License for more details.
+<p>
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+675 Mass Ave, Cambridge, MA 02139, USA.
+<p>
+<p>
+<a name=sec7><h2>AUTHOR</h2>
+
+<p>
+Graham THE Ollis <ollisg@netl.org>
+
+
+
+</BODY></HTML>
+

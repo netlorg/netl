@@ -1,0 +1,92 @@
+#TITLE hwpassive
+#SECTION 8
+#HEAD White Dactyl Labs
+#TAIL 2 July 1999
+#START
+
+#H NAME
+
+i<hwpassive> - passively scan for, and keep a database of hardware/ip
+address mappings.
+
+#H SYNOPSIS
+
+i<hwpassive> [options] ['config rule'] [...]
+
+#H DESCRIPTION
+
+i<hwpassive> is a program for gathering hardware/ip address mappings.  
+it is implemented as a sa<netl>(8) module and sa<perl>(1) script front
+end.  when i<hwpassive> sees a hardware address it has not seen before,
+or if the existing mapping is different, then it will send it to syslogd
+(default) or stdout (with the --background option).
+
+i<hwpassive> writes its database to /usr/local/lib/netl/hwpassive on
+exit, if it has changed, or if you send it the sa<dcp>(1) message
+"hwpassive:write"
+
+#H OPTIONS
+
+hwpassive accepts all the same options and config rules as sa<netl>(8).
+of special interest would be ignore rules which could be used to filter
+out packets being sent into or out of your local network.  for example,
+if your network were 10.* :
+
+% hwpassive 'ignore ip !srcip=10.0.0.0/8' 'ignore ip !dstip=10.0.0.0/8'
+% ping 10.255.255.255
+
+would be an active method for getting nearly all the hardware/ip address
+mappings for the hosts on your local area network.
+
+(note that you may have to escape the `!' character on some shells)
+
+#H DCP COMMANDS
+
+hwpassive will accept four sa<dcp>(1) commands, each is prefixed be
+`hwpassive:' so that they will be ignored by any other program listening
+for sa<dcp>(1) commands.
+
+b<hwpassive:write>
+
+this instructs hwpassive to write the entire database to disk, regardless
+of weather the database has changed since the last save.
+
+b<hwpassive:print>
+
+instructs hwpassive to print out the entire ip/hardware address mapping
+database.  each entry is presented as
+
+hw:hw:hw:hw:hw:hw => ip [first] [last]
+
+where b<hw> is the hardware address, b<ip> is the ip address (and may
+either be a dotted decimal, or a DNS hostname), b<first> is the full date
+of the first time the mapping was seen by i<hwpassive> and b<last> is
+the last time the mapping was seen by i<hwpassive>.
+
+b<hwpassive:lookhw:xx:xx:xx:xx:xx:xx>
+
+makes a query for the hardware address b<xx> in the database.  this may
+return multiple results, if the one hardware address is mapped to more
+than one ip address (which may happen, especially in a dhcp network (see
+sa<dhcpd>(8) and sa<dhcpcd>(8), where ip addresses are assigned
+dynamically)).
+
+b<hwpassive:lookip:hostname>
+
+makes the reverse query for b<hostname>.  again, more than one mapping
+will be returned.  if the host is not found in the database, or DNS fails
+to find the host, then the appropriate error message will be logged.
+
+#H HISTORY
+
+the genesis for this program came about when the author and a friend of
+his were tracking quake users on their university LAN.  thanks to the
+networking knowledge of said friend, determined programming of the author,
+and dominos pizza, we were able to track nearly every anonymous quaker to
+an email address, phone number, dorm, and sometimes even their room
+number.
+
+note that neither the author, nor the author's friend play quake anymore,
+and do not condone the senseless violence in many of today's video games.
+
+#EXEC tail

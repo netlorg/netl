@@ -1,0 +1,28 @@
+#TITLE netl_table
+#SECTION 3
+#HEAD White Dactyl Labs
+#TAIL 25 April 2000
+#START
+
+#H NAME
+
+i<netl>,
+- netl api function.
+
+#H SYNOPSIS
+
+#PRE
+hash#include <netl/api.h>
+
+!!FIXME!!
+#/PRE
+ 
+#H DESCRIPTION
+
+this document has yet to be (re)written.
+
+if you are looking for documentation on the netl system application, then
+check under sa<netl>(8).
+
+#EXEC apitail
+

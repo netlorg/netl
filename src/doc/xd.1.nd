@@ -1,0 +1,28 @@
+#TITLE xd
+#SECTION 1
+#HEAD White Dactyl Labs
+#TAIL 18 June 1999
+#START
+
+#H NAME
+
+i<xd> - hex dump
+
+#H SYNOPSIS
+
+i<xd> filename [ ... ]
+
+#H DESCRIPTION
+
+i<xd> will give you a hex dump of the files provided on the command line.  
+in addition to the hex values, you get the (readable) ASCII values, and
+the offset of the byte beginning on each line.  i<xd> is a scaled down
+version of the classic sa<od>(1).  i<xd> was abstracted out of the
+sa<neta>(1) source code in the sa<netl>(8) distribution, which is usefull
+for sniffing logging arbitrary ethernet frames.
+
+#H OPTIONS
+
+none
+
+#EXEC tail

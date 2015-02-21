@@ -1,0 +1,197 @@
+
+<HTML>
+	<HEAD>
+		<TITLE>White Dactyl Labs : netl homepage</TITLE>
+		<LINK REL=STYLESHEET TYPE="text/css"
+			HREF=/css/core.css NAME=core>
+	</HEAD>
+
+<BODY>
+<h1>netl homepage</h1>
+
+<p><i>netl</i> is a customizable low level network monitor.</p>
+
+<p><i>netl</i> can be configured to look for particular TCP, UDP or ICMP
+packets, or can be setup to look for generic IP packets or even raw
+ethernet frames.</p>
+
+<p>For example, <i>netl's</i> TCP filters allow individual SYNs and ACKs
+(or any combination of flags) to be logged into syslogd or stdout, or
+dumped into a file for later perusal.  the companion program <a
+href=neta.1.html>neta (1)</a> is used to disassemble those packets in a
+human readable form.</p>
+
+<h2>Quickstart</h2>
+
+<p>Netl is a network monitoring utility.  It still has a few rough edges,
+but provides functionality which cannot be found in similar programs.  
+
+If you are wondering where to get started, provided with the netl dist is a file called <a
+href=netl_install.1.html>INSTALL</a> with a step by step instructions.  Netl has been
+developed under the Open Source Linux Operating System, though it should work with anything
+which supports the libpcap packet capture library.  We are looking for broader platform
+support, espectially under windows.  If you are a programmer and would like to help fee free
+to contact us at netl@netl.org for information.</P>
+
+<p>Netl can now run in one of two different modes.  Interactive mode requires a special netl
+user interface.  The only UI written for netl at this time is the perl/Tk netl user
+interface, but others are sure to follow.  If you want to play around with the interactive
+mode, then you will have to install perl/Tk and <a href=#tk>tknetl</a>.
+
+<p>Daemon mode is the default, and original mode.  Using a <a
+href=netl.conf.5.html>config file (usually /etc/netl.conf)</a>, you can
+write rules which send packets to syslogd, or get dumped as a file.  You don't need to install anything special to use daemon mode.</a>
+
+<a name=source></a>
+<h2>Source code</h2>
+
+<p>The latest version of netl is 1.10.  For more information on
+recent advances in the netl source base, consult the <a
+href=HISTORY>HISTORY</a> file.
+
+<ul><li><a href=/netl/netl-1.10.tar.gz>netl-1.10.tar.gz</a></ul>
+
+<!-- <a name=bin></a>
+<h2>Binaries</h2>
+
+<p>We have binary versions available for redhat linux in RPM format.</p>
+
+<TABLE CLASS=dist>
+
+<tr><th>RPM <th>netl version <th>CPU <th>OS <th>os version
+
+<tr><td><a href=/netl/rh61/netl-1.09-1.i386.rpm>netl-1.09-1.i386.rpm</a>
+    <td align=center>1.09 <td>i386 <td>Red Hat Linux <td align=center>6.1
+
+<tr><td><a href=/netl/rh60/netl-1.09-1.i386.rpm>netl-1.09-1.i386.rpm</a>
+    <td align=center>1.09 <td>i386 <td>Red Hat Linux <td align=center>6.0
+
+<tr><td><a href=/netl/rh61/netl-1.09-1.alpha.rpm>netl-1.09-1.alpha.rpm</a>
+    <td align=center>1.09 <td>alpha <td>Red Hat Linux <td align=center>6.1
+
+</TABLE>
+
+<a name=tk></a>
+<h2>Perl/Tk interface</h2>
+
+<p>As a prototype to a more perminent Gtk+ interface for netl, I have
+been working on a perl/Tk interface.  If you download the source, the Tk
+interface can be built from face/perlTk in the netl dist.  You will need
+Perl/Tk 8 or better.  If compiling perl/Tk and the netl perl/Tk interface
+sounds like a hassle, considering grabbing one of the binaries:</p>
+
+<TABLE CLASS=dist>
+<tr><th>RPM <th>netl version <th>CPU <th>OS <th>os version
+
+<tr><td><a href=/netl/rh61/tknetl-1.09-1.i386.rpm>tknetl-1.09-1.i386.rpm</a>
+    <td align=center>1.09 <td>i386 <td>Red Hat Linux <td align=center>6.1
+
+<tr><td><a href=/netl/rh60/tknetl-1.09-1.i386.rpm>tknetl-1.09-1.i386.rpm</a>
+    <td align=center>1.09 <td>i386 <td>Red Hat Linux <td align=center>6.0
+
+<tr><td><a href=/netl/rh61/tknetl-1.09-1.alpha.rpm>tknetl-1.09-1.alpha.rpm</a>
+    <td align=center>1.09 <td>alpha <td>Red Hat Linux <td align=center>6.1
+
+</TABLE> 
+
+<p>You will also need perl/Tk, and since Red Hat 6.0 doesn't come with
+that, I have also provided that in binary form:</p>
+
+<TABLE CLASS=dist>
+<tr><th>RPM <th>netl version <th>CPU <th>OS <th>os version
+
+<tr><td><a href=/netl/rh61/perl-Tk-800.014-1.i386.rpm>perl-Tk-800.014-1.i386.rpm</a>
+    <td align=center>1.09 <td>i386 <td>Red Hat Linux <td align=center>6.1
+
+<tr><td><a href=/netl/rh60/perl-Tk-800.014-1.i386.rpm>perl-Tk-800.014-1.i386.rpm</a>
+    <td align=center>1.09 <td>i386 <td>Red Hat Linux <td align=center>6.0
+
+<tr><td><a href=/netl/rh61/perl-Tk-800.014-1.alpha.rpm>perl-Tk-800.014-1.alpha.rpm</a>
+    <td align=center>1.09 <td>alpha <td>Red Hat Linux <td align=center>6.1
+
+</TABLE>
+
+<p>You can also, optionally install perl/Tk yourself (you may have to
+provide rpm the `--nodep' option when installing tknetl, if it gives you
+problems).  perl/Tk is available at your local CPAN mirror.  See 
+<a href=http://www.perl.com>www.perl.com</a> for more details.</p>
+
+-->
+
+<a name=old></a>
+<h2>Old versions</h2>
+
+<p>We keep a limited number of older versions of netl available.</p>
+
+<ul>
+	<Li><A HREF=/netl/netl-1.09.tar.gz>netl-1.09.tar.gz</A>
+	<li><a href=/netl/netl-1.08.tar.gz>netl-1.08.tar.gz</a>
+	<li><a href=/netl/netl-1.07.tar.gz>netl-1.07.tar.gz</a>
+	<li><a href=/netl/netl-1.05.tar.gz>netl-1.05.tar.gz</a>
+	<li><a href=/netl/netl-1.05-1.i386.rpm>netl-1.05-1.i386.rpm</a>
+	<li><a href=/netl/netl-1.04.tar.gz>netl-1.04.tar.gz</a>
+	<li><a href=/netl/netl-1.04-1.i386.rpm>netl-1.04-1.i386.rpm</a>
+	<li><a href=/netl/netl-1.04-1.alpha.rpm>netl-1.04-1.alpha.rpm</a>
+	<li><a href=/netl/netl-1.03.tar.gz>netl-1.03.tar.gz</a>
+	<li><a href=/netl/netl-1.02.tar.gz>netl-1.02.tar.gz</a>
+	<li><a href=/netl/netl-1.01.tar.gz>netl-1.01.tar.gz</a>
+</ul>
+
+<a name=doc></a>
+<h2>Documentation</h2>
+
+<p>It's best to start out with the main daemon <a
+href=netl.8.html>netl(8)</a>, unless you haven't managed to install netl
+yet, in which case it's best to start with the <a
+href=netl_install.1.html>install guide</a>.  The newest, and most
+exciting new features for netl are the new <a
+href=netl_module.1.html>netl modules</a> and <a href=netlcc.1.html>netl
+compiler</a>.  Modules are considered stable, in fact netl 1.02 and later
+are module based.  The compiler is experimental, but useable.</p>
+
+<UL>
+<LI>Section 1
+User Programs<UL>
+<LI><A HREF=dcp.1.html>dcp(1)</A> discrete communication protocol client.</LI>
+<LI><A HREF=hwlookup.1.html>hwlookup(1)</A> query the ethernet hardware address database off-line.</LI>
+<LI><A HREF=neta.1.html>neta(1)</A> network packet analyzer</LI>
+<LI><A HREF=netl_install.1.html>netl_install(1)</A>  <i>netl</i> install instructions.</LI>
+<LI><A HREF=netl_module.1.html>netl_module(1)</A>  <i>netl</i> API.</LI>
+<LI><A HREF=tdr.1.html>tdr(1)</A> test driver.</LI>
+<LI><A HREF=unsoiled.1.html>veracity(1)</A>veracity (unsoiled)</LI>
+<LI><A HREF=xd.1.html>xd(1)</A> hex dump</LI>
+</UL></LI>
+<LI>Section 3
+Application Programmer Interface (somewhat incomplete) <UL>
+<LI><A HREF=netl.3.html>netl_table(3)</A> <i>netl</i> ,</LI>
+<LI><A HREF=netl_api.3.html>netl_api(3)</A> <i>netl_api</i> , </LI>
+<LI><A HREF=netl_catch.3.html>netl_catch(3)</A> <i>netl_catch_prepare</i> ,</LI>
+<LI><A HREF=netl_config.3.html>netl_config(3)</A> <i>netl_config_readfile</i> , </LI>
+<LI><A HREF=netl_generate.3.html>netl_generate(3)</A> <i>netl_generate_c</i> ,</LI>
+<LI><A HREF=netl_guts_yy_line_number.3.html>netl_guts_yy_line_number(3)</A> <i>netl_guts_yy_line_number</i> ,</LI>
+<LI><A HREF=netl_io.3.html>netl_io(3)</A> <i>netl_io_die</i> , </LI>
+<LI><A HREF=netl_nm.3.html>netl_nm(3)</A> <i>netl_nm</i> ,</LI>
+<LI><A HREF=netl_packet_check.3.html>netl_packet(3)</A> <i>netl_packet_check</i> </LI>
+<LI><A HREF=netl_resolve.3.html>netl_resolve(3)</A> <i>netl_resolve_addip</i> , </LI>
+<LI><A HREF=netl_table.3.html>netl_table(3)</A> <i>netl_table_icmptype</i> ,</LI>
+</UL></LI>
+<LI>Section 5
+File Formats<UL>
+<LI><A HREF=netl.conf.5.html>netl.conf(5)</A>  <i>netl</i> (8) configuration file</LI>
+</UL></LI>
+<LI>Section 8
+Daemons and Services<UL>
+<LI><A HREF=hwpassive.8.html>hwpassive(8)</A> passively scan for, and keep a database of hardware/ip</LI>
+<LI><A HREF=netl.8.html>netl(8)</A> customizable network logger and sniffer</LI>
+<LI><A HREF=netlcc.1.html>netlcc(8)</A> convert  <i>netl</i> configuration files into  <i>netl</i> modules /  <i>gcc</i> front end for  <i>netl</i> modules</LI>
+</UL></LI>
+</UL>
+
+<a name=contact></a>
+<h2>Contact</h2>
+
+<p>You can contact the netl team at <a
+href=mailto:netl@netl.org>netl@netl.org</a>.</P>
+
+</BODY></HTML>
+

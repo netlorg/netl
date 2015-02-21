@@ -1,3 +1,48 @@
-% gcc -O3 -Wall -L. -rdynamic ./test_prog.c -o ./test_prog
-% ./test_prog
-hello world
+% printenv
+PWD=/home/ollisg/code/projects/netl/src
+XAUTHORITY=/home/ollisg/.Xauthority
+TMPDIR=/home/ollisg/.temp
+VENDOR=intel
+PAGER=less
+LC_MESSAGES=en
+HOSTNAME=figment
+LESSOPEN=|/usr/bin/lesspipe.sh %s
+LANGUAGE=en_US:en
+NENSCRIPT=-2rwG
+KDEDIR=/usr
+VISUAL=pico
+NNTPSERVER=news.mindspring.com
+LESS=-MM
+BROWSER=xterm -font 9x15 -e lynx
+USER=ollisg
+LS_COLORS=
+LC_TIME=en
+MACHTYPE=i586-mandrake-linux-gnu
+MAIL=/var/spool/mail/ollisg
+INPUTRC=/etc/inputrc
+PYTHONPATH=/home/ollisg/.py
+LANG=en
+HOST=figment
+LC_NUMERIC=en
+COLORTERM=
+DISPLAY=:0
+COMPDATE=000708
+LOGNAME=ollisg
+SHLVL=2
+LC_CTYPE=en
+GROUP=xgrp
+PYTHONSTARTUP=/home/ollisg/.py/start.py
+LOCALDOMAIN=cs.arizona.edu arizona.edu u.arizona.edu ccit.arizona.edu rescomp.arizona.edu lanl.gov
+SHELL=/bin/tcsh
+HOSTTYPE=i586
+OSTYPE=linux-gnu
+HISTSIZE=1000
+HOME=/home/ollisg
+TERM=xterm
+PATH=/usr/local/mozilla/bin:/usr/local/bin:/bin:/usr/bin::/usr/X11R6/bin:/usr/games:/home/ollisg/bin
+SECURE_LEVEL=2
+RPM_INSTALL_LANG=en_US:en
+LC_MONETARY=en
+LC_COLLATE=en
+_=/usr/bin/printenv
+OLDPWD=/home/ollisg/code/projects/netl/src/.lextest

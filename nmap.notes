@@ -1,0 +1,46 @@
+nmap -sT	# connect() scan
+
+	netl detects this easily with 
+		tcp flag=syn
+	but then, typically so does the target system when nmap tries to
+	connect to ftp and the like.  this is really no different than
+	what probe or strobe do, except nmap doesn't probe any
+	`uninteresting' ports.
+
+nmap -sS	# half open syn
+
+	target machine will normal not log this, but netl will with
+		tcp flag=syn
+
+nmap -sF	# stealth fin
+
+	netl logs this with
+		tcp flag=fin !flag=urg,psh,syn,ack,rst
+
+nmap -sX	# Xmas Tree
+
+	netl logs with
+		tcp flag=fin,urg,psh !flag=syn,ack,rst
+
+nmap -sN	# NULL scan
+
+	netl logs with
+		tcp !flag=all
+
+nmap -sP	# `ping' scan
+
+	netl logs (both) with
+		tcp flag=ack !flag=syn,fin,rsh,psh,urg
+		icmp name=ping type=echo
+
+nmap -sU	# UDP scan
+
+	target system typically logs this when nmap hits the talk daemon.  
+	so does netl with
+		udp
+	anything.  hrm.  go figure.  gonna want to filter stuff out here
+	though, because a lot of traffic goes through UDP
+
+nmap -f		# fragmentation
+
+	this does not seem to bother netl very much.

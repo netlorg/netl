@@ -1,0 +1,135 @@
+#!/usr/local/lang/perl/bin/perl
+
+eval 'exec /usr/local/lang/perl/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+# @(#)netatk.pl (c) 1999 Graham THE Ollis
+#===============================================================================
+# network analizer written in perl.  this is equivalent to neta.c, but written 
+# in perl.  happy.
+#
+#   Copyright (C) 1997 Graham THE Ollis <ollisg@wwa.com>
+#
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#
+#===============================================================================
+
+use Netl::Packet;
+use Netl::Dump;
+use Netl::PacketPopup;
+use Netl::UI;
+use Netl;
+
+$VERSION = $Netl::VERSION;
+
+Netl::parsecmdline(@ARGV);
+
+if(Netl::displayVersion()) {
+	print "libnetl ", Netl::COPYVER(), "\n";
+	print "tkneta ", $VERSION, " Copyright 1999 Graham THE Ollis <ollisg\@wwa.com>\n";
+}
+
+undef $/;
+for(@ARGV) {
+	undef $ENV{'DISPLAY'} if /^--stdout$/;
+	next if /^-/;
+	process($_);
+}
+
+sub process {
+	return to_x(@_) if defined $ENV{'DISPLAY'};
+	to_stdout(@_);	# else
+}
+
+Netl::UI::loop() if defined $ENV{'DISPLAY'};
+
+sub to_x {
+	my $fred = Netl::PacketPopup->new_from_file(shift);
+}
+
+sub to_stdout {
+	my $filename = shift;
+	my $packet = Netl::Packet->new(Netl::Dump::readentire($filename));
+
+	printf "-------------------------------------------------------------------
+$filename
+ethernet:
+  type: %s\n  ", $packet->hw_class;
+	printf "%s => %s\n", $packet->hw_src, $packet->hw_dst;
+	if($packet->is_ip) {
+		printf "IP:
+  version:           %s
+  header length:     %02x
+  type of service:   %s
+  total length       %04x
+  frag id            %04x
+  frag offset        %04x
+  time to live       %02x
+  protocol           %s", 
+		   $packet->{'ip.version'}, $packet->ip_len, $packet->ip_tos, 
+		   $packet->{'ip.tot_len'}, $packet->{'ip.id'}, 
+		   $packet->{'ip.frag_off'}, $packet->{'ip.ttl'},
+		   $packet->ip_class;
+		if($packet->is_tcp) {
+			my @flags = $packet->tcp_flags;
+			printf "
+  sequence number    %08x
+  ack number         %08x
+  doff               %02x
+  flags              @flags 
+  window size        %04x
+  urg pointer        %04x", $packet->{'tcp.seq'}, $packet->{'tcp.ack_seq'},
+			     $packet->{'tcp.doff'} << 2,
+			     $packet->{'tcp.window'}, $packet->{'tcp.urg_ptr'};
+		}
+		if($packet->has_port) {
+			printf "\n  %s:%d => %s:%d", 
+				$packet->ip_src, $packet->{'ip.source'},
+				$packet->ip_dst, $packet->{'ip.dest'};
+		} else {
+			printf "\n  %s => %s", $packet->ip_src, $packet->ip_dst;
+		}
+		if($packet->is_icmp) {
+			printf "
+  type:              %s
+  code:              %s 
+  id:                %04x
+  sequence:          %04x
+  gateway:           %08x",
+			$packet->icmp_type, $packet->icmp_code,
+			$packet->{'icmp.id'}, $packet->{'icmp.sequence'},
+			$packet->{'icmp.gateway'};
+		}
+		print "\n";
+	}
+	Netl::Dump::dumpdata($packet->{'payload'});
+}
+
+
+sub about_popup {
+	my $mw = MainWindow->new;
+	$mw->title('about pipeprog');
+	my $f;
+	my $tree = $mw->Photo('-file' => "$Netl::Dirs::libdir/img/tree3.gif", '-palette' => 10);
+	$mw->Label('-text' => 'GTO/CSI', '-image' => $tree)->grid(
+		$f = $mw->Frame,
+		'-stick' => 'nsew',
+	);
+	$f->Label('-text'  => 'netatk (network packet analizer)')->grid;
+	$f->Label('-text'  => 'copyright 1999 White Dactyl Labs')->grid;
+	$f->Label('-text'  => "version $VERSION")->grid;
+	$f->Button('-text' => 'Ok',
+		'-command' => sub { $mw->destroy },
+		)->grid;
+}

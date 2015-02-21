@@ -1,0 +1,27 @@
+#TITLE netl_generate
+#SECTION 3
+#HEAD White Dactyl Labs
+#TAIL 25 April 2000
+#START
+#ALSOAS netl_generate_c(3)
+
+#H NAME
+
+i<netl_generate_c>,
+- generate a netl module from a netl config file.
+
+#H SYNOPSIS
+
+#PRE
+hash#include <netl/api.h>
+void b<netl_generate_c>(FILE *i<fp>);
+#/PRE
+ 
+#H DESCRIPTION
+
+after running the sa<netl>(8)configuration routines (sa<netl_config(3)>),
+this routine can be run to generate an equivalent sa<netl_module>(1).  
+i<fp> should be opened for writ ing, which is where the c program will be
+generated. b<netl_generate_c> will close i<fp> when it is done.
+
+#EXEC apitail

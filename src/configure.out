@@ -1,0 +1,127 @@
+## NETL CONFIGURE.OUT ##
+## PERL TEST ##
+hello world
+## COMPILER TEST ##
+% gcc -O2  -march=pentiumpro -mpentiumpro -Wall -L. -rdynamic ./test_prog.c -o ./test_prog
+`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.
+% ./test_prog
+hello world
+## SIZES ##
+% gcc -O2  -march=pentiumpro -mpentiumpro -Wall -L. -rdynamic ./test_prog.c -o ./test_prog
+`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.
+% ./test_prog
+typedef unsigned char u8;
+typedef unsigned short u16;
+typedef unsigned int u32;
+## BYTE ORDER ##
+% gcc -O2  -march=pentiumpro -mpentiumpro -Wall -L. -rdynamic ./test_prog.c -o ./test_prog
+`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.
+test_prog.c: In function `main':
+test_prog.c:10: warning: implicit declaration of function `sprintf'
+test_prog.c:11: warning: implicit declaration of function `printf'
+test_prog.c:12: warning: implicit declaration of function `strcmp'
+% ./test_prog
+typedef unsigned char u8;
+typedef unsigned short u16;
+typedef unsigned int u32;
+/* byte order: 78563412 */
+#define NETL_LITTLE_ENDIAN
+## SNPRINTF TEST ##
+% gcc -O2  -march=pentiumpro -mpentiumpro -Wall -L. -rdynamic ./test_prog.c -o ./test_prog
+`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.
+## VSNPRINTF TEST ##
+% gcc -O2  -march=pentiumpro -mpentiumpro -Wall -L. -rdynamic ./test_prog.c -o ./test_prog
+`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.
+test_prog.c: In function `main':
+test_prog.c:9: warning: control reaches end of non-void function
+test_prog.c:4: warning: `s' might be used uninitialized in this function
+test_prog.c:5: warning: `n' might be used uninitialized in this function
+test_prog.c:6: warning: `format' might be used uninitialized in this function
+test_prog.c:7: warning: `ap' might be used uninitialized in this function
+## GETHOSTBYNAME/GETHOSTBYADDR TEST ##
+% gcc -O2  -march=pentiumpro -mpentiumpro -Wall -L. -rdynamic ./test_prog.c -o ./test_prog
+`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.
+test_prog.c: In function `main':
+test_prog.c:4: warning: implicit declaration of function `atoi'
+## NTOHL/NTOHS TEST ##
+% gcc -O2  -march=pentiumpro -mpentiumpro -Wall -L. -rdynamic ./test_prog.c -o ./test_prog
+`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.
+test_prog.c: In function `main':
+test_prog.c:3: warning: implicit declaration of function `ntohl'
+## libdl TEST ##
+% gcc -O2  -march=pentiumpro -mpentiumpro -Wall -L. -rdynamic ./test_prog.c -o ./test_prog
+`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.
+/home/ollisg/.temp/ccSIkoyy.o: In function `main':
+/home/ollisg/.temp/ccSIkoyy.o(.text+0x24): undefined reference to `dlopen'
+/home/ollisg/.temp/ccSIkoyy.o(.text+0x39): undefined reference to `dlsym'
+collect2: ld returned 1 exit status
+% gcc -O2  -march=pentiumpro -mpentiumpro -Wall -L. -rdynamic ./test_prog.c -o ./test_prog -ldl
+`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.
+% gcc -shared -O2  -march=pentiumpro -mpentiumpro -Wall -L. -rdynamic ./derf.c -o derf.so
+`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.
+derf.c: In function `derf':
+derf.c:3: warning: implicit declaration of function `fred'
+% ./test_prog
+## libpcap TEST ##
+% gcc -O2  -march=pentiumpro -mpentiumpro -Wall -L. -rdynamic ./test_prog.c -o ./test_prog -lpcap
+`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.
+test_prog.c:1:18: pcap.h: No such file or directory
+test_prog.c: In function `main':
+test_prog.c:4: `PCAP_ERRBUF_SIZE' undeclared (first use in this function)
+test_prog.c:4: (Each undeclared identifier is reported only once
+test_prog.c:4: for each function it appears in.)
+test_prog.c:5: `pcap_t' undeclared (first use in this function)
+test_prog.c:5: `pc' undeclared (first use in this function)
+test_prog.c:7: warning: implicit declaration of function `pcap_open_live'
+test_prog.c:4: warning: unused variable `ebuf'
+test_prog.c:5: warning: statement with no effect
+## libpthread TEST ##
+% gcc -O2  -march=pentiumpro -mpentiumpro -Wall -L. -rdynamic ./test_prog.c -o ./test_prog
+`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.
+/home/ollisg/.temp/ccmKzbhS.o: In function `main':
+/home/ollisg/.temp/ccmKzbhS.o(.text+0x37): undefined reference to `pthread_create'
+/home/ollisg/.temp/ccmKzbhS.o(.text+0x64): undefined reference to `pthread_join'
+collect2: ld returned 1 exit status
+// trying with -lpthread
+% gcc -O2  -march=pentiumpro -mpentiumpro -Wall -L. -rdynamic ./test_prog.c -o ./test_prog -lpthread
+`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.
+% ./test_prog
+## libpq TEST ##
+OK called actual()
+% gcc -O2  -march=pentiumpro -mpentiumpro -Wall -L. -rdynamic ./test_prog.c -o ./test_prog -lpq
+`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.
+% ./test_prog
+## <netdb.h> TEST ##
+% gcc -O2  -march=pentiumpro -mpentiumpro -Wall -L. -rdynamic ./test_prog.c -o ./test_prog
+`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.
+## <net/if.h> TEST ##
+% gcc -O2  -march=pentiumpro -mpentiumpro -Wall -L. -rdynamic ./test_prog.c -o ./test_prog
+`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.
+## <netinet/in.h> TEST ##
+% gcc -O2  -march=pentiumpro -mpentiumpro -Wall -L. -rdynamic ./test_prog.c -o ./test_prog
+`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.
+## <dlfcn.h> TEST ##
+% gcc -O2  -march=pentiumpro -mpentiumpro -Wall -L. -rdynamic ./test_prog.c -o ./test_prog
+`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.
+## SEEK_SET TEST ##
+% gcc -O2  -march=pentiumpro -mpentiumpro -Wall -L. -rdynamic ./test_prog.c -o ./test_prog
+`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.
+## LEX/FLEX TEST ##
+% flex -F test.l
+% gcc -O2  -march=pentiumpro -mpentiumpro -Wall -L. -rdynamic lex.yy.c -o lex_test -lfl
+`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.
+lex.yy.c: In function `yy_get_next_buffer':
+lex.yy.c:845: warning: implicit declaration of function `read'
+test.l: At top level:
+lex.yy.c:932: warning: `yyunput' defined but not used
+% lex_test
+## YACC/BISON TEST ##
+% bison -v -d test.y
+% gcc -O2  -march=pentiumpro -mpentiumpro -Wall -L. -rdynamic test.tab.c -o yacc_test  -lfl
+`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.
+/web/share/bison.simple: In function `yyparse':
+/web/share/bison.simple:358: warning: implicit declaration of function `yyerror'
+/web/share/bison.simple:361: warning: implicit declaration of function `free'
+/web/share/bison.simple:432: warning: implicit declaration of function `yylex'
+/web/share/bison.simple:285: warning: `yyval' might be used uninitialized in this function
+% yacc_test

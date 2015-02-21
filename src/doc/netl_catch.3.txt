@@ -1,0 +1,103 @@
+netl_catch(3)
+White Dactyl Labs
+25 April 2000
+
+NAME
+
+netl_catch_prepare,
+netl_catch_fork,
+netl_catch_catch
+- routines for communicating with netl as a seperate process.
+
+
+SYNOPSIS
+
+#include <netl/api.h>
+
+void netl_catch_prepare(int fd);
+int netl_catch_fork(char * progpath, char *arg[]);
+netl_catch_t *netl_catch_catch(void);
+ 
+
+DESCRIPTION
+
+routines for communicating with netl as a sperate process. using the
+pipe method for output in netl(8), it is possible to write a
+program which receives packet data through a pipe from netl(8).  
+there are two ways of doing this. you may fork a new netl(8)
+yourself, or netl(8) may execute a program (usually named pipeprog).  
+either way, the calling program must set the environment variable
+NETL_PIPE_FD to the number of the file descripter the consumer process
+will read from.  if netl(8) is the calling process, then you may also
+use the environment variable NETL_PIPE_PROG to the name of the consumer
+program.
+
+to fork a new netl(8), use netl_catch_fork progpath is the
+location of the netl(8) executable, while arg is any optional
+arguments you wish to pass.  to avoid unnecessary forks, you will
+probably at least want to provide the -z option. the last element in
+arg should be NULL.
+
+if the consumer is the callee, then it should call netl_catch_prepare
+on the file descripter indicated by the NETL_PIPE_FD environment
+variable.
+
+now the consumer can call netl_catch_catch to get the packets
+netl(8)  has deemed suitable for processing. netl_catch_t looks like
+this:
+
+typedef struct {
+	char *name;
+	char *packet;
+	int packet_len;
+} netl_catch_t;
+
+if netl(8) has died for as unknown reason, packet_len will be -1.  
+if netl(8) signaled a die to the consumer, -2 is returned.  if there
+are no packets currently available for the consumer, NULL will be
+returned.  otherwise, name will point to the string used in the
+name="string" portion of the rule which triggered netl(8), packet
+will point to the ethernet frame, or other packet, and packet_len will
+indicate the length of that packet.
+
+
+SEE ALSO
+
+netl(8), netl_api(3), netl_module(1)
+
+
+BUGS
+
+there are almost certainly bugs, please report them to me.  send bugs and
+bug fixes to netl@netl.org.  the netl home page is at
+http://www.netl.org which should contain up to date information on
+netl.
+
+i have attempted to write pretty readable documentation, however, i'm not
+really the best technically writer.  if you are, maybe we could
+colaborate?
+
+
+COPYING
+
+Copyright 1996, 1997, 1999, 2000 Graham THE Ollis
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+675 Mass Ave, Cambridge, MA 02139, USA.
+
+
+
+AUTHOR
+
+Graham THE Ollis <ollisg@netl.org>

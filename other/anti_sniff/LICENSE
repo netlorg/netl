@@ -1,0 +1,183 @@
+               L0pht Heavy Industries Research Software License
+
+PREAMBLE: L0pht has developed the AntiSniff computer software, a
+tool for detecting machines in promiscuous mode. Under the terms of 
+this software license the L0pht Software is distributed in source code 
+form for Unix. The L0pht Software is the product of L0pht Heavy 
+Industries and is being made available to you under the terms and 
+conditions of this software license agreement (the "License 
+Agreement" or the "License").
+
+Any company which has or is developing a product offering that competes with
+L0pht Software and Licensed Products, including: sniffer products, intrusion
+detection and network management software, inlcuding hardware based
+offerings and hardware/software based offerings, are disqualified from
+using or viewing the AntiSniff *nix source code, without the express written 
+permission of L0pht Heavy Industries, Inc.
+
+1. LICENSE GRANT
+
+     a. L0pht hereby grants to you, and you accept, a non-exclusive,
+     non-transferable license to use the L0pht Software and the
+     accompanying User Documentation only as authorized in this License
+     Agreement.
+
+     b. The License permits you to use, copy and modify the L0pht 
+     Software solely for the internal, non-commercial use of your
+     organization. The L0pht Software, if modified, must carry prominent
+     notices stating that changes have been made and the dates of any
+     such changes. You agree that you will not assign, sublicense,
+     transfer, pledge, lease, rent or share your rights under the
+     License.
+
+     c. All rights not expressly granted herein are reserved to L0pht.
+
+2. LIMITATIONS ON THE LICENSE
+
+     a.You may only use, copy and modify the L0pht Software as expressly
+     provided for in this Agreement. You must reproduce and include
+     this Agreement and L0pht's copyright notices on any copy and its
+     associated documentation.
+
+     b.You may not publish, re-publish, print, re-print or otherwise
+     redistribute the L0pht Software, in any form, without written
+     permission from L0pht. This restriction is enforced to ensure that
+     L0pht is the sole source of L0pht Software on the Internet and that
+     published versions and bug fixes are kept current.
+
+     c.The use of the L0pht Software is limited to your internal,
+     non-commercial use only. The use, compilation, installation,
+     modification, maintenance or operation must be performed by
+     employees of your organization. If you require assistance from
+     outside your organization, the L0pht Software and source code are
+     considered "commercial" and subject to license fees.
+     Neither the L0pht Software in its entirety, nor any part or element of 
+     the L0pht, is being licensed to you for use with, or in, any hardware, 
+     firmware, software program or other product (i) which is sold; (ii) 
+     for which you receive any revenue; or (iii) which is provided by 
+     you (even for free) in conjunction with any commercial activity. 
+     Commercial licensing of the L0pht Software is available.
+
+3. NO L0pht OBLIGATION
+
+     You are solely responsible for maintaining the L0pht Software and
+     the security of the operating environment in which the L0pht
+     Software may be used. You are solely responsible for all of your
+     costs and expenses incurred in connection with your use of the L0pht
+     Software or any application program thereunder, and L0pht shall have
+     no liability, obligation or responsibility therefor. L0pht shall
+     have no obligation to provide you maintenance, support, upgrades
+     or new releases.
+
+4. NO WARRANTY OF PERFORMANCE
+
+     THE L0PHT SOFTWARE IS LICENSED "AS IS" WITHOUT WARRANTY, EXPRESS OR
+     IMPLIED, AS TO ITS PERFORMANCE, OF MERCHANTABILITY OR FITNESS FOR
+     ANY PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE RESULTS AND
+     PERFORMANCE OF THE L0PHT IS ASSUMED BY YOU. SHOULD THE L0PHT PROVE
+     DEFECTIVE, YOU ASSUME THE ENTIRE COST OF ALL NECESSARY SERVICING,
+     REPAIR OR CORRECTION OF SAID DEFECT AND ANY CONSEQUENCES OF SUCH
+     DEFECT. L0PHT DOES NOT WARRANT THAT THE FUNCTIONS CONTAINED IN THE
+     L0PHT SOFTWARE WILL MEET YOUR REQUIREMENTS OR THAT THE OPERATION OF
+     THE L0PHT SOFTWARE WILL BE UNINTERRUPTED OR ERROR-FREE. THE ENTIRE
+     RISK REGARDING THE QUALITY AND PERFORMANCE OF THE L0PHT SOFTWARE IS
+     WITH YOU.
+
+     Some jurisdictions do not allow the exclusion of implied
+     warranties, so the above exclusion may not apply to you. This
+     limited warranty gives you specific legal rights, and you may also
+     have other rights which vary from one jurisdiction to another.
+
+5. LIMITATION OF LIABILITY
+
+     Neither L0pht nor any other person who has been involved in the
+     creation, production or delivery of the L0pht Software shall be
+     liable to you or to any other person for any direct, indirect,
+     special, incidental, consequential, special or exemplary damages
+     or lost profits, even if L0pht has been advised of the possibility
+     of such damages. SOME STATES DO NOT ALLOW THE LIMITATION OR
+     EXCLUSION OF LIABILITY FOR INCIDENTAL OR CONSEQUENTIAL DAMAGES, SO
+     THE ABOVE LIMITATION OR EXCLUSION MAY NOT APPLY TO YOU.
+
+6. TERM
+
+     This License is effective upon your receipt of this software.
+     The grant of the License shall automatically terminate
+     without notice if you breach any of the provisions hereof. You may
+     terminate the grant of the license at any time by destroying all
+     portions of the L0pht Software.
+
+7. TRADEMARK
+
+     L0pht is a registered trademark of Licensor. No right, license, or
+     interest to such trademark is granted hereunder, and you agree
+     that no such right, license or interest shall be asserted by you
+     with respect to such trademark.
+
+8. EXPORT
+
+     You agree that you will not knowingly export or transmit the L0pht
+     Software, directly or indirectly, to any restricted countries or
+     in any manner that would violate United States laws and
+     regulations as shall time to time govern the license and delivery
+     of technology abroad by persons subject to the jurisdiction of the
+     United States, including the Export Administration Act of 1979, as
+     amended, and any export administration regulations issued
+     thereafter.
+
+9.U.S. GOVERNMENT AGENCIES
+
+     If you are the Department of Defense ("DoD"), the L0pht Software
+     shall be supplied as "Commercial Computer Software" under
+     paragraph 252.227-7014 of the DoD Supplement to the Federal
+     Acquisition Regulations ("DFARS") (or any successor regulations)
+     and the Government shall acquire only the license rights granted
+     herein (the license rights customarily provided to non-Government
+     users). If L0pht Software or source code is supplied to any unit or
+     agency of the Government other than DoD, it shall be supplied as
+     "Restricted Computer Software" and the Government's rights in the
+     L0pht Software are defined in paragraph 52.227-19 of the Federal
+     Acquisition Regulations ("FAR") (or any successor regulations) or,
+     in the case of NASA, in paragraph 18.52.227-86 of the NASA
+     Supplement to the FAR (or any successor regulations). You shall
+     take all actions reasonably necessary to protect L0pht's rights and
+     interest in the L0pht Software and L0pht Licensed Products in
+     accordance with such regulations and successor regulations
+     including, but not limited to, the placement of appropriate
+     legends on the L0pht Software and L0pht Licensed Products used by you.
+
+10. GOVERNING LAW
+
+     This License Agreement shall be construed and governed in
+     accordance with the laws of the Commonwealth of Massachusetts.
+
+11. COSTS OF LITIGATION
+
+     If any action is brought by either party to this License Agreement
+     against the other party regarding the subject matter hereof, the
+     prevailing party shall be entitled to recover, in addition to any
+     other relief granted, reasonable attorneys' fees and expenses of
+     litigation.
+
+12. SEVERABILITY
+
+     Should any term of this License Agreement be declared void or
+     unenforceable by any court of competent jurisdiction, such
+     declaration shall have no effect on the remaining terms hereof.
+
+13. NO WAIVER
+
+     The failure of either party to enforce any rights granted
+     hereunder or to take action against the other party in the event
+     of any breach hereunder shall not be deemed a waiver by that party
+     as to subsequent enforcement of rights or subsequent actions in
+     the event of future breaches.
+
+14. CORRESPONDENCE
+
+     Address all other correspondence regarding this license to
+     antisniff@l0pht.com, or to:
+
+                        L0pht Heavy Industries, Inc.
+                              PO Box 990857
+                             Boston MA 02199

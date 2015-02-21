@@ -1,0 +1,516 @@
+.ad b
+.TH netl_module 1 "18 June 1999" "White Dactyl Labs" "White Dactyl Labs"
+.AT 3
+.de sh
+.br
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.PP
+.SH NAME
+.PP
+.I netl_module
+- 
+.I netl
+API.
+.PP
+.SH DESCRIPTION
+.PP
+.I netl
+modules allow a user with a pretty basic understanding of C write
+his own additions to 
+.I netl
+, while relying on the existing power of the
+.I netl
+API.  there are currently three types of 
+.I netl
+modules, and
+they shall be described in the following sections, but they all have a
+few attributes in common which will be described here.  the 
+.I netl
+distribution comes with a number of modules, which you will likely want
+to look at.  
+.I netl
+by default relies rather heavily on modules in the
+.I netl
+distribution.
+.PP
+a 
+.I netl
+module is just a dynamic object file (.so) similar to the
+dynamic libraries that you file in your library directories
+(/lib/libc.so.6.1) for example.  
+.I netl
+decides at run time which
+modules need to be loaded by reading the configuration file (see
+.BR netl.conf (5))
+or by command line rules (see 
+.BR netl (8)),
+and then
+executes the appropriate action based on that configuration.
+.PP
+a .so file can be created by creating a C module, and compiling it using
+the 
+.BR gcc (1)
+-shared option.  depending on the module type, there will
+need to be various subroutines defined.  any module (regardless of type)
+may define functions which take no arguments construct() and destruct().  
+these functions will be called when the module is loaded and deallocated
+respectively.
+.PP
+if you have perl, then you can use the 
+.BR netlcc (1)
+front end to compile
+netl modules.  if installed correctly, you can give it a netl module
+source code without having to know where the various libraries and header
+files are located on the system.
+.PP
+by default, 
+.BR netl (8)
+will search the directly /usr/local/lib/netl for
+modules (you can specify a different directly with the -L option).  once
+you have created a 
+.I netl
+module, you will likely want to move it into
+there so that it can be automatically loaded.
+.PP
+.SH INPUT MODULE
+.PP
+a 
+.I netl
+process will always have exactly one input module when running.  
+this is the code which actually grabs the packets from the network so
+that they can then be filtered and dealt configuration file.  when
+porting 
+.I netl
+to a new system, one will typically only have to write a
+new input module, as the rest of the code is fairly portable ANSI C.
+.PP
+a 
+.I netl
+input module must define at least two functions:
+.PP
+void
+.B prepare
+(char *dev)
+.PP
+this code (if necessary) will prepare the device for later reading.  
+typically, this routine will place the promiscuous mode.
+.PP
+int
+.B grab
+(char *buf)
+.PP
+this code actually grabs the ethernet frame from the network and writes
+it into the buffer *buf.  *buf will be allocated by the netl system to be
+large enough for your typical ethernet frame.
+.PP
+a good example of a 
+.I netl
+input module is the linux-ether input module
+which comes with the 
+.I netl
+distribution.  it is a working
+implementation for linux.  all input modules must be put in a directory
+called `in' under the directory where netl searches for modules.  
+typically this means /usr/local/lib/netl/in.
+.PP
+.SH FILTER MODULE
+.PP
+a filter module decides if the ethernet frame passed to it is worthy of
+note.  this is how the protocol filters are implemented.  you can program
+you filter to do with the packet as you please (e.g. directly log to
+syslogd or dump to a file), but a better design would be to pass the
+packet (if it is a `hit') to the output module specified by the
+particular rule.
+.PP
+when loading a user netl filter module, you will have to prefix it with
+an ampersand ('&') character to indicate that it is not an `official'
+module.  some of the modules netl ships with are in this state, not
+because they are defective, but because they haven't been implemented by
+the compiler (for more information on the compiler, see 
+.BR netlcc (1)).
+.PP
+a filter module should include (in this order) these header files which
+come with the 
+.I netl
+distribution: netl/global.h netl/ether.h netl/ip.h
+netl/config.h
+.PP
+a filter module should also have a structure of type configlist called
+req, which most likely can be ignored.  this structure is largely used
+for protocol filters only.
+.PP
+void 
+.B check
+(u8 *dg, size_t len) is where the packet gets sent. u8 * is
+a eight bit integer pointer, and dg is the pointer to the datagram.  len
+is the actual length of the datagram.
+.PP
+all filter modules must be placed in a directory called `filt' under the
+directory where netl searches for modules.  typically this means
+/usr/local/lib/netl/filt.
+.PP
+here is an example module which logs pings and pongs (a pong is my
+private term for an ICMP_ECHOREPLY which is what gets sent back to you
+when you ping a host).
+.PP
+.nf
+/*==============================================================================
+| ping
+|   log pings (ICMP_ECHO) and pongs (ICMP_ECHOREPLY)
+|
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@netl.org>
+|
+|   This program is free software; you can redistribute it and/or modify
+|   it under the terms of the GNU General Public License as published by
+|   the Free Software Foundation; either version 2 of the License, or
+|   (at your option) any later version.
+|
+|   This program is distributed in the hope that it will be useful,
+|   but WITHOUT ANY WARRANTY; without even the implied warranty of
+|   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+|   GNU General Public License for more details.
+|
+|   You should have received a copy of the GNU General Public License
+|   along with this program; if not, write to the Free Software
+|   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+|=============================================================================*/
+
+#include <stdio.h>
+
+#include "netl/global.h"
+
+#include "netl/filter.h"
+#include "netl/ether.h"
+#include "netl/ip.h"
+#include "netl/action.h"
+#include "netl/config.h"
+#include "netl/io.h"
+#include "netl/resolve.h"
+
+fun_prefix struct configlist req;
+
+/*==============================================================================
+| check icmp
+|=============================================================================*/
+
+fun_prefix void
+check(u8 *dg, size_t len)
+{
+	iphdr *ip = (iphdr *) &dg[14];
+	icmphdr *h = (icmphdr *) &dg[(IPIHL(ip->ihl_version) << 2) + 14];
+
+	if(((machdr*)dg)->type != MACTYPE_IPDG)
+		return;
+
+	if(IPVER(ip->ihl_version) != IP_VERSION)
+		return;
+
+	if(ip->protocol != PROTOCOL_ICMP)
+		return;
+
+	if(h->type == 8)
+		log("ping %s => %s", ip2string(ip->saddr), ip2string(ip->daddr));
+	if(h->type == 0)
+		log("pong %s => %s",  ip2string(ip->saddr), ip2string(ip->daddr));
+}
+
+#if BOOL_DYNAMIC_MODULES == 0
+void
+filt_ping_register_symbols(void)
+{
+	register_symbol("filt/ping.so", "req", &req);
+	register_symbol("filt/ping.so", "check", check);
+}
+#endif
+
+
+.fi
+.PP
+to compile this module,
+.PP
+% netlcc ping.c
+.PP
+and then copy it into the module directory at the correct place.
+.PP
+% cp ping.so /usr/local/lib/netl/filt
+.PP
+and you can try it out by running (as root) netl thus:
+.PP
+# netl -z 'null &ping'
+.PP
+here is a more complicated module, which i use on my system.
+.PP
+.nf
+/*==============================================================================
+| gnr
+|   stadard rules for the Graham New Republic
+|
+|   Copyright (C) 1997 Graham THE Ollis <ollisg@netl.org>
+|
+|   This program is free software; you can redistribute it and/or modify
+|   it under the terms of the GNU General Public License as published by
+|   the Free Software Foundation; either version 2 of the License, or
+|   (at your option) any later version.
+|
+|   This program is distributed in the hope that it will be useful,
+|   but WITHOUT ANY WARRANTY; without even the implied warranty of
+|   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+|   GNU General Public License for more details.
+|
+|   You should have received a copy of the GNU General Public License
+|   along with this program; if not, write to the Free Software
+|   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+|=============================================================================*/
+
+#include <stdio.h>
+
+#include "netl/global.h"
+
+#include "netl/filter.h"
+#include "netl/ether.h"
+#include "netl/ip.h"
+#include "netl/action.h"
+#include "netl/config.h"
+#include "netl/io.h"
+#include "netl/resolve.h"
+
+fun_prefix struct configlist req;
+#define mynet 0x0a0a0a00
+
+/*==============================================================================
+| check icmp
+|=============================================================================*/
+
+fun_prefix void
+check(u8 *dg, size_t len)
+{
+	iphdr *ip = (iphdr *) &dg[14];
+	union { icmphdr i; tcphdr t; udphdr u; } *h = 
+			(void *) &dg[(IPIHL(ip->ihl_version) << 2) + 14];
+	u32 us = searchbyname("local");
+
+	if(((machdr*)dg)->type != MACTYPE_IPDG)
+		return;
+
+	if(IPVER(ip->ihl_version) != IP_VERSION)
+		return;
+
+	if(ip->daddr != us)
+		return;
+
+	if((ntohl(ip->saddr) & mynet) == mynet)
+		return;
+
+	if(ip->protocol == PROTOCOL_ICMP) {
+
+		if(h->i.type == 8)
+			log("ping %s => %s", ip2string(ip->saddr), ip2string(ip->daddr));
+		if(h->i.type == 0)
+			log("pong %s => %s",  ip2string(ip->saddr), ip2string(ip->daddr));
+	}
+
+	else if(ip->protocol == PROTOCOL_UDP) {
+
+		if(ntohs(h->u.dest) >= 33434)
+			log("traceroute %s => %s (%d)", ip2string(ip->saddr), ip2string(ip->daddr), ntohs(h->u.dest));
+
+	}
+
+	else if(ip->protocol == PROTOCOL_TCP && 
+		h->t.fin == 0 &&
+		h->t.syn == 1 &&
+		h->t.rst == 0 &&
+		h->t.psh == 0 &&
+		h->t.ack == 0 &&
+		h->t.urg == 0) {
+
+		char *prot;
+
+		switch(ntohs(h->t.dest)) {
+			case 21 : prot = "ftp"; break;
+			case 22 : prot = "ssh"; break;
+			case 23 : prot = "telnet"; break;
+			case 25 : prot = "smtp"; break;
+			case 70 : prot = "gopher"; break;
+			case 79 : prot = "finger"; break;
+			case 80 : prot = "www"; break;
+			case 109: prot = "pop2"; break;
+			case 110: prot = "pop3"; break;
+			case 113: prot = "auth"; break;
+
+			default : 
+				if(h->t.source)
+					prot = "ftp reply";
+				else
+					prot = "unknown_tcp";
+				break;
+		}
+
+		log("%s %s:%d => %s:%d", prot, 
+				ip2string(ip->saddr), 
+				ntohs(h->t.source),
+				ip2string(ip->daddr),
+				ntohs(h->t.dest));
+
+	}
+
+	else if(ip->protocol == PROTOCOL_TCP && 
+		h->t.fin == 1 &&
+		h->t.syn == 0 &&
+		h->t.rst == 0 &&
+		h->t.psh == 0 &&
+		h->t.ack == 0 &&
+		h->t.urg == 0) {
+
+		log("fin %s:%d => %s:%d", 
+			ip2string(ip->saddr), 
+			ntohs(h->t.source),
+			ip2string(ip->daddr),
+			ntohs(h->t.dest));
+
+	}
+
+	else if(ip->protocol == PROTOCOL_TCP) { 
+
+		/* nothing */
+
+	}
+
+	else if(ip->protocol == PROTOCOL_IGNP) {
+
+		log("ignp %s => %s", 
+			ip2string(ip->saddr), 
+			ip2string(ip->daddr));
+
+	}
+
+	else {
+		log("unknown %s => %s",
+			ip2string(ip->saddr), 
+			ip2string(ip->daddr));
+	}
+}
+
+#if BOOL_DYNAMIC_MODULES == 0
+void
+filt_gnr_register_symbols(void)
+{
+	register_symbol("filt/gnr.so", "req", &req);
+	register_symbol("filt/gnr.so", "check", check);
+}
+#endif
+
+
+.fi
+.PP
+notice the use of structures such as iphdr, udphdr and the like.  it is
+useful to take a look at netl/ip.h as this contains most of the
+structures useful for IPv4.
+.PP
+.SH OUTPUT MODULE
+.PP
+the last type of module is used for output.  once the packet has been
+deemed interesting by whatever filter module, it is passed to an output
+module.  once again, output modules must live in a directory called `out'
+where ever 
+.I netl
+is searching for modules.  this is usually
+/usr/local/lib/netl/out.
+.PP
+a netl output module is sometimes also refered to an action module, since
+the output modules are the ones which actually act once a packet has been
+filtered.
+.PP
+when loading a user netl action module, you will have to prefix it with
+an at sign ('@') character to indicate that it is not an `official'
+module.  some of the modules netl ships with are in this state, not
+because they are defective, but because they haven't been implemented by
+the compiler (for more information on the compiler, see 
+.BR netlcc (1)).
+.PP
+possible uses for this type of module include an X interface which sends
+pop up messages to a user when someone is trying to hack into his machine.  
+this is just an idea.
+.PP
+an output module should define an integer 
+.B action_done
+which is used by
+the protocol filters to keep it from logging or dumping a particular
+frame more than once, while allowing a frame to be logged and dumped by
+different rules.  in general, set 
+.B action_done
+to TRUE immediately when
+.B action
+() is called.
+.PP
+void 
+.B action
+(u8 *dg, struct configitem *cf, size_t len) is called
+directly by whichever filter module is in use.  once again, dg is the
+pointer to the datagram and len is the length of that datagram.  cf is a
+pointer to a config item which can for the most part be ignored.  the one
+useful portion of the configitem is the member logname which is the
+requirement 
+.B name=
+you specified in the configuration file (see
+.BR netl.conf (5)).
+cf->logname is the desired value.
+.PP
+there are copious examples that come with the 
+.I netl
+distribution, but
+none really worth going over at the moment.
+.PP
+.SH SEE ALSO
+.PP
+.BR netl (8),
+.BR netl.conf (5),
+.BR netlcc (1),
+.BR netl_install (1),
+.BR netl_module (1),
+.BR netl_api (3),
+.BR neta (1),
+.BR hwpassive (8),
+.BR hwlookup (1),
+.BR dcp (1)
+and 
+.BR xd (1)
+.PP
+.SH BUGS
+.PP
+there are almost certainly bugs, please report them to me.  send bugs and
+bug fixes to netl@netl.org.  the netl home page is at
+http://www.netl.org which should contain up to date information on
+.B netl
+.
+.PP
+i have attempted to write pretty readable documentation, however, i'm not
+really the best technically writer.  if you are, maybe we could
+colaborate?
+.PP
+.SH COPYING
+.PP
+Copyright 1996, 1997, 1999, 2000 Graham THE Ollis
+.PP
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+.PP
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License for more details.
+.PP
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+675 Mass Ave, Cambridge, MA 02139, USA.
+.PP
+.PP
+.SH AUTHOR
+.PP
+Graham THE Ollis <ollisg@netl.org>

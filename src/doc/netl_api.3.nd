@@ -1,0 +1,25 @@
+#TITLE netl_api
+#SECTION 3
+#HEAD White Dactyl Labs
+#TAIL 25 April 2000
+#START
+
+#H NAME
+
+i<netl_api>, 
+- overview of the netl application programmers interface.
+
+#H SYNOPSIS
+
+#PRE
+hash#include <netl/api.h>
+
+!!FIXME!!
+#/PRE
+ 
+#H DESCRIPTION
+
+this document has yet to be (re)written.
+
+#EXEC apitail
+

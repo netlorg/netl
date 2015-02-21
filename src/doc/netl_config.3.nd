@@ -1,0 +1,65 @@
+#TITLE netl_config
+#SECTION 3
+#HEAD White Dactyl Labs
+#TAIL 25 April 2000
+#START
+#ALSOAS netl_config_readfile(3)
+#ALSOAS netl_config_parseline(3)
+#ALSOAS netl_config_pre(3)
+#ALSOAS netl_config_post(3)
+#ALSOAS netl_config_set(3)
+#ALSOAS netl_config_clear(3)
+#ALSOAS netl_config_listenport(3)
+
+#H NAME
+
+i<netl_config_readfile>, 
+i<netl_config_parseline>, 
+i<netl_config_pre>, 
+i<netl_config_post>, 
+i<netl_config_set>, 
+i<netl_config_clear>, 
+i<netl_config_listenport>
+- routines and data for reading netl configuration files.
+
+#H SYNOPSIS
+
+#PRE
+hash#include <netl/api.h>
+
+void b<netl_config_readfile>(char *i<filename>, int i<nbg>);
+void b<netl_config_parseline>(char *i<configline>);
+void b<netl_config_pre>(void);
+void b<netl_config_post>(void);
+void b<netl_config_set>(void *i<l>);
+void b<netl_config_clear>(void);
+extern int b<netl_config_listenport>;
+#/PRE
+ 
+#H DESCRIPTION
+
+routines for reading a sa<netl>(8) configuration file sa<netl.conf>(5).
+
+before using any of the configuration functions, you should all
+b<netl_config_pre> and when done, call b<netl_config_post>.  they
+currently do nothing, though they may preform some initilization work in
+the future.
+
+b<netl_config_readfile> reads the file i<filename> and loads sa<netl>(8)
+modules (sa<netl_module>(1)) as necessary for later use by the packet
+grab event loop.  i<nbg> should always be 1.  b<netl_config_parseline>
+parses the configura tion line given by configline
+
+if you want to start from scratch, you may use b<netl_config_clear>
+to erase the current configuration.  from there, call b<netl_config_pre>,
+b<netl_config_readfile> or b<netl_config_parseline>, and then
+b<netl_config_post> as you usually would.
+
+you should not use b<netl_config_set> unless you understand the internals of
+core sa<netl>(8) better.
+
+b<netl_config_listenport> is the port which dcp will listen to, if the
+module is loaded.  see sa<dcp>(1) and sa<netl>(8)  for more information.
+
+#EXEC apitail
+

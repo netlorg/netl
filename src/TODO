@@ -1,0 +1,16 @@
+. this is my little note pad for things to do on netl.  if you're
+  interested in working on any of these aspects of netl, please let me
+  know by sending email to netl@netl.org.  i can provide you with
+  documentation, and also make sure that these things don't get
+  implemented twice.
+
+ * add ipx protocol
+ * add igmp protocol (a proper implementation)
+ * add arp protocol
+ * PPP interface
+ * win32 port
+ * write/use a loadable kernel module which filters packets for me
+ * make a pg output module
+ * finish off perl/Tk interface prototype
+ * Gtk+/Gnome interface
+ * implement a config set, so you can say things like "$pg::pghost = fred.com"

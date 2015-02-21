@@ -1,0 +1,28 @@
+#TITLE netl_packet
+#SECTION 3
+#HEAD White Dactyl Labs
+#TAIL 25 April 2000
+#START
+#ALSOAS netl_packet_check(3)
+
+#H NAME
+
+i<netl_packet_check>
+- single round of the netl event loop.
+
+#H SYNOPSIS
+
+#PRE
+hash#include <netl/api.h>
+
+void b<netl_packet_check>(char *i<datagram>, size_t i<length>);
+#/PRE
+ 
+#H DESCRIPTION
+
+given the packet datagram of length length , react appro priately given
+an already configured (see sa<netl_config>(3)) sa<netl>(8).  this is the
+function which gets called every time sa<netl>(8) reads a packet from the
+network.
+
+#EXEC apitail

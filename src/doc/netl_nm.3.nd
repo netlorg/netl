@@ -1,0 +1,25 @@
+#TITLE netl_nm
+#SECTION 3
+#HEAD White Dactyl Labs
+#TAIL 25 April 2000
+#START
+
+#H NAME
+
+i<netl_nm>,
+- routines for loading netl modules.
+
+#H SYNOPSIS
+
+#PRE
+hash#include <netl/api.h>
+
+!!FIXME!!
+#/PRE
+ 
+#H DESCRIPTION
+
+this document has yet to be (re)written.
+
+#EXEC apitail
+

@@ -1,0 +1,64 @@
+netl_table(3)
+White Dactyl Labs
+25 April 2000
+
+NAME
+
+netl_table_icmptype,
+netl_table_icmp6type,
+netl_table_icmpcode,
+- tables for ICMP type and code lookups.
+
+
+SYNOPSIS
+
+#include <netl/api.h>
+
+!!FIXME!!
+ 
+
+DESCRIPTION
+
+this document has yet to be (re)written.
+
+
+SEE ALSO
+
+netl(8), netl_api(3), netl_module(1)
+
+
+BUGS
+
+there are almost certainly bugs, please report them to me.  send bugs and
+bug fixes to netl@netl.org.  the netl home page is at
+http://www.netl.org which should contain up to date information on
+netl.
+
+i have attempted to write pretty readable documentation, however, i'm not
+really the best technically writer.  if you are, maybe we could
+colaborate?
+
+
+COPYING
+
+Copyright 1996, 1997, 1999, 2000 Graham THE Ollis
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+675 Mass Ave, Cambridge, MA 02139, USA.
+
+
+
+AUTHOR
+
+Graham THE Ollis <ollisg@netl.org>

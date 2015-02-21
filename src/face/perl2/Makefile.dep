@@ -1,0 +1,4 @@
+Netl.o: \
+	$(SOURCE_DIRx)$(ONELEVEL)$(ONELEVEL)include/EXTERN.h \
+	$(SOURCE_DIRx)$(ONELEVEL)$(ONELEVEL)include/perl.h \
+	$(SOURCE_DIRx)$(ONELEVEL)$(ONELEVEL)include/XSUB.h 

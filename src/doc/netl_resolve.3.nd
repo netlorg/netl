@@ -1,0 +1,34 @@
+#TITLE netl_resolve
+#SECTION 3
+#HEAD White Dactyl Labs
+#TAIL 25 April 2000
+#START
+#ALSOAS netl_resolve_addip(3)
+#ALSOAS netl_resolve_ip2string(3)
+#ALSOAS netl_resolve_search(3)
+#ALSOAS netl_resolve_searchbyname(3)
+#ALSOAS netl_resolve_clear(3)
+
+#H NAME
+
+i<netl_resolve_addip>, 
+i<netl_resolve_ip2string>, 
+i<netl_resolve_search>, 
+i<netl_resolve_searchbyname>, 
+i<netl_resolve_clear>
+- routines for resolving hostnames.
+
+#H SYNOPSIS
+
+#PRE
+hash#include <netl/api.h>
+
+!!FIXME!!
+#/PRE
+ 
+#H DESCRIPTION
+
+this document has yet to be (re)written.
+
+#EXEC apitail
+

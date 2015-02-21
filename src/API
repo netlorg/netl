@@ -1,0 +1,106 @@
+_namespaces:
+	netl_guts_		low level anything
+	netl_guts_yy_		low level lex and yacc stuff
+	netl_config_		high level config stuff
+	netl_catch_		functions relating to communication to and
+				from netl
+	netl_packet_		the actual packet loop stuff
+	netl_generate_		the compiler
+	netl_io_		IO operations
+	netl_resolve_		DNS resolution, and aliases
+	netl_table_		various lookup tables.  right now this is for
+				ICMP types and codes only.
+
+	unimplemented:
+	netl_nm_		replace the netl_nm* suite
+
+config.l
+	int netl_guts_yy_line_number
+	[ normal lex stuff now live in netl_guts_yy_* ]
+
+config.y:
+	int netl_config_listenport
+	netl_config_clear() [ was: clearconfig() ]
+	netl_config_set() [ was: set_config_list() ]
+	netl_config_pre() [ was: preconfig() ; currently does nothing ]
+	netl_config_post() [ was: postconfig() ; currently does nothing ]
+	netl_config_readfile() [ was: readconfig() ]
+	netl_config_parseline() [ was: parseconfigline() ]
+	[ normal yacc stuff now live in netl_guts_yy_* ]
+
+action.c:	# FIXME #
+	action_mod *acts
+	int num_acts
+	lookup_act()
+
+catch.c:
+	netl_catch_prepare()
+	netl_catch_fork() 	[ was: netl_fork_a_netl() ]
+	netl_catch_catch()
+
+check.c:
+	netl_packet_check() 	[ was: check() ]
+
+compiler.c:
+	netl_generate_c()	[ was: generate_c() ]
+
+die.c:
+	netl_io_die()		[ was: netl_die() ]
+
+dump.c:
+	netl_io_readfile()	[ was: readentire() ]
+	netl_io_dumpf()		[ was: dumpdata(), dumpdatafile() ]
+
+filter.c:	# FIXME #
+	filter_mod *filters
+	int num_filters
+	lookup_finter()
+
+resolve.c:
+	int netl_config_resolveHostnames [ was: int resolveHostnames ]
+	netl_guts_alias_dump() [ was: alias_dump() ]
+	netl_resolve_addip() [ was: addip() ]
+	netl_resolve_ip2string() [ was: ip2string() ]
+	netl_resolve_search() [ was: search() ]
+	netl_resolve_searchbyname() [ was: searchbyname() ]
+	netl_resolve_clear() [ was: clearipcache() ]
+
+
+options.c:	# FIXME #
+	char *netl_config_so_path [ was: so_path ]
+	char *netl_config_nm_input_name [ was: char *grab_module_name ]
+	char *dump_dir
+	int displayVersion
+	int useIPv6
+	int debug_mode
+	int output_mode
+	char *net_device
+	int netl_num_threads
+	parsecmdline()
+
+netl.c:
+	void *netl_guts_grab_module
+	netl()
+
+lookup.c:
+	struct lookupitem netl_table_icmptype[]		[ was: icmptype ]
+	struct lookupitem netl_table_icmp6type[] 	[ was: icmp6type ]
+	struct lookupitem netl_table_icmpcode[]		[ was: icmpcode ]
+
+nm.c:		# FIXME #
+	int netl_nmopen_pretend
+	netl_nmopen()
+	netl_nmclose()
+	netl_nmsym()
+	netl_nmsym_nofail()
+
+io.c:
+	int netl_guts_noBackground [ was: int noBackground ]
+	char *netl_guts_teefile [ was: char *teefile ]
+	char *netl_guts_prog [ was: char *prog ]
+	netl_io_log()		[ was: netl_* etc. ]
+	netl_io_err()
+	netl_io_ope()
+	netl_io_clo()
+	netl_io_ahextoi()
+	netl_io_allocate()

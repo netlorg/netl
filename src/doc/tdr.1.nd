@@ -1,0 +1,80 @@
+#TITLE tdr
+#SECTION 1
+#HEAD White Dactyl Labs
+#TAIL 25 June 1999
+#START
+
+#H NAME
+
+i<tdr> - test driver.
+
+#H SYNOPSIS
+
+i<tdr> [-v [-i] ] [-o] b<cmd> [b<args>]
+
+#H DESCRIPTION
+
+i<tdr> is a program for testing programs.  i<tdr> executes b<cmd> and
+puts the various standard streams in the appropriate places.  b<cmd> is
+intended to be a here document with a .t extension.  If the extension
+exists, then this part of the file name will be removed for the output
+streams.  If there are expected output files present in the current
+directory, then i<tdr> will do a sa<diff>(1) on the expected and actual
+output and inform the user that differences were found.
+
+#H FILES
+
+all these files should be found in the current directory the test program
+is named b<fred> or b<fred.t> in this case:
+
+#H GENERATED FILES
+
+   fred.ao - actual output created by i<tdr>
+   fred.aERR - actual error stream created by i<tdr>
+   fred.diff - differences (ie. unix diff) between
+                  actual and expected output iff there
+                  is a difference
+   fred.diffERR - differences between actual and expected
+                  error stream
+   fred.aRET - text file with the return value
+   tdr.log - log file for the test driver.
+                  this file is appended to.
+
+#H EXISTING FILES
+
+   fred.eo - expected output created by programmer
+   fred.eERR - expected error stream created by programmer
+   fred.eRET - expected return value
+
+note that the diff files are only created if there is a difference.  the
+program warns the user when a file is to be overwritten if -v option used
+but doesn't prompt, unless the -i option is specified.
+
+#H OPTIONS
+
+    -v warn before over writing files.
+    -i prompt before over writing files.
+    -o do not overwrite log file.
+    -n print out handy statistical information (totals)
+
+#H RETURN VALUES
+
+   0 - normal execution
+   1 - user abort
+   2 - usage line
+   3 - file doesn't exist
+   4 - difference between actual and expected output
+
+#H SEE ALSO
+
+sa<diff>(1)
+
+#H LEGAL
+
+Copyright, 1996, Regents of University of California
+
+portions are (c) 1997 Graham THE Ollis
+
+#H AUTHOR
+
+Graham THE Ollis <ollisg@whitedactyl.com>

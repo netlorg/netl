@@ -1,0 +1,26 @@
+#TITLE netl_guts_yy_line_number
+#SECTION 3
+#HEAD White Dactyl Labs
+#TAIL 25 April 2000
+#START
+
+#H NAME
+
+i<netl_guts_yy_line_number>,
+- current netl config line number.
+
+#H SYNOPSIS
+
+#PRE
+hash#include <netl/api.h>
+
+extern int b<netl_guts_yy_line_number>;
+#/PRE
+ 
+#H DESCRIPTION
+
+the current line number, when reading from the configuration file.  
+since netl modules never read the configuration file, it is only useful
+if you are working within the netl core.
+
+#EXEC apitail

@@ -1,0 +1,70 @@
+#TITLE netl_catch
+#SECTION 3
+#HEAD White Dactyl Labs
+#TAIL 25 April 2000
+#START
+#ALSOAS netl_catch_prepare(3)
+#ALSOAS netl_catch_fork(3)
+#ALSOAS netl_catch_catch(3)
+
+#H NAME
+
+i<netl_catch_prepare>,
+i<netl_catch_fork>,
+i<netl_catch_catch>
+- routines for communicating with netl as a seperate process.
+
+#H SYNOPSIS
+
+#PRE
+hash#include <netl/api.h>
+
+void b<netl_catch_prepare>(int i<fd>);
+int b<netl_catch_fork>(char * i<progpath>, char *i<arg>[]);
+netl_catch_t *b<netl_catch_catch>(void);
+#/PRE
+ 
+#H DESCRIPTION
+
+routines for communicating with netl as a sperate process. using the
+i<pipe> method for output in sa<netl>(8), it is possible to write a
+program which receives packet data through a pipe from sa<netl>(8).  
+there are two ways of doing this. you may fork a new sa<netl>(8)
+yourself, or sa<netl>(8) may execute a program (usually named pipeprog).  
+either way, the calling program must set the environment variable
+NETL_PIPE_FD to the number of the file descripter the consumer process
+will read from.  if sa<netl>(8) is the calling process, then you may also
+use the environment variable NETL_PIPE_PROG to the name of the consumer
+program.
+
+to fork a new sa<netl>(8), use b<netl_catch_fork> i<progpath> is the
+location of the sa<netl>(8) executable, while i<arg> is any optional
+arguments you wish to pass.  to avoid unnecessary forks, you will
+probably at least want to provide the -z option. the last element in
+i<arg> should be NULL.
+
+if the consumer is the callee, then it should call b<netl_catch_prepare>
+on the file descripter indicated by the NETL_PIPE_FD environment
+variable.
+
+now the consumer can call b<netl_catch_catch> to get the packets
+sa<netl>(8)  has deemed suitable for processing. netl_catch_t looks like
+this:
+
+#PRE
+typedef struct {
+	char *name;
+	char *packet;
+	int packet_len;
+} netl_catch_t;
+#/PRE
+
+if sa<netl>(8) has died for as unknown reason, packet_len will be -1.  
+if sa<netl>(8) signaled a die to the consumer, -2 is returned.  if there
+are no packets currently available for the consumer, NULL will be
+returned.  otherwise, name will point to the string used in the
+name="string" portion of the rule which triggered sa<netl>(8), packet
+will point to the ethernet frame, or other packet, and packet_len will
+indicate the length of that packet.
+
+#EXEC apitail

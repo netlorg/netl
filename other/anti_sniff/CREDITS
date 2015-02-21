@@ -1,0 +1,20 @@
+Thanks to all of those who have encouraged and supported the L0pht 
+throughout the years.
+
+The various tests used by AntiSniff were discovered by various
+people who we would like to credit here:
+
+The ARP test was discovered by DilDog of L0pht Heavy Industries.
+
+The Ether Ping (ICMP/IP kernel processing bug) test are based off of
+ideas from Hobbit and Mudge and independently found by Ivan Arce of CORE.
+
+The latency measurement tests are based off ideas and concepts from
+research work performed by Thomas H. Ptacek, Jennifer Dawn Myers,
+Mark Hittinger, and indirectly by Charles Ewan Macmillan and
+Mike Scher.
+
+
+cheers,
+
+.mudge

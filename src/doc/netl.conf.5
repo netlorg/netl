@@ -1,0 +1,377 @@
+.ad b
+.TH netl.conf 5 "18 June 1999" "White Dactyl Labs" "White Dactyl Labs"
+.AT 3
+.de sh
+.br
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.PP
+.SH NAME
+.PP
+.I netl.conf
+- 
+.I netl
+(8) configuration file
+.PP
+.SH DESCRIPTION
+.PP
+the file netl.conf is the main configuration file for the program
+.BR netl (8).
+there is an example 
+.I netl.conf
+which comes with the
+.I netl
+distribution.  it is well commented and highly recommended that
+you play around with that to learn its structure.  this is intended for
+reference only.
+.PP
+blank lines and lines beginning with the # characters are ignored by
+netl.  extra white space is ignored.
+.PP
+.SH INITIALIZATION RULES
+.PP
+the first elements of the 
+.I netl.conf
+file should be a 
+.B device
+statement, followed by an optional 
+.B detect
+statement and then an
+optional list of 
+.B alias
+statements.  lets look at them first.
+.PP
+.B device
+device type
+.PP
+this line specifies the device and what type it is.  type should be
+ethernet, as that is the only device type currently supported and device
+should indicate the device, such as eth0 or eth1.
+.PP
+.B detect
+.PP
+this instructs 
+.BR netl (8)
+to detect the hostname that it is running on
+and assign two aliases, local to the IP address of your machine, and
+localhost to 127.0.0.1, traditionally loop back.  this is helpful if you
+are using one standard configuration file over a whole network where more
+than one machine may be running with the same configuration file.
+.PP
+.B alias
+hostname ipnumber
+.PP
+this allows you to define an alias for a specific host.  this is name can
+be used later in the configuration file (with the 
+.B dstip=
+and 
+.B srcip=
+options), and is also used to report the hostname to 
+.BR syslogd (8)
+when
+a log is triggered.
+.PP
+.B dir lib
+"directory"
+.PP
+enables you to specify the directory where netl will look in order to
+find dynamic netl modules.  see 
+.BR netl_modules (1)
+for more information.
+by placing this strategically, you can draw modules from various
+different directories, though i don't see much point in this.  this is
+equivalent to the --lib-dir command line option.  see 
+.BR netl (8)
+for
+more information on that.
+.PP
+.B dir dump
+"directory"
+.PP
+allows you to specify the directory netl will dump packets to when the
+dump action rule is used.  similar notations as to the 
+.B dir lib
+rule.  
+equivalent to the --dump-dir command line option.
+.PP
+.SH ACTION RULES
+.PP
+rule syntax is as follows:
+.PP
+action protocol if(requirement)
+.PP
+which can be shortened (if specified on a single line) to:
+.PP
+action protocol requirement
+.PP
+the parenthetical notation is useful for complicated, multi line
+requirements.  action is one of
+.PP
+.B log
+- send information about the datagram to 
+.BR syslogd (8)
+(by
+default), or stdout (with the 
+.B --foreground
+option).  see the
+.BR syslog.conf (5)
+for information on redirecting syslogd output to a
+specific file.
+.PP
+.B dump
+- save the datagram to a file.  this will be a unique file in
+/usr/local/lib/netl/dump.
+.PP
+.B ignore
+- ignore the datagram, do not process any further rules.
+.PP
+.B dl
+- dump and log the datagram.  this is equivalent to having a log
+and then a dump rule with the same requirements.
+.PP
+.B null
+- do nothing.  this is the desired action when using a filter
+module which also does its own output.
+.PP
+.B userdefined
+- this indicates a user defined filter module.  see
+.BR netl_module (1)
+for more information on the netl API.
+.PP
+protocol is one of 
+.B tcp
+, 
+.B udp
+, 
+.B icmp
+, 
+.B ignp
+(unimplemented),
+.B raw
+, 
+.B ip
+or 
+.B &userdefined
+.  tcp, udp, icmp and ignp are sub
+protocols of ip.  currently only IPv4 is supported, but IPv6 is in the
+works.  raw indicates a raw ethernet frame.  on such a packet, currently
+only source and destination hardware addresses can be checked on such a
+packet.  a user defined protocol must be implemented as a netl module.  
+see the 
+.BR netl_module (1)
+man page for more information on programming
+your own user defined protocol filters.  the netl distribution comes with
+two useful filter modules, aside from the standard protocol filters.  
+.B &gnr
+logs the usual useful things, but is much faster than using the
+equivalent protocol filter rules.  
+.B &ping
+logs pings and "pongs" (my
+term for ECHO_REPLY, the standard reply to a ping).
+.PP
+there are now experimental IPv6 filters, although they have not been
+tested, and may not be completely implemented.  you are welcome to try
+them out though.  if you use the 
+.I netl
+-6 option, then 
+.I netl
+will use
+its standard filter rules on IPv6 packets.  you can also specify IPv4 and
+IPv6 explicitly by adding a version number to the desired protocol.  for
+example, 
+.B tcp
+becomes 
+.B tcp4
+for IPv4 or 
+.B tcp6
+for IPv6.  this
+interface is likely to change in the near future.
+.PP
+the requirement of a rule is a list of the following.  you may only use a
+particular requirement and its negation once, with the exception of the
+.B flags
+requirement, which may be used multiple times on the same line.  
+not all requirements are valid for all protocols.  
+.I netl
+will silently
+ignore requirements which do not make sense for the protocol.  a
+requirement may be negated by putting a `!' character in front of it.  
+an example configuration will follow.
+.PP
+.B name=
+is technically not a requirement.  it indicates a string by
+which the packet may be identified.  this identification will be used by
+log when sent to 
+.BR syslogd (8),
+or as part of the filename when dumped.
+.PP
+.B flags=
+[TCP only] allows you to specify that certain TCP flags be set.  
+each flag is separated with a comma (,) character.  valid flags are syn,
+fin, rst, psh, ack, urg.  the special `flag' all is used to indicate that
+all flags should be set.
+.PP
+.B dstport=
+[TCP and UDP only] specify the destination port number.  for
+example, httpd (web) requests are made to port 80.
+.PP
+.B srcport=
+[TCP and UDP only] same as 
+.B dstport=
+, except this is for
+source port numbers.
+.PP
+.B dstip=
+[all IP protocols] this specifies the destination IP address,
+either as a dotted decimal (10.10.10.1) or as an aliased hostname (see
+.B alias
+above).
+.PP
+an ip address may optionally be followed by a `/x' where x is the size of
+the bitmask which should match the ip address.  for example, 10.0.0.0/8
+will match 10.*.*.* and 150.135.0.0/16 will match 150.135.*.*.  this is
+useful for making rules for a whole subnet.
+.PP
+.B srcip=
+[all IP protocols] same as 
+.B dstip=
+, except this is for the
+source IP address.
+.PP
+.B dsthw=
+and 
+.B srchw=
+indicate the destination and source hardware
+addresses at the beginning of the ethernet frame are to be checked.  a
+hardware address is specified as six two digit hexadecimal numbers
+delimited by the colon (:) character.  e.g. a6:f1:33:00:32:aa.
+.PP
+.B type=
+and 
+.B code=
+[ICMP only] these allow you to specify the type and
+code values on ICMP packets.  this may either be a numeric value, or the
+appropriate ICMP_ code.  see the file lookup.c with the 
+.B netl
+distribution for specific details.  the most common values are for
+type=echo or type=echoreply which indicate a ping and a ping reply
+respectively.
+.PP
+.SH EXAMPLE
+.PP
+.nf
+# netl config file see the man page netl.conf(5)
+
+device	eth0	ethernet	# only ethernet is suported
+
+# the detect line replaces manual configeration of your netl.conf file,
+# so that you can have one single netl.conf file for multiple hosts.
+# here is what it does:
+#  1. aliases localhost to be 127.0.0.1 (net byte order)
+#  2. aliases local to be your hosts IP number (for this config file)
+#  3. aliases your hostname to be your hosts IP number (for the actual logging)
+
+detect
+
+# note: the aliasing of your own host has been replaced with the much simpler
+# detect config line.  however, if there are remote aliases you want to make, 
+# here is where you'd want to do that.
+
+#aliases
+#alias	hostname	ipnumber
+
+#alias	fred.com	10.1.1.1
+
+#here are some examples:
+
+ignore	udp	if(dstport=644);
+ignore	udp	if(srcport=644);
+#log	udp	if(name=udp);
+
+#pop3
+dl	tcp	if (	name=pop3 	# post office protocol version 3
+			dstport=110 	# destination port for pop3
+			!srcip=local );	# don't spy on myself!
+ignore	tcp	if(dstport=110)		# from here on in, ignore pop3 stuff
+
+#web
+ignore	tcp	if(srcport=80)		# web traffic is booooring.
+
+#ridiculous stuff
+null	&ping	# special code "ping" for echo and "pong" for echo reply.
+log	udp	if(name=traceroute dstport=33434-60000)	# same notation
+
+#ignore localhost for tcp udp icmp source ip
+ignore	tcp	srcip=local
+ignore	udp	srcip=local
+ignore	icmp	srcip=local
+
+#specific services, open or not
+log	tcp	if(	name=telnet	# standard 23 telnet
+			dstport=23 	# standard telnet port
+			flag=syn 	# syn is set
+			!flag=all )	# everything else is not set.
+
+log	tcp	name=ftp dstport=21 flag=syn !flag=all		# similar notation
+log	tcp	name=smtp dstport=25 flag=syn !flag=all		# see above
+
+#tcp stuff- this will log syn when a connection is attempted and
+#fin when the connection is closed.
+log	tcp	name=syn flag=syn !flag=all !srcip=localhost
+log	tcp	name=fin flag=fin !srcip=localhost
+
+# end netl config
+.fi
+.PP
+.SH SEE ALSO
+.PP
+.BR netl (8),
+.BR netl.conf (5),
+.BR netlcc (1),
+.BR netl_install (1),
+.BR netl_module (1),
+.BR netl_api (3),
+.BR neta (1),
+.BR hwpassive (8),
+.BR hwlookup (1),
+.BR dcp (1)
+and 
+.BR xd (1)
+.PP
+.SH BUGS
+.PP
+there are almost certainly bugs, please report them to me.  send bugs and
+bug fixes to netl@netl.org.  the netl home page is at
+http://www.netl.org which should contain up to date information on
+.B netl
+.
+.PP
+i have attempted to write pretty readable documentation, however, i'm not
+really the best technically writer.  if you are, maybe we could
+colaborate?
+.PP
+.SH COPYING
+.PP
+Copyright 1996, 1997, 1999, 2000 Graham THE Ollis
+.PP
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+.PP
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License for more details.
+.PP
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+675 Mass Ave, Cambridge, MA 02139, USA.
+.PP
+.PP
+.SH AUTHOR
+.PP
+Graham THE Ollis <ollisg@netl.org>

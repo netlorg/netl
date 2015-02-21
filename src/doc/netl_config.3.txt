@@ -1,0 +1,95 @@
+netl_config(3)
+White Dactyl Labs
+25 April 2000
+
+NAME
+
+netl_config_readfile, 
+netl_config_parseline, 
+netl_config_pre, 
+netl_config_post, 
+netl_config_set, 
+netl_config_clear, 
+netl_config_listenport
+- routines and data for reading netl configuration files.
+
+
+SYNOPSIS
+
+#include <netl/api.h>
+
+void netl_config_readfile(char *filename, int nbg);
+void netl_config_parseline(char *configline);
+void netl_config_pre(void);
+void netl_config_post(void);
+void netl_config_set(void *l);
+void netl_config_clear(void);
+extern int netl_config_listenport;
+ 
+
+DESCRIPTION
+
+routines for reading a netl(8) configuration file netl.conf(5).
+
+before using any of the configuration functions, you should all
+netl_config_pre and when done, call netl_config_post.  they
+currently do nothing, though they may preform some initilization work in
+the future.
+
+netl_config_readfile reads the file filename and loads netl(8)
+modules (netl_module(1)) as necessary for later use by the packet
+grab event loop.  nbg should always be 1.  netl_config_parseline
+parses the configura tion line given by configline
+
+if you want to start from scratch, you may use netl_config_clear
+to erase the current configuration.  from there, call netl_config_pre,
+netl_config_readfile or netl_config_parseline, and then
+netl_config_post as you usually would.
+
+you should not use netl_config_set unless you understand the internals of
+core netl(8) better.
+
+netl_config_listenport is the port which dcp will listen to, if the
+module is loaded.  see dcp(1) and netl(8)  for more information.
+
+
+SEE ALSO
+
+netl(8), netl_api(3), netl_module(1)
+
+
+BUGS
+
+there are almost certainly bugs, please report them to me.  send bugs and
+bug fixes to netl@netl.org.  the netl home page is at
+http://www.netl.org which should contain up to date information on
+netl.
+
+i have attempted to write pretty readable documentation, however, i'm not
+really the best technically writer.  if you are, maybe we could
+colaborate?
+
+
+COPYING
+
+Copyright 1996, 1997, 1999, 2000 Graham THE Ollis
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+675 Mass Ave, Cambridge, MA 02139, USA.
+
+
+
+AUTHOR
+
+Graham THE Ollis <ollisg@netl.org>

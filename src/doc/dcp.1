@@ -1,0 +1,109 @@
+.ad b
+.TH dcp 1 "18 June 1999" "White Dactyl Labs" "White Dactyl Labs"
+.AT 3
+.de sh
+.br
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.PP
+.SH NAME
+.PP
+.I dcp
+- discrete communication protocol client.
+.PP
+.SH SYNOPSIS
+.PP
+.I dcp
+message [port]
+.PP
+.SH DESCRIPTION
+.PP
+.I dcp
+is a way of passing messages to 
+.BR netl (8)
+and related programs.  
+in the case of 
+.BR netl (8)
+there is currently only two messages you can
+send it.
+.PP
+"netl:readconfig" will order 
+.BR netl (8)
+(if it's listening, see the man
+page for details on the 
+.I listen
+directive) to terminate it's current
+configuration and read the netl.conf file again.  this is handy if you
+make modifications to netl.conf while 
+.BR netl (8)
+is running.
+.PP
+"hwpassive:write" tells 
+.BR hwpassive (8)
+to write its database to disk.  
+it is wise to do this occasionally, in case of system crash.
+.PP
+.SH EXAMPLE
+.PP
+run 
+.BR netl (8)
+with the listen directive, then type this, as a ordinary
+user:
+.PP
+% dcp "netl:readconfig"
+.PP
+if it worked, then there should be a note in the netl output (typically,
+this is sent to syslogd) that the configuration was re-read.
+.PP
+.SH SEE ALSO
+.PP
+.BR netl (8),
+.BR netl.conf (5),
+.BR netlcc (1),
+.BR netl_install (1),
+.BR netl_module (1),
+.BR netl_api (3),
+.BR neta (1),
+.BR hwpassive (8),
+.BR hwlookup (1),
+.BR dcp (1)
+and 
+.BR xd (1)
+.PP
+.SH BUGS
+.PP
+there are almost certainly bugs, please report them to me.  send bugs and
+bug fixes to netl@netl.org.  the netl home page is at
+http://www.netl.org which should contain up to date information on
+.B netl
+.
+.PP
+i have attempted to write pretty readable documentation, however, i'm not
+really the best technically writer.  if you are, maybe we could
+colaborate?
+.PP
+.SH COPYING
+.PP
+Copyright 1996, 1997, 1999, 2000 Graham THE Ollis
+.PP
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+.PP
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License for more details.
+.PP
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+675 Mass Ave, Cambridge, MA 02139, USA.
+.PP
+.PP
+.SH AUTHOR
+.PP
+Graham THE Ollis <ollisg@netl.org>

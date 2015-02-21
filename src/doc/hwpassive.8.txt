@@ -1,0 +1,137 @@
+hwpassive(8)
+White Dactyl Labs
+2 July 1999
+
+NAME
+
+hwpassive - passively scan for, and keep a database of hardware/ip
+address mappings.
+
+
+SYNOPSIS
+
+hwpassive [options] ['config rule'] [...]
+
+
+DESCRIPTION
+
+hwpassive is a program for gathering hardware/ip address mappings.  
+it is implemented as a netl(8) module and perl(1) script front
+end.  when hwpassive sees a hardware address it has not seen before,
+or if the existing mapping is different, then it will send it to syslogd
+(default) or stdout (with the --background option).
+
+hwpassive writes its database to /usr/local/lib/netl/hwpassive on
+exit, if it has changed, or if you send it the dcp(1) message
+"hwpassive:write"
+
+
+OPTIONS
+
+hwpassive accepts all the same options and config rules as netl(8).
+of special interest would be ignore rules which could be used to filter
+out packets being sent into or out of your local network.  for example,
+if your network were 10.* :
+
+% hwpassive 'ignore ip !srcip=10.0.0.0/8' 'ignore ip !dstip=10.0.0.0/8'
+% ping 10.255.255.255
+
+would be an active method for getting nearly all the hardware/ip address
+mappings for the hosts on your local area network.
+
+(note that you may have to escape the `!' character on some shells)
+
+
+DCP COMMANDS
+
+hwpassive will accept four dcp(1) commands, each is prefixed be
+`hwpassive:' so that they will be ignored by any other program listening
+for dcp(1) commands.
+
+hwpassive:write
+
+this instructs hwpassive to write the entire database to disk, regardless
+of weather the database has changed since the last save.
+
+hwpassive:print
+
+instructs hwpassive to print out the entire ip/hardware address mapping
+database.  each entry is presented as
+
+hw:hw:hw:hw:hw:hw => ip [first] [last]
+
+where hw is the hardware address, ip is the ip address (and may
+either be a dotted decimal, or a DNS hostname), first is the full date
+of the first time the mapping was seen by hwpassive and last is
+the last time the mapping was seen by hwpassive.
+
+hwpassive:lookhw:xx:xx:xx:xx:xx:xx
+
+makes a query for the hardware address xx in the database.  this may
+return multiple results, if the one hardware address is mapped to more
+than one ip address (which may happen, especially in a dhcp network (see
+dhcpd(8) and dhcpcd(8), where ip addresses are assigned
+dynamically)).
+
+hwpassive:lookip:hostname
+
+makes the reverse query for hostname.  again, more than one mapping
+will be returned.  if the host is not found in the database, or DNS fails
+to find the host, then the appropriate error message will be logged.
+
+
+HISTORY
+
+the genesis for this program came about when the author and a friend of
+his were tracking quake users on their university LAN.  thanks to the
+networking knowledge of said friend, determined programming of the author,
+and dominos pizza, we were able to track nearly every anonymous quaker to
+an email address, phone number, dorm, and sometimes even their room
+number.
+
+note that neither the author, nor the author's friend play quake anymore,
+and do not condone the senseless violence in many of today's video games.
+
+
+SEE ALSO
+
+netl(8), netl.conf(5), netlcc(1), netl_install(1),
+netl_module(1), netl_api(3), neta(1), hwpassive(8),
+hwlookup(1), dcp(1) and xd(1)
+
+
+BUGS
+
+there are almost certainly bugs, please report them to me.  send bugs and
+bug fixes to netl@netl.org.  the netl home page is at
+http://www.netl.org which should contain up to date information on
+netl.
+
+i have attempted to write pretty readable documentation, however, i'm not
+really the best technically writer.  if you are, maybe we could
+colaborate?
+
+
+COPYING
+
+Copyright 1996, 1997, 1999, 2000 Graham THE Ollis
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+675 Mass Ave, Cambridge, MA 02139, USA.
+
+
+
+AUTHOR
+
+Graham THE Ollis <ollisg@netl.org>

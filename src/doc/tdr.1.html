@@ -1,0 +1,115 @@
+
+<HTML>
+	<HEAD>
+		<TITLE>White Dactyl Labs : tdr(1)</TITLE>
+		<LINK REL=STYLESHEET TYPE="text/css"
+			HREF=/css/core.css NAME=core>
+	</HEAD>
+<body>
+<h1>White Dactyl Labs : tdr(1)</h1>
+<h2>table of content</h2>
+<ul>
+  <li><a href=#sec1>NAME</a>
+  <li><a href=#sec2>SYNOPSIS</a>
+  <li><a href=#sec3>DESCRIPTION</a>
+  <li><a href=#sec4>FILES</a>
+  <li><a href=#sec5>GENERATED FILES</a>
+  <li><a href=#sec6>EXISTING FILES</a>
+  <li><a href=#sec7>OPTIONS</a>
+  <li><a href=#sec8>RETURN VALUES</a>
+  <li><a href=#sec9>SEE ALSO</a>
+  <li><a href=#sec10>LEGAL</a>
+  <li><a href=#sec11>AUTHOR</a>
+
+</ul>
+<p>
+<a name=sec1><h2>NAME</h2>
+
+<p>
+ <i>tdr</i> - test driver.
+<p>
+<a name=sec2><h2>SYNOPSIS</h2>
+
+<p>
+ <i>tdr</i> [-v [-i] ] [-o]  <b>cmd</b> [ <b>args</b> ]
+<p>
+<a name=sec3><h2>DESCRIPTION</h2>
+
+<p>
+ <i>tdr</i> is a program for testing programs.   <i>tdr</i> executes  <b>cmd</b> and
+puts the various standard streams in the appropriate places.   <b>cmd</b> is
+intended to be a here document with a .t extension.  If the extension
+exists, then this part of the file name will be removed for the output
+streams.  If there are expected output files present in the current
+directory, then  <i>tdr</i> will do a  <a href=diff.1.html>diff (1)</a> on the expected and actual
+output and inform the user that differences were found.
+<p>
+<a name=sec4><h2>FILES</h2>
+
+<p>
+all these files should be found in the current directory the test program
+is named  <b>fred</b> or  <b>fred.t</b> in this case:
+<p>
+<a name=sec5><h2>GENERATED FILES</h2>
+
+<p>
+   fred.ao - actual output created by  <i>tdr</i> 
+   fred.aERR - actual error stream created by  <i>tdr</i> 
+   fred.diff - differences (ie. unix diff) between
+                  actual and expected output iff there
+                  is a difference
+   fred.diffERR - differences between actual and expected
+                  error stream
+   fred.aRET - text file with the return value
+   tdr.log - log file for the test driver.
+                  this file is appended to.
+<p>
+<a name=sec6><h2>EXISTING FILES</h2>
+
+<p>
+   fred.eo - expected output created by programmer
+   fred.eERR - expected error stream created by programmer
+   fred.eRET - expected return value
+<p>
+note that the diff files are only created if there is a difference.  the
+program warns the user when a file is to be overwritten if -v option used
+but doesn't prompt, unless the -i option is specified.
+<p>
+<a name=sec7><h2>OPTIONS</h2>
+
+<p>
+    -v warn before over writing files.
+    -i prompt before over writing files.
+    -o do not overwrite log file.
+    -n print out handy statistical information (totals)
+<p>
+<a name=sec8><h2>RETURN VALUES</h2>
+
+<p>
+   0 - normal execution
+   1 - user abort
+   2 - usage line
+   3 - file doesn't exist
+   4 - difference between actual and expected output
+<p>
+<a name=sec9><h2>SEE ALSO</h2>
+
+<p>
+ <a href=diff.1.html>diff (1)</a> 
+<p>
+<a name=sec10><h2>LEGAL</h2>
+
+<p>
+Copyright, 1996, Regents of University of California
+<p>
+portions are (c) 1997 Graham THE Ollis
+<p>
+<a name=sec11><h2>AUTHOR</h2>
+
+<p>
+Graham THE Ollis <ollisg@whitedactyl.com>
+
+
+
+</BODY></HTML>
+

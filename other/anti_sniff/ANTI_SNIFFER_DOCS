@@ -1,0 +1,111 @@
+Anti-Sniffer 
+by L0pht Heavy Industries
+antisniff@l0pht.com
+
+---
+Requirements:
+---
+
+Solaris 2.5, Solaris 2.6 on Sparc Architecture
+
+Windows 95, Windows 98, Windows NT
+
+OpenBSD running on Intel Architecture (modification to ether
+driver is required for proper operation... see BSD_README)
+
+Ethernet adapter
+
+---
+Description
+---
+
+The Anti-Sniffer runs on a local ethernet segment and reports whether
+machines are in promiscuous mode or not. It does this through a variety
+of tests designed to tickle certain drivers, operating systems, and
+hardware filtering. 
+
+One of the first things that intruders do when they compromise a machine
+and 'set up shop' is to promiscously monitor the network to obtain more
+accounts/password pairs and to determine trust and priority of machines.
+After all, it makes much more sense to compromise one machine, set it 
+to copy passwords and credientials from all of the traffic that goes by it,
+and come back a few days later to collect the bounty. This is much more
+efficient than attempting to break into each machine individually. 
+
+[hypothetical example]
+
+  Mallory breaks into a server at YoYo-Dyne Propulsion Systems and sets up
+  a common network sniffing tool. Mallory goes off and attacks other companies
+  around the world attempting to do the same thing to them. A few days later
+  Mallory logs back in to the compromised YoYo-Dyne machine and collects the
+  passwords from his monitoring tool. In this list he now has valid accounts
+  and passwords for most of YoYo-Dyne's internal systems. Additionally 
+  Mallory has the accounts and passwords for users on 6 major universities and
+  several Internet Service Providers as YoYo-Dyne employees logged into their
+  alma-matter's and home accounts from work. 
+
+It was long believed to be almost impossible to determine if a machine on 
+the network was in promiscuos mode without having an account on that actual
+machine to check the network cards current status. Thomas Ptacek and
+Tim Newsham pointed out to comp.security.unix some theoretical and practical
+ways of doing this based upon time deltas. It was also found that the
+Linux IP stack is somewhat broken and it is possible to elicit responses
+from linux machines that indicate their NIC is indeed in promiscuous mode.
+
+We incorporated these methods and developed several of our own into this
+tool. We also added the ability to "turn-off" some of the network monitoring
+tools that are discovered. All without needing to be physically at the 
+remote machine or have accounts on them.
+
+As with all tools, this can be used for both "white-hat" and "black-hat"
+purposes. 
+
+[White Hat uses]
+
+Some of the white-hat purposes are fairly straight forward: Find the machines 
+that are monitoring network traffic. Unless the "owner" of the system has
+a valid reason for doing so there is a high possibility that the system
+has been compromised. If this is the case there is a good chance that
+many other systems on the local network are compromised as well. 
+
+[Black Hat uses]
+
+Some of the black-hat purposes: determine where Intrusion Detection Systems
+are located on the network and in certain cases have the ability to 
+disable them.
+
+[Network Utilization]
+
+Several of the tests generate considerable amounts of network traffic.
+In particular, any of the time-delta tests will do periodic flooding. The
+effects of these tests can temporarily hinder network performance for other
+people on the same local net.
+
+[Switched Environments]
+
+Switched environments have the ability to not send traffic to machines other
+than the one that the traffic is actually intended for. This can, in 
+many cases, make sniffing inneffectual. In addition it can negate the
+usefulness of the anti_sniff program. For best results the Anti-Sniffer
+should be used on non-switched networks. However, with that being said,
+there are certain switched environments that we have the ability to 
+work in based upon how certain switch vendors handle certain types of
+traffic. We will be coming out with point releases of this program that
+take advantage of these situations as we come across them.
+
+[Usage]
+
+There are two versions of anti_sniff: Un*x Command Line and Windows NT/95/98
+GUI versions. While there are some nuances to each of them the functionality
+remains somewhat the same.
+
+Unix:
+
+The unix command line version is currently only availiable for OpenBSD and
+Solaris. Should demand be great enough for other operating systems the 
+tool will be ported to them.
+
+The interface to be used defaults to ep1. This value can be overriden with
+the environment variable ANTI_INTERFACE. 
+
+

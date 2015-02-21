@@ -1,0 +1,30 @@
+In reality I should have gone through and 
+
+   . cleaned stuff up
+   . made it a more logical build directory
+   . gotten rid of the large makefile abomination and replaced it with
+     a ./configure script
+   . moved to a threaded or entire semaphore setup as opposed to taking
+     advantage of nuances in various kernels and how they handle interrupted
+     system calls. This is why you see that I went the quick way out and
+     just created separate linux_* files.
+
+But, I've been really busy with the merging of the L0pht and @Stake. I'm
+doing my best to make sure that the people working with me get everything
+they need to learn and explore -- and are reminded that the world does not
+move forward in productive ways unless you contribute to it!
+
+It was more important for me to get this out to the community than to 
+sit on it promising myself I'd make it as clean as I would want (and more than
+likely not getting to it due to the other time constraints).
+
+With that being said - anti_sniff researchers version now compiles and runs on 
+redhat 6.1 with kernel 2.2.12-20 now. 
+
+One of the nice parts is that you don't need to modify the kernel for
+truly raw ether frames as you do on BSD. 
+
+Feel free to go at it and add/remove/modify and most importantly -> learn!
+
+.mudge   4.17.00
+mudge@l0pht.com

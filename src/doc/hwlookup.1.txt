@@ -1,0 +1,131 @@
+hwlookup(1)
+White Dactyl Labs
+23 July 1999
+
+NAME
+
+hwlookup - query the ethernet hardware address database off-line.
+
+
+SYNOPSIS
+
+hwlookup [options] address [ address [ ... ] ]
+
+
+DESCRIPTION
+
+when hwpassive(8) exits, it leaves behind a database of the new
+address mappings it has found.  while hwpassive(8) is running, you
+are incouraged to use its set of dcp(1) commands to query the
+database realtime.  when it is not running, you can use hwlookup
+instead.
+
+addess can either be an IP address, or a ethernet hardware address.  IP
+addresses must be specified as a dotted decimal, but may be followed by a
+netmask.  ie.
+
+% hwlookup 150.135.0.0/16
+
+returns all entries for the 150.135 subnet.  for ethernet hardware
+addresses, you need only specify the first digits if you wish, ie
+
+% hwlookup 00:d0:c0
+
+will match all ethernet hardware addresses beginning with the prefix
+00:d0:c0.
+
+there are two output modes, short and long.  the long mode is default and
+spits out more information.  here is an example of a long output
+
+==============================================
+HW:             00:c0:4f:93:6d:8c
+IP:             128.196.51.111
+first seen:     Fri Jul 23 11:42:32 1999
+last seen:      Fri Jul 23 12:18:34 1999
+card info:      Dell
+
+HW and IP are clearly the hardware/IP address mappings.  
+first seen and last seen are respectively the first and last time
+the mapping had been seen by hwpassive(8).  card info specifies the
+vendor who uses the 3 byte prefix, if found in the hwcode database of
+known manufacturer/prefix mappings.
+
+note that the database file used by hwpassive and hwlookup are specific
+to their version of netl, and are also not platform portable.
+
+
+OPTIONS
+
+-v, -r, --resolve, --dont-resolve, -d, --debug, --help work as described
+in the netl(8) man page.
+
+
+-ffilename, --file filename
+	specifies the database file which should be read, instead of
+/usr/local/lib/netl/hwpassive.
+
+-s, --short
+	use short output mode.  only the hardware/IP address mapping will
+be printed on a single line.
+
+-l, --long
+	use long output mode.  the address mapping will be followed by
+the time the mapping was first seen, last seen, and the manufacturer of
+the card, if known.
+
+
+HISTORY
+
+the genesis for this program came about when the author and a friend of
+his were tracking quake users on their university LAN.  thanks to the
+networking knowledge of said friend, determined programming of the author,
+and dominos pizza, we were able to track nearly every anonymous quaker to
+an email address, phone number, dorm, and sometimes even their room
+number.
+
+note that neither the author, nor the author's friend play quake anymore,
+and do not condone the senseless violence in many of today's video games.
+
+
+SEE ALSO
+
+netl(8), netl.conf(5), netlcc(1), netl_install(1),
+netl_module(1), netl_api(3), neta(1), hwpassive(8),
+hwlookup(1), dcp(1) and xd(1)
+
+
+BUGS
+
+there are almost certainly bugs, please report them to me.  send bugs and
+bug fixes to netl@netl.org.  the netl home page is at
+http://www.netl.org which should contain up to date information on
+netl.
+
+i have attempted to write pretty readable documentation, however, i'm not
+really the best technically writer.  if you are, maybe we could
+colaborate?
+
+
+COPYING
+
+Copyright 1996, 1997, 1999, 2000 Graham THE Ollis
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+675 Mass Ave, Cambridge, MA 02139, USA.
+
+
+
+AUTHOR
+
+Graham THE Ollis <ollisg@netl.org>
