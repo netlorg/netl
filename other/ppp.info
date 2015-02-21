@@ -1,0 +1,89 @@
+From tparsons@U.Arizona.EDU Sun Nov  1 12:21:13 1998
+From: Tyler W. Parsons <tparsons@U.Arizona.EDU>
+To: Graham THE Ollis <ollisg@U.Arizona.EDU>
+Date: Fri, 30 May 1997 15:39:20 -0700 (MST)
+Subject: pea-pea-peahats
+
+
+You need a pass phrase to unlock your RSA secret key. 
+Key for user ID "Graham THE Ollis <ollisg@ns.arizona.edu>"
+
+Enter pass phrase: 
+
+Good signature from user "Tyler's DOS key (do NOT trust this key unless I've told you in a message signed by my OTHER key that it's okay) <tparsons@u.arizona.edu>".
+Signature made 1997/05/30 21:38 GMT
+^G
+WARNING:  Because this public key is not certified with enough trusted
+signatures, it is not known with high confidence that this public key
+actually belongs to: "Tyler's DOS key (do NOT trust this key unless I've told you in a message signed by my OTHER key that it's okay) <tparsons@u.arizona.edu>".
+But you previously approved using this public key anyway.
+===========================================================================
+PPP Frame info:
+
+I don't know how much or little of this will be useful, 
+but I thought it best to transcribe most of it.
+Forgive the rough ascii; it's not entirely to scale,
+but it's not horrible.
+
+From Stevens, TCP/IP Illustrated vol. I:
+
++-------------------------------------------------+
+|flag|addr|ctrl|protocol|information|   CRC  |flag|      
+| 7E | FF | 03 |        |           |        | 7E |
++-------------------------------------------------+
+   1    1    1      2       up to        2      1
+                          1500 bytes
+
+               +--------------------+
+               |protocol|    IP     |
+               |  0021  |  datagram |
+               +--------------------+
+
+               +--------------------+
+               |protocol|   link    |
+               |  C021  | ctrl data |
+               +--------------------+
+
+               +--------------------+
+               |protocol|  network  |
+               |  8021  | ctrl data |
+               +--------------------+
+
+"Each frame begins and ends with a _flag_ byte whose
+value is 0x7e.  This is followed by an _address_ byte
+whose value is always 0xff, and then a _control_
+byte, with a value of 0x03.
+[note: i think we went over this already...]
+   Next comes the _protocol_ field, similar in
+function to the Ethernet _type_ field.  A value of
+0x0021 means the _information_ field is an IP
+datagram, a value of 0xc021 means the _information_
+field is link control data, and a value of 0x8021 is
+for network control data.
+   The CRC field (or FCS, for frame check sequence)
+is a cyclic redundancy check, to detect errors in the
+frame.
+<some material omitted>
+   Since PPP, like SLIP, is often used across slow
+serial links, reducing the number of bytes per frame
+reduces the latency for interactive applications.
+Using the link control protocol, most implementations
+negotiate to omit the constant _address_ and
+_control_ fields and to reduce the size of the
+_protocol_ field from 2 bytes to 1 byte.  If we then
+compare the framing overhead in a PPP frame, versus
+the 2-byte framing overhead in a SLIP frame, we see
+that PPP adds three additional bytes:  1 byte for the
+_protocol_ field, and 2 bytes for the CRC.
+Additionally, using the IP network control protocol,
+most implementations then negotiate to use Van
+Jacobson header compression (identical to CSLIP
+compression) to reduce the size of the IP and TCP
+headers.
+---end Stevens stuff---
+
+Hope this helps a bit.  Let me know if you need more
+information.
+
+--Tyler
+

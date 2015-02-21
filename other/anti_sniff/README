@@ -1,0 +1,24 @@
+
+Hi -
+
+Read the LICENSE file. You are now bound by it.
+
+make by itself should give you the build options.
+
+Have fun, learn, enjoy.
+
+You need to be root to get the raw device.
+
+The promisc count should be set to >0 if it detects a machine in promisc
+mode. 
+
+The ICMPTIMETEST needs you to make a human guess in this version (we took
+care of that with a whole bunch of magic in the windows version). If you 
+see that the averages for the clean run and the run while flooding are
+way way off you probably have a sniffing machine.
+
+Oh yeah, read the NOTES file for more info on the proggie.
+
+cheers,
+
+.mudge

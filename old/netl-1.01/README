@@ -1,0 +1,199 @@
+netl, neta, hwpassive, xd and dcp.pl are Copyright 1996, 1997 Graham THE Ollis
+
+tdr.pl is Copyright 1996 Regents of the University of California 
+       and Copyright 1997 Graham THE Ollis
+
+toc
+---
+  . legal
+  . what is netl?
+  . portability
+  . how do i install it?
+  . internals
+  . credits
+  . contact information
+
+legal
+-----
+
+this software is copyright me.  you are free to use and modify it under
+the terms of the GNU General Public License.  There is no written or
+implied warranty of any kind, so compile and run this software at your
+own risk.  see COPYING for official legal information.
+
+what is netl?
+-------------
+
+netl will log or dump any ip datagram you might like to log or dump.  by
+log i mean it sends a nifty message in to syslogd.  by dump i mean it will
+save the datagram to a file in /tmp/netl.  see the netl.conf file for
+information on how to configure.  the only real limitation on netl for
+network logging/sniffing is your imagination.
+
+netl doesn't really care if the destination addresses happen to be yours,
+unless you specify it to be so.  for this reason, netl sort of doubles as
+a sniffer.  (behave yourself now)
+
+portability
+-----------
+
+an older version of netl reportadly dumps core on sparc linux.  i do not
+have access to this platform so i have no idea why.  if someone could
+help me out in this area i would appreciate it.
+
+netl *should* work on any linux platform.  however i've only been able to
+test it on several intel linux station.  i have made consideration of the
+possibility that the platform it is compiled on may not in fact be little
+endian.  the big endian code is actually simpler and leads me to think
+big endian hardware is better for networking--but i have no bid endian
+hardware to test this on.
+
+netl probably will not work on any other unix platform with out a lot of
+work.  if you are successful in porting netl to other platforms, please
+let me know what you did and i can add the appropriate code to my netl
+source.  most of what you are going to want to change should be in the
+header files global.h, ip.h and ether.h.
+
+i have attempted porting netl to Windows 32, but have failed miserably.  
+i have never in my life encountered an operating system which was more
+programmer hostile in my life.  i have experience with VMS mind you.
+
+how do i install it?
+--------------------
+
+ AS NOT ROOT:
+
+ 1. edit `Makefile' and `global.h' with your favorite text editor.  if your
+    platform is supported, you shouldn't have to do anything but change
+    CFLAGS or one of the global config items at the top of global.h.
+
+ 2. type `make'
+
+ 3. if you have tdr you can run the test cases to perform some simple
+    diagnostics on neta/netl/xd.  if you don't have tdr, i suggest that
+    you get it, there should be a copy of the latest version available at: 
+
+http://www.u.arizona.edu/~ollisg/core.html#swfw
+
+    if tdr is installed, simple type `make test' and if everything works
+    out, you should see a few .t files followed by OK.  if any of the tests
+    fail, please send me the .ao .aERR .aRET files by internet mail so that
+    i can try and trck down the problem and correct in future versions.
+
+ 4. take a look at netl.conf.  modify it to your liking.
+    in the very least, READ IT, as this will save you a lot of trouble.
+
+ AS ROOT
+
+ 5. type `netl -z -fnetl.conf' to try out the configeration.  go to
+    another virtual terminal and send yourself a ping (or something else
+    you are logging), come back and see if it shows up on the screen.
+
+ 6. type `make install'
+
+ 7. copy netl.conf to your /etc directory, and run `netl' with no
+    arguments to have it run in the background.  when it runs in this
+    manner, output is sent to syslog and will show up in your
+    ~adm/messages file (unless you modify /etc/syslog.conf).  you may want
+    to run netl from one of your startup scripts in /etc/rc.d or
+    thereabouts. 
+
+ 8. read the documentation.  that is, the rest of this file and the man
+    pages.  there is decent man page style documents for:
+	. dcp(1)	: discrete communication protocol
+        . hwpassive(1)	: passive hardware database
+        . neta(1)	: network packet analizer, handy for analizing frames
+			  dumped by netl
+        . netl(8)	: base documentation VERY IMPORTANT
+        . xd(1)		: hex dump not so important
+
+internals
+---------
+
+netl is highly modularized.  if you want to make any modifications,
+shouldn't be too hard.  over all i would describe the documentation style
+as "pretty ok".  every module is a .c file with a .h header which exports
+the prototypes and global variables to other modules.  there are two
+special header files which aren't attached to any particular module but
+are important to many (but not all) of the modules. 
+
+  global.h - this defines unsigned 8bit, 16bit and 32bit integers.
+	if you are doing an os port, this is the first thing to look at.
+
+  ether.h - this has all the heder datatype definitions (or at least
+	pointers to such data structures in zthe kernel source).  if you
+	want to add a new device type, copy this file and use it as a 
+	template.
+
+  ip.h - this defines the IP header formats.
+
+  config.c - reads the default or specified config file, or single line
+	config parsing
+
+  dump.c - hex dump of binary file to the screen (for xd and neta)
+
+  io.c - io for netl.  this allows netl to be run in either the background
+	as a daemon or in the forground using stdout and stderr. 
+
+  lookup.c - some icmp codes are stored here for the TYPE and CODE fields
+	in the icmp header.  there is no code in this module, just data.
+
+  neta.c - datagram analysis software.
+
+  netl.c - network log.
+
+  options.c - parse command line options.
+
+  resolve.c - resolve hostnames from IP numbers.  (and caches)
+
+  sighandle.c - catch some fatal signals for clean exit.
+
+  xd.c - dump raw files to screen in hex format.
+
+  dcp.c - send messages to netl while it's running using this protocol.  right
+	now, you'll need the dcp.pl script to work.  one day i'd like to make
+	dcp.pl a regular c program. 
+
+  hwpassive.c - right now this is completely unfinished.  when complete, it
+	will passively keep a database of hardware <=> IP addresses as IP 
+	datagrams fly by the network.
+
+credits
+-------
+
+tyler parsons-
+
+i couldn't have done this program or started work on the stealth kernel
+without the networking knowledge of tyler parsons.  even after that, his
+alpha/beta testing has been extremely useful in making netl what it is
+today. 
+
+gordon lyon-
+
+fellow computer science student, and handy dandy beta tester.
+
+jeff thompson-
+
+early versions of netl were heavily derived from a program by jeff
+thompson which didn't even quite work right.  i had to debug and correct
+it.  when i got deeper in to the problem i discovered that his
+`synlogger' (as it was called) was highly specialized and didn't have to
+be.  netl was thus born.
+
+graham the ollis-
+
+my name is graham the ollis, i'm a computer science/math major at the
+university of arizona.  or private contractor working as CORE software.  
+or some even call me grand master of all in existance, but for the most
+part i am apt to reply to the name `graham' (no mr. ollises thanks much).  
+if you have anything relevant or non-relevant to say about netl then i
+would certainly like to hear from you.  especially if you have
+improvements for netl.  you can get my public pgp key by fingering my
+university account:
+
+contact information
+-------------------
+
+finger:ollisg@u.arizona.edu or ollisg@wwa.com
+mailto:ollisg@wwa.com
+http://www.u.arizona.edu/~ollisg/

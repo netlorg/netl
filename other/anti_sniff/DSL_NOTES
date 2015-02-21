@@ -1,0 +1,28 @@
+This program is *not* intended for use on anything other than
+local ethernet connections. DSL and other devices can often times get
+confused and bothered.
+
+With that being said we've found wonderful results on dsl lines. Hit the
+broadcast addresses (go through all the bit boundaries) and see which 
+linux boxes, freeBSD boxes etc are in promisc. Then hit the NT bug
+to see which NT machines that are not at your residence but are in promisc.
+This seems to happen as the dsl modems often times seem happy to send traffic
+out in a flooding style if they do not recognize the ether addr. Of course,
+your mileage may vary. 
+
+Many of the DSL modems seem to be extremely chatty when it comes to 
+handling things they are not familiar with.
+
+Second, they seem to bridge just about everything if you tickle them correctly.
+
+The Westell, for example, exhibits a strange feature in re-forwarding
+packets with it's own mac address if it does not understand the dest 
+ether-addr. This is disturbing. To wit:
+
+  dest ether addr of ff:ff:ff:ff:ff:00 with a target IP address of say
+  10.10.10.12 will, after the first packet is not responded to, be
+  resent to the address of 10.10.10.12 (if it exists) with the correct
+  ether address and a return address of the DSL box - not the originating
+  sender.
+
+.mudge

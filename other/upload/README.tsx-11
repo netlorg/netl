@@ -1,0 +1,75 @@
+Guidelines for submitting files to the tsx-11 archive:  These
+guidelines should make it easier for us to maintain tsx-11,
+allowing us to publish submissions in a timely manner.
+
+0) The files you upload *must* be freely redistributable.  Also,
+   no copyright conditions prohibiting distribution charges may
+   exist, as several CD-ROM's of the tsx-11 archives are produced
+   and sold by independent companies.  IF YOU ARE THE COPYRIGHT
+   OWNER OF SUCH A PACKAGE AND YOU UPLOAD YOUR PACKAGE TO
+   TSX-11 IN VIOLATION OF THIS RULE, YOU INDEMNIFY AND HOLD
+   HARMLESS ALL INDIVIDUALS WHO VIOLATE SUCH A CLAUSE IN YOUR
+   COPYRIGHT NOTICE BY CHARGING A DISTRIBUTION FEE FOR DISTRIBUTING
+   YOUR PROGRAM, WHETHER IT IS OBTAINED DIRECTLY OR INDIRECTLY
+   FROM TSX-11.  If you are not the copyright holder and you
+   upload software in violation of its license agreement, you
+   implictly agree that we may inform the copyright holder of
+   your violation, and you also implicitly agree to take full
+   responsibility for the legal consequences of this violation.
+
+   (Sorry for the legalese, folks.  Turns out some uploaders
+    have made it necessary.  I apologize to all you honest people
+    who have to suffer through reading this because of it.)
+
+1) When you separate the sources and binaries, please use "src"
+   in the filename of the source packages and "bin" in the filename
+   of the binary package.  Please include any necessary documentation
+   in *both* the source and binary distributions.
+
+   Source is far more important than binaries.  Feel free to only
+   upload sources, not binaries.
+
+2) Please upload an LSM file with your upload, or at the very
+   least a .doc file or some explanation, so that users don't
+   have to download the whole package to see what it is...
+   A template for LSM files is in /pub/linux/docs/LSM.README
+   LSM files are Linux Software Map files which can be used to
+   update a list of publically available programs for Linux.
+   The list itself can be obtained in the same directory as the
+   template.
+
+3) We prefer that you package all files in tar archives, compressed
+   with the GNU gzip program.  Other formats cause us trouble, and
+   that means that we will take longer to deal with your file, and
+   may never deal with it at all.  When creating gzipped tar files,
+   please use the .gz suffix.  If you use the .tgz suffix, it will
+   be converted to the .tar.gz suffix before being made available.
+   We normally re-zip with -9 to save space, so don't be shocked
+   when the file in the archives has a different size than the one
+   you uploaded.
+
+4) Please mail ftp-linux@tsx-11.mit.edu when you make a submission
+   to the archives.  Otherwise your submission may very well be
+   deleted.  Really.
+
+5) If this is a version of something already in the archives,
+   please tell us why we should put up your version of it instead
+   of leaving the current one in place.  Is it a new version?  Did
+   you fix a bug?  Are you the new maintainer?  Please explain...
+
+6) Please bundle everything in a tar file which explodes into a
+   subdirectory.  A tar file which spills everything into the
+   current directory is usually considered anti-social, except
+   in the case of binary packages that explode out of the root
+   directory -- and distributions are making those mostly
+   irrelevant anyway.
+
+7) It will help people figure things out if you follow a naming
+   convention roughly like this:  packagename-version.number.tar.gz,
+   which explodes into a directory named packagename-version.number.
+   Then name the lsm file packagename-version.number.lsm
+   This is not required, but following it when reasonable makes
+   everyone's life a little easier.
+
+Thanks for your upload, and we appreciate your cooperation and
+patience.

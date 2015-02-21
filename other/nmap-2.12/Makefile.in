@@ -1,0 +1,149 @@
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+sbindir = @sbindir@
+mandir = @mandir@
+srcdir = @srcdir@
+libdir = @libdir@/nmap
+
+CC = @CC@
+CCOPT = 
+LIBPCAPDIR = @libpcapdir@
+INCLS = -I. -I$(LIBPCAPDIR)
+DEFS = @DEFS@ -DVERSION=\"$(VERSION)\" -DLIBDIR=\"$(libdir)\"
+CFLAGS = @CFLAGS@ $(CCOPT) $(DEFS) $(INCLS)
+# CFLAGS = -g -Wall $(DEFS) $(INCLS)
+STATIC = 
+LDFLAGS = @LDFLAGS@ $(STATIC)
+LIBS =  @LIBS@ -lpcap -lm
+INSTALL = @INSTALL@
+MAKEDEPEND = @MAKEDEPEND@
+RPMTDIR=$(HOME)/rpmdir
+VERSION = 2.12
+
+TARGET = nmap
+
+SRCS = nmap.c targets.c tcpip.c error.c utils.c osscan.c charpool.c services.c @COMPAT_SRCS@
+
+OBJS = nmap.o targets.o tcpip.o error.o utils.o osscan.o charpool.o services.o @COMPAT_OBJS@
+
+DEPS = nmap.h error.h targets.h osscan.h tcpip.h utils.h global_structures.h charpool.h services.h
+
+all: $(TARGET)
+
+$(TARGET): $(DEPS) @PCAP_DEPENDS@ $(OBJS)
+	@echo Compiling nmap
+	rm -f $@
+	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
+
+$(LIBPCAPDIR)/libpcap.a: $(LIBPCAPDIR)/Makefile
+	@echo Compiling libpcap; cd $(LIBPCAPDIR); $(MAKE)
+$(LIBPCAPDIR)/Makefile:
+	@echo Configuring libpcap; cd $(LIBPCAPDIR); ./configure
+
+ci: checkin
+
+checkin: 
+	ci -u Makefile nmap.c targets.c nmap.h tcpip.c tcpip.h error.c error.h utils.c utils.h inet_aton.c configure.in config.h.in Makefile.in configure install-sh config.guess config.sub
+
+# This target is just for me ... don't you get any ideas --Fyodor
+distro: 
+	autoconf
+	rm -f config.cache
+	./configure
+	cd $(LIBPCAPDIR) && ./configure
+	$(MAKE) clean
+	$(MAKE) static
+	$(MAKE)
+	./nmap -h > /dev/null    #Make sure nmap exists
+	rm -f docs/nmap.usage.txt	
+	./nmap -h > docs/nmap.usage.txt 
+	rm -f docs/nmap_manpage.html
+	nroff -man docs/nmap.1 | man2html -title 'Nmap network security scanner man page' > docs/nmap_manpage.html
+	rm -rf /usr/tmp/nmap-$(VERSION)
+	mkdir /usr/tmp/nmap-$(VERSION)
+# Make the RPM .spec file
+	sed -e s/\@VERSION\@/$(VERSION)/g nmap.spec.in > nmap-$(VERSION)-1.spec
+	$(MAKE) clean
+	rm -f $(LIBPCAPDIR)/config.cache $(LIBPCAPDIR)/Makefile
+	cp -ra $(SRCS) $(DEPS) inet_aton.c snprintf.c nmap-os-fingerprints \
+	nmap-services \
+	configure.in config.h.in Makefile.in configure install-sh \
+        config.guess nmap-$(VERSION)-1.spec config.sub INSTALL docs \
+	COPYING CHANGELOG \
+        $(LIBPCAPDIR) /usr/tmp/nmap-$(VERSION)
+# Kill the CVS crap
+	find /usr/tmp/nmap-$(VERSION) -type d -name CVS | xargs rm -rf
+	cd /usr/tmp; \
+	tar czf nmap-$(VERSION).tgz nmap-$(VERSION)
+# Make the actual RPM
+	rpm -ta /usr/tmp/nmap-$(VERSION).tgz
+	cp -f $(RPMTDIR)/RPMS/i386/nmap-$(VERSION)-1.i386.rpm /usr/tmp
+	cp -f $(RPMTDIR)/SRPMS/nmap-$(VERSION)-1.src.rpm /usr/tmp
+	rm -rf /usr/tmp/nmap-$(VERSION)
+
+# For distributing the binary
+static: 
+	cd $(LIBPCAPDIR); $(MAKE)
+	$(CC) $(CFLAGS) -static $(LDFLAGS) -o nmap.linux.bin  $(SRCS) $(LIBS)
+	strip nmap.linux.bin
+
+clean: @PCAP_CLEAN@ my_clean
+my_clean:
+	rm -f $(OBJS) $(TARGET) 
+pcap_clean:
+	cd $(LIBPCAPDIR); $(MAKE) clean
+pcap_dist_clean:
+	cd $(LIBPCAPDIR); $(MAKE) distclean
+
+distclean: my_clean my_distclean @PCAP_DIST_CLEAN@
+my_distclean:
+	rm -f Makefile Makefile.bak config.h stamp-h stamp-h.in \
+	         config.cache config.log config.status
+
+
+depend:
+	$(MAKEDEPEND) $(INCLS) -s "# DO NOT DELETE" -- $(DEFS) -- $(SRCS)
+
+install: all
+	$(INSTALL) -d $(bindir) 
+	$(INSTALL) -d $(mandir) 
+	$(INSTALL) -d $(mandir)/man1
+	$(INSTALL) -d $(libdir)
+	$(INSTALL) -m 755 $(TARGET) $(bindir)/$(TARGET)
+	$(INSTALL) -m 644 docs/$(TARGET).1 $(mandir)/man1/$(TARGET).1
+	$(INSTALL) -m 644 nmap-os-fingerprints  $(libdir)/nmap-os-fingerprints
+	$(INSTALL) -m 644 nmap-services  $(libdir)/nmap-services
+
+uninstall:
+	rm -f $(bindir)/$(TARGET)
+
+${srcdir}/configure: configure.in 
+	cd ${srcdir} && autoconf
+
+# autoheader might not change config.h.in, so touch a stamp file.
+${srcdir}/config.h.in: stamp-h.in
+${srcdir}/stamp-h.in: configure.in acconfig.h \
+	config.h.top config.h.bot
+	cd ${srcdir} && autoheader
+	echo timestamp > ${srcdir}/stamp-h.in
+
+config.h: stamp-h
+stamp-h: config.h.in config.status
+	./config.status
+
+Makefile: Makefile.in config.status
+	./config.status
+
+config.status: configure
+	./config.status --recheck
+
+# DO NOT DELETE -- Needed by makedepend
+
+
+
+
+
+
+
